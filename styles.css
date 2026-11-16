@@ -375,3 +375,58 @@ a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
 .gallery-note { margin: 18px 0 0; color: #68766b; font-size: .82rem; }
 @media (max-width: 900px) { .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .gallery-card-feature { grid-row: span 2; } .gallery-card-feature img { min-height: 300px; } }
 @media (max-width: 650px) { .gallery-grid { grid-template-columns: 1fr; gap: 16px; } .gallery-card-feature { grid-row: auto; } .gallery-card img, .gallery-card-feature img { height: 220px; min-height: 0; } .gallery-card figcaption { padding: 16px; } }
+
+
+/* Butterflies sit above the hero content so they remain visible */
+.hero .nature-butterfly {
+  position:absolute; z-index:4; display:block; left:0;
+  width:clamp(42px,5.2vw,64px); height:auto; opacity:0;
+  pointer-events:none; filter:drop-shadow(0 3px 5px rgba(18,42,26,.42));
+  will-change:transform,opacity;
+}
+.hero .butterfly-one { top:39%; animation:butterfly-meander 34s ease-in-out -7s infinite; }
+.hero .butterfly-two { top:55%; width:clamp(34px,4.3vw,52px); animation:butterfly-meander-two 41s ease-in-out -19s infinite; }
+.hero .nature-butterfly svg { display:block; width:100%; height:auto; overflow:visible; animation:butterfly-hover 2.4s ease-in-out infinite; }
+.hero .nature-butterfly .wing { transform-box:fill-box; transform-origin:center center; }
+.hero .nature-butterfly .wing-left { animation:butterfly-wing-left .19s ease-in-out infinite alternate; }
+.hero .nature-butterfly .wing-right { animation:butterfly-wing-right .19s ease-in-out infinite alternate; }
+@keyframes butterfly-wing-left { from{transform:scaleY(.58) rotate(-7deg)} to{transform:scaleY(1.12) rotate(7deg)} }
+@keyframes butterfly-wing-right { from{transform:scaleY(.58) rotate(7deg)} to{transform:scaleY(1.12) rotate(-7deg)} }
+@keyframes butterfly-hover { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-5px) rotate(2deg)} }
+@keyframes butterfly-meander {
+  0%{opacity:0;transform:translate3d(-10vw,24px,0) rotate(-15deg) scale(.82)}
+  7%{opacity:1}
+  20%{transform:translate3d(16vw,-20px,0) rotate(9deg) scale(1)}
+  27%{transform:translate3d(22vw,-25px,0) rotate(-3deg) scale(1.02)}
+  34%{transform:translate3d(25vw,-18px,0) rotate(8deg) scale(1)}
+  47%{transform:translate3d(42vw,13px,0) rotate(-12deg) scale(.96)}
+  55%{transform:translate3d(50vw,-19px,0) rotate(7deg) scale(1.04)}
+  62%{transform:translate3d(55vw,-12px,0) rotate(-5deg) scale(1)}
+  78%{transform:translate3d(78vw,17px,0) rotate(13deg) scale(.94);opacity:1}
+  94%{opacity:1}
+  100%{transform:translate3d(112vw,-12px,0) rotate(-9deg) scale(.86);opacity:0}
+}
+@keyframes butterfly-meander-two {
+  0%{opacity:0;transform:translate3d(-12vw,-10px,0) rotate(12deg) scale(.8)}
+  8%{opacity:1}
+  23%{transform:translate3d(20vw,24px,0) rotate(-10deg) scale(1)}
+  31%{transform:translate3d(27vw,12px,0) rotate(4deg) scale(1.04)}
+  39%{transform:translate3d(34vw,20px,0) rotate(-8deg) scale(1)}
+  54%{transform:translate3d(52vw,-24px,0) rotate(12deg) scale(.96)}
+  63%{transform:translate3d(63vw,-14px,0) rotate(-5deg) scale(1.04)}
+  72%{transform:translate3d(72vw,-20px,0) rotate(8deg) scale(1)}
+  88%{transform:translate3d(94vw,15px,0) rotate(-12deg) scale(.9);opacity:1}
+  100%{transform:translate3d(114vw,4px,0) rotate(8deg) scale(.84);opacity:0}
+}
+@media(prefers-reduced-motion:reduce) {
+  .hero .nature-butterfly { display:block!important; opacity:1!important; animation:none!important; transform:translate3d(28vw,0,0)!important; }
+  .hero .butterfly-two { transform:translate3d(66vw,18px,0)!important; }
+  .hero .nature-butterfly svg,.hero .nature-butterfly .wing { animation:none!important; }
+}
+/* A little taller flower border; existing SVG flowers remain unchanged */
+.garden-bed { height:clamp(125px,19vw,198px); }
+@media(max-width:650px) {
+  .garden-bed { height:116px; }
+  .hero .nature-butterfly { width:40px; }
+  .hero .butterfly-two { width:33px; }
+}
