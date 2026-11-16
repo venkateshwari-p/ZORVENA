@@ -249,3 +249,29 @@ a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
   .brand img,
   .foot-brand img { border-radius: 10px; }
 }
+
+
+/* Keep every main navigation destination available on small screens */
+@media (max-width: 650px) {
+  header .nav {
+    height: auto;
+    min-height: 0;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 12px;
+  }
+  header nav {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px 18px;
+    padding: 2px 0;
+    font-size: .76rem;
+  }
+  header nav a:nth-child(2),
+  header nav a:nth-child(3) { display: inline; }
+  .hero-grid { padding-top: 142px; }
+}
