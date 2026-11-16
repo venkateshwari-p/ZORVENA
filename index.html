@@ -63,7 +63,7 @@
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
 <header><div class="wrap nav">
-  <a class="brand" href="#top"><img src="assets/zorvena-logo.png" alt="ZORVENA logo"><span>ZORVENA</span></a>
+  <a class="brand" href="#top"><img src="assets/zorvena-logo.png" alt="ZORVENA logo" decoding="async"><span>ZORVENA</span></a>
   <nav aria-label="Main navigation"><a href="#about">About</a><a href="#focus">Our Focus</a><a href="#vision">Vision & Mission</a><a href="#contact">Contact</a></nav>
 </div></header>
 <main id="main-content" tabindex="-1">
@@ -73,7 +73,7 @@
       <p>Advancing agriculture through practical services, modern technology, and sustainable farming practices. We connect farming knowledge with intelligent solutions to help agriculture move forward.</p>
       <div class="actions"><a class="btn btn-primary" href="#focus">Explore our focus areas</a><a class="btn btn-outline" href="#about">Discover ZORVENA</a></div>
     </div>
-    <div class="hero-mark"><img src="assets/zorvena-logo.png" alt="ZORVENA green technology and agriculture emblem"></div>
+    <div class="hero-mark"><img src="assets/zorvena-logo.png" alt="ZORVENA green technology and agriculture emblem" decoding="async" fetchpriority="high"></div>
   </div></section>
   <section id="about"><div class="wrap about-grid">
     <div class="about-panel"><small>Who we are</small><strong>Where farming knowledge meets innovation.</strong><small>Growing Agriculture · Empowering Tomorrow</small></div>
@@ -99,5 +99,8 @@
   <section class="contact" id="contact"><div class="wrap contact-panel"><div class="kicker">Connect with us</div><h2>Let’s grow a smarter future together.</h2><p>Have a question, an idea, or an opportunity to collaborate in agriculture and agritech? Connect with ZORVENA on LinkedIn and start a conversation.</p><a class="btn btn-primary" href="https://www.linkedin.com/company/zorvena/" target="_blank" rel="noopener noreferrer">Visit ZORVENA on LinkedIn</a></div></section>
   <section class="closing"><div class="wrap"><h2>Growing Agriculture,<br>Empowering Tomorrow.</h2><p>Rooted in the potential of agriculture. Moving forward with innovation, collaboration, and sustainable thinking.</p></div></section>
 </main>
-<footer><div class="wrap foot"><div class="foot-brand"><img src="assets/zorvena-logo.png" alt=""> ZORVENA</div><div>© <span id="year">2026</span> ZORVENA. All rights reserved.</div><div>Growing Agriculture · Empowering Tomorrow</div></div></footer>
+<footer><div class="wrap foot"><div class="foot-brand"><img src="assets/zorvena-logo.png" alt="" decoding="async"> ZORVENA</div><div>© <span id="year">2026</span> ZORVENA. All rights reserved.</div><div>Growing Agriculture · Empowering Tomorrow</div></div></footer>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
 </body></html>
