@@ -296,3 +296,10 @@ a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
 @keyframes flower-sway { from{transform:rotate(-7deg)} to{transform:rotate(7deg)} } @keyframes firefly-glow { 0%,55%{opacity:0} 68%,88%{opacity:.9} 100%{opacity:0} }
 @media(max-width:650px){.nature-tree{width:34vw;height:48%;opacity:.55}.tree-left{left:-12%}.tree-right{right:-14%;height:55%}.nature-sun{width:52px;height:52px;left:10%;top:24%}.nature-moon{width:42px;height:42px;right:16%}.nature-moon::after{width:40px;height:40px}.flower-bed{bottom:2%;gap:8px}.flower-bed i{font-size:20px}.flowers-left{left:3%}.flowers-right{right:3%}.nature-hills{height:30%}}
 @media(prefers-reduced-motion:reduce){.nature-sky,.nature-sun,.nature-moon,.nature-stars,.tree-left,.tree-right,.tree-leaves,.flower-bed i,.nature-fireflies{animation:none!important}.nature-moon,.nature-stars,.nature-fireflies{display:none}.nature-sun{opacity:.8;transform:none}}
+
+/* Butterflies drift gently through the daytime garden */
+.nature-butterfly { position:absolute; z-index:2; left:-8%; top:42%; font-size:clamp(19px,2.2vw,29px); opacity:0; filter:drop-shadow(0 2px 5px rgba(16,55,35,.2)); animation:butterfly-flight 24s ease-in-out infinite; }
+.butterfly-two { top:57%; font-size:clamp(15px,1.8vw,23px); animation-delay:-11s; animation-duration:29s; }
+@keyframes butterfly-flight { 0%,8%{left:-8%;opacity:0;transform:translateY(18px) rotate(-12deg)} 15%,42%{opacity:.9} 25%{transform:translateY(-32px) rotate(10deg)} 38%{transform:translateY(12px) rotate(-8deg)} 48%,100%{left:108%;opacity:0;transform:translateY(-20px) rotate(12deg)} }
+@media(max-width:650px){.nature-butterfly{font-size:18px}.butterfly-two{font-size:15px}}
+@media(prefers-reduced-motion:reduce){.nature-butterfly{animation:none!important;display:none}}
