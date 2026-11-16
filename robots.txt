@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://venkateshwari-p.github.io/ZORVENA/sitemap.xml
