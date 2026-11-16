@@ -166,3 +166,77 @@ a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
   outline-offset: 3px;
 }
 #main-content:focus { outline: none; }
+
+
+/* Logo alignment and consistent logo backing */
+.brand {
+  min-width: 0;
+  gap: 14px;
+  line-height: 1;
+}
+.brand img {
+  display: block;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  padding: 5px;
+  object-fit: contain;
+  object-position: center;
+  background: #fff;
+  border: 1px solid rgba(213, 182, 91, .65);
+  border-radius: 50%;
+}
+.hero-mark {
+  min-width: 0;
+  min-height: 340px;
+  display: grid;
+  place-items: center;
+}
+.hero-mark img {
+  display: block;
+  width: min(100%, 320px);
+  height: 320px;
+  padding: 22px;
+  object-fit: contain;
+  object-position: center;
+  background: #fff;
+  border: 3px solid var(--gold);
+  border-radius: 28px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .24);
+  filter: none;
+}
+.hero-note {
+  right: max(0px, calc((100% - 320px) / 2));
+  bottom: 0;
+  max-width: 230px;
+  text-align: center;
+}
+.foot-brand {
+  gap: 12px;
+  line-height: 1;
+}
+.foot-brand img {
+  display: block;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  padding: 4px;
+  object-fit: contain;
+  object-position: center;
+  background: #fff;
+  border: 1px solid rgba(213, 182, 91, .65);
+  border-radius: 50%;
+}
+@media (max-width: 900px) {
+  .hero-mark { min-height: 280px; }
+  .hero-mark img { width: min(100%, 270px); height: 270px; }
+  .hero-note { right: max(0px, calc((100% - 270px) / 2)); }
+}
+@media (max-width: 650px) {
+  .brand { gap: 10px; }
+  .brand img { flex-basis: 40px; width: 40px; height: 40px; }
+  .hero-mark { min-height: 210px; justify-content: center; }
+  .hero-mark img { width: 190px; height: 190px; padding: 14px; }
+  .hero-note { left: calc(50% + 18px); right: auto; bottom: -2px; max-width: 155px; padding: 9px 12px; font-size: .72rem; }
+  .foot-brand img { flex-basis: 32px; width: 32px; height: 32px; }
+}
