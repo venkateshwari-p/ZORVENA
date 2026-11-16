@@ -299,7 +299,9 @@ a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
 
 /* Butterflies fly visibly across the landscape, above the background overlays */
 .nature-butterfly { position:absolute; z-index:3; left:0; top:42%; display:block; font-size:clamp(22px,2.5vw,32px); line-height:1; opacity:0; filter:drop-shadow(0 2px 5px rgba(16,55,35,.35)); will-change:transform,opacity; animation:butterfly-flight 18s linear infinite; }
+.nature-butterfly span { display:block; transform-origin:50% 55%; animation:butterfly-flutter .22s ease-in-out infinite alternate; }
+@keyframes butterfly-flutter { from{transform:scaleX(.88) rotate(-9deg)} to{transform:scaleX(1.08) rotate(9deg)} }
 .butterfly-two { top:58%; font-size:clamp(18px,2vw,26px); animation-delay:-9s; animation-duration:22s; }
 @keyframes butterfly-flight { 0%{opacity:0;transform:translate3d(-12vw,18px,0) rotate(-14deg) scale(.85)} 8%{opacity:1} 28%{transform:translate3d(25vw,-34px,0) rotate(12deg) scale(1)} 50%{transform:translate3d(55vw,16px,0) rotate(-10deg) scale(.95)} 72%{transform:translate3d(85vw,-28px,0) rotate(14deg) scale(1.05);opacity:1} 92%,100%{opacity:0;transform:translate3d(112vw,12px,0) rotate(-8deg) scale(.9)} }
 @media(max-width:650px){.nature-butterfly{font-size:21px}.butterfly-two{font-size:17px}}
-@media(prefers-reduced-motion:reduce){.nature-butterfly{animation:none!important;display:none}}
+@media(prefers-reduced-motion:reduce){.nature-butterfly,.nature-butterfly span{animation:none!important;display:none}}
