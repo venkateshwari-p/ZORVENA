@@ -144,3 +144,25 @@ a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
   .contact-panel { padding: 28px 20px; }
   .contact-panel .btn { width: 100%; }
 }
+
+
+/* Keyboard accessibility: visible skip navigation */
+.skip-link {
+  position: fixed;
+  z-index: 1000;
+  top: 12px;
+  left: 12px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--forest);
+  font-weight: 700;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .18);
+  transform: translateY(-160%);
+}
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+#main-content:focus { outline: none; }
