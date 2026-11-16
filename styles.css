@@ -323,3 +323,40 @@ a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
 .butterfly-two{top:57%;width:clamp(30px,3.8vw,46px)}
 @media(max-width:650px){.garden-bed{height:100px;gap:0}.garden-bed.flowers-left{left:0}.garden-bed.flowers-right{right:0}.garden-flower{width:34px}.nature-butterfly{width:38px}.butterfly-two{width:30px}}
 @media(prefers-reduced-motion:reduce){.garden-flower,.garden-flower .petals,.nature-butterfly .wing{animation:none!important}}
+
+
+/* Give the flower clusters a planted, natural ground layer */
+.garden-bed::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -12px;
+  right: -12px;
+  bottom: 0;
+  height: 38px;
+  border-radius: 50% 50% 0 0;
+  background:
+    repeating-linear-gradient(76deg, transparent 0 8px, rgba(36, 91, 43, .78) 9px 10px, transparent 11px 17px),
+    linear-gradient(180deg, transparent 0%, rgba(20, 76, 37, .72) 100%);
+  opacity: .9;
+}
+.garden-bed::after {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  left: -24px;
+  right: -24px;
+  bottom: -5px;
+  height: 17px;
+  border-radius: 50%;
+  background: rgba(15, 55, 29, .32);
+  filter: blur(5px);
+}
+.garden-flower:nth-child(1) { height: 94%; }
+.garden-flower:nth-child(2) { height: 76%; }
+.garden-flower:nth-child(3) { height: 86%; }
+.garden-flower:nth-child(4) { height: 70%; }
+@media (max-width: 650px) {
+  .garden-bed::before { height: 28px; }
+  .garden-bed::after { height: 12px; }
+}
