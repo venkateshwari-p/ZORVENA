@@ -430,3 +430,65 @@ a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
   .hero .nature-butterfly { width:40px; }
   .hero .butterfly-two { width:33px; }
 }
+
+
+/* Visibility-first butterfly fix: keep both illustrated butterflies visible */
+.hero { position:relative; }
+.hero .nature-butterfly {
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  z-index:20 !important;
+  width:clamp(54px,6vw,76px);
+  height:auto;
+  left:0;
+  pointer-events:none;
+}
+.hero .butterfly-one {
+  top:34%;
+  animation:zorvena-butterfly-path-one 26s ease-in-out infinite !important;
+}
+.hero .butterfly-two {
+  top:58%;
+  width:clamp(44px,5vw,62px);
+  animation:zorvena-butterfly-path-two 31s ease-in-out -13s infinite !important;
+}
+.hero .nature-butterfly svg {
+  display:block;
+  width:100%;
+  height:auto;
+  overflow:visible;
+}
+.hero .nature-butterfly .wing-left {
+  animation:butterfly-wing-left .2s ease-in-out infinite alternate !important;
+}
+.hero .nature-butterfly .wing-right {
+  animation:butterfly-wing-right .2s ease-in-out infinite alternate !important;
+}
+@keyframes zorvena-butterfly-path-one {
+  0% { transform:translate3d(4vw,0,0) rotate(-8deg); }
+  20% { transform:translate3d(22vw,-24px,0) rotate(10deg); }
+  38% { transform:translate3d(36vw,-8px,0) rotate(-5deg); }
+  55% { transform:translate3d(54vw,-34px,0) rotate(9deg); }
+  72% { transform:translate3d(72vw,-4px,0) rotate(-8deg); }
+  88% { transform:translate3d(88vw,-26px,0) rotate(8deg); }
+  100% { transform:translate3d(104vw,0,0) rotate(-5deg); }
+}
+@keyframes zorvena-butterfly-path-two {
+  0% { transform:translate3d(8vw,18px,0) rotate(9deg); }
+  18% { transform:translate3d(26vw,-14px,0) rotate(-9deg); }
+  36% { transform:translate3d(43vw,12px,0) rotate(7deg); }
+  55% { transform:translate3d(62vw,-22px,0) rotate(-8deg); }
+  74% { transform:translate3d(80vw,8px,0) rotate(10deg); }
+  100% { transform:translate3d(106vw,-12px,0) rotate(-6deg); }
+}
+@media(max-width:650px) {
+  .hero .nature-butterfly { width:48px; }
+  .hero .butterfly-two { width:40px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .hero .nature-butterfly { animation:none !important; opacity:1 !important; }
+  .hero .butterfly-one { left:18%; top:38%; transform:none !important; }
+  .hero .butterfly-two { left:66%; top:55%; transform:none !important; }
+  .hero .nature-butterfly .wing { animation:none !important; }
+}
