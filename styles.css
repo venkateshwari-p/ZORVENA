@@ -240,3 +240,12 @@ a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
   .hero-note { left: calc(50% + 18px); right: auto; bottom: -2px; max-width: 155px; padding: 9px 12px; font-size: .72rem; }
   .foot-brand img { flex-basis: 32px; width: 32px; height: 32px; }
 }
+
+
+/* Preserve the full square emblem in the header and footer */
+.brand img,
+.foot-brand img { border-radius: 12px; }
+@media (max-width: 650px) {
+  .brand img,
+  .foot-brand img { border-radius: 10px; }
+}
