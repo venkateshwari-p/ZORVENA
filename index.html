@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#073d22">
+  <meta name="description" content="ZORVENA is an agriculture and agritech company advancing smarter, more sustainable farming through agricultural services and technology-driven solutions.">
+  <title>ZORVENA | Growing Agriculture, Empowering Tomorrow</title>
+  <link rel="icon" type="image/png" href="assets/zorvena-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--forest:#063b22;--deep:#032817;--green:#168b45;--lime:#8bd52b;--gold:#d5b65b;--ink:#173326;--muted:#617469;--paper:#f7faf5;--white:#fff}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:"DM Sans",sans-serif;color:var(--ink);background:var(--paper);line-height:1.65}
+    a{color:inherit;text-decoration:none}.wrap{width:min(1160px,calc(100% - 44px));margin:auto}
+    header{position:absolute;inset:0 0 auto;z-index:5;color:#fff}.nav{height:88px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:12px;font-family:Manrope,sans-serif;font-size:1.15rem;font-weight:800;letter-spacing:.12em}.brand img{width:48px;height:48px;object-fit:contain;border-radius:50%;background:#fff}
+    nav{display:flex;gap:30px;font-size:.92rem;color:#e2f1e6}nav a:hover{color:var(--lime)}
+    .hero{min-height:680px;display:flex;align-items:center;color:white;position:relative;overflow:hidden;background:radial-gradient(ellipse at 83% 25%,rgba(101,190,47,.25),transparent 30%),radial-gradient(ellipse at 75% 90%,rgba(24,139,69,.25),transparent 35%),linear-gradient(118deg,#021f13 0%,#064326 58%,#0b572c 100%)}
+    .hero:before,.hero:after{content:"";position:absolute;border:1px solid rgba(172,221,107,.23);border-radius:50%;width:580px;height:580px;right:-100px;top:75px}.hero:after{width:730px;height:730px;right:-175px;top:0;border-color:rgba(213,182,91,.18)}
+    .hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1.2fr .8fr;align-items:center;gap:55px;padding:130px 0 85px}
+    .eyebrow{display:inline-flex;align-items:center;gap:10px;text-transform:uppercase;letter-spacing:.19em;font-size:.76rem;font-weight:700;color:#b8e67a}.eyebrow:before{content:"";width:30px;height:2px;background:var(--gold)}
+    h1,h2,h3{font-family:Manrope,sans-serif;line-height:1.15}h1{font-size:clamp(2.8rem,6vw,5.3rem);letter-spacing:-.055em;margin:20px 0}.hero h1 span{color:#a5df50}.hero p{max-width:620px;color:#d6e8dc;font-size:1.12rem}
+    .actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:32px}.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 22px;border-radius:999px;font-weight:700;font-size:.92rem;transition:.2s}.btn-primary{background:var(--lime);color:#15391d}.btn-primary:hover{transform:translateY(-2px);background:#b4ec6b}.btn-outline{border:1px solid rgba(255,255,255,.45);color:#fff}.btn-outline:hover{background:rgba(255,255,255,.1)}
+    .hero-mark{display:flex;justify-content:center;align-items:center;position:relative}.hero-mark img{width:min(100%,370px);height:auto;filter:drop-shadow(0 20px 45px rgba(0,0,0,.22));border-radius:24px}
+    .hero-note{position:absolute;right:0;bottom:5px;background:rgba(255,255,255,.1);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.18);padding:13px 18px;border-radius:14px;color:#e9f6e9;font-size:.83rem}
+    section{padding:88px 0}.section-head{max-width:700px;margin-bottom:42px}.kicker{color:var(--green);font-size:.76rem;text-transform:uppercase;letter-spacing:.18em;font-weight:800}.section-head h2{font-size:clamp(2rem,4vw,3.1rem);letter-spacing:-.04em;margin:10px 0 14px;color:var(--forest)}.section-head p{color:var(--muted);margin:0}
+    .about-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:70px;align-items:center}.about-panel{background:#e9f3e6;border-radius:26px;padding:34px;position:relative;overflow:hidden;min-height:310px;display:flex;flex-direction:column;justify-content:space-between}.about-panel:after{content:"";position:absolute;width:240px;height:240px;border:1px solid rgba(22,139,69,.2);border-radius:50%;right:-70px;bottom:-100px;box-shadow:0 0 0 25px rgba(22,139,69,.04),0 0 0 50px rgba(22,139,69,.03)}.about-panel strong{font:800 2.4rem Manrope,sans-serif;color:var(--forest);max-width:270px;line-height:1.2}.about-panel small{color:var(--green);font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+    .about-copy p{color:var(--muted);margin:0 0 16px}.focus{background:#eef4eb}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.card{background:white;border:1px solid #e5ede3;border-radius:20px;padding:26px 22px;box-shadow:0 8px 30px rgba(20,65,36,.035);transition:.2s}.card:hover{transform:translateY(-5px);box-shadow:0 16px 38px rgba(20,65,36,.09)}.icon{width:52px;height:52px;display:grid;place-items:center;border-radius:16px;background:#e9f5df;color:var(--green);font-size:1.5rem;margin-bottom:20px}.card h3{font-size:1.15rem;color:var(--forest);margin:0 0 12px}.card p{font-size:.91rem;color:var(--muted);margin:0 0 15px}.card ul{list-style:none;padding:0;margin:0;color:#53675a;font-size:.88rem}.card li{padding:5px 0}.card li:before{content:"✓";color:var(--green);font-weight:800;margin-right:8px}
+    .vision{background:linear-gradient(120deg,#06351f,#0b542e);color:#fff}.vision-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.vision-card{padding:35px;border:1px solid rgba(255,255,255,.17);border-radius:22px;background:rgba(255,255,255,.055)}.vision-card .kicker{color:#b5e66b}.vision-card h2{font-size:2rem;margin:12px 0}.vision-card p{color:#d2e5d7;margin:0}
+    .closing{text-align:center;padding:86px 0}.closing h2{font-size:clamp(2rem,4vw,3.1rem);color:var(--forest);margin:0 0 12px}.closing p{color:var(--muted);max-width:650px;margin:0 auto 26px}
+    footer{background:#021e12;color:#c8d9cd;padding:28px 0}.foot{display:flex;justify-content:space-between;align-items:center;gap:20px;font-size:.86rem}.foot-brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.1em;color:#fff}.foot-brand img{width:32px;height:32px;background:white;border-radius:50%}
+    @media(max-width:900px){.hero-grid{grid-template-columns:1fr .7fr;gap:25px}.cards{grid-template-columns:repeat(2,1fr)}.about-grid{gap:35px}}
+    @media(max-width:650px){.wrap{width:min(100% - 32px,560px)}.nav{height:72px}.brand{font-size:.95rem}.brand img{width:40px;height:40px}nav{gap:13px;font-size:.78rem}nav a:nth-child(2),nav a:nth-child(3){display:none}.hero{min-height:auto}.hero-grid{grid-template-columns:1fr;padding:120px 0 65px;gap:25px}.hero-mark{justify-content:flex-start}.hero-mark img{width:170px}.hero-note{left:185px;right:auto;bottom:15px}.hero h1{font-size:3.1rem}section{padding:65px 0}.about-grid,.vision-grid{grid-template-columns:1fr}.about-panel{min-height:230px}.cards{grid-template-columns:1fr}.foot{flex-direction:column;text-align:center}}
+  </style>
+</head>
+<body>
+<header><div class="wrap nav">
+  <a class="brand" href="#top"><img src="assets/zorvena-logo.png" alt="ZORVENA logo"><span>ZORVENA</span></a>
+  <nav aria-label="Main navigation"><a href="#about">About</a><a href="#focus">Our Focus</a><a href="#vision">Vision & Mission</a></nav>
+</div></header>
+<main id="top">
+  <section class="hero"><div class="wrap hero-grid">
+    <div><div class="eyebrow">Agriculture · Innovation · Sustainability</div>
+      <h1>Growing a <span>smarter</span> tomorrow.</h1>
+      <p>Advancing agriculture through practical services, modern technology, and sustainable farming practices. We connect farming knowledge with intelligent solutions to help agriculture move forward.</p>
+      <div class="actions"><a class="btn btn-primary" href="#focus">Explore our focus areas</a><a class="btn btn-outline" href="#about">Discover ZORVENA</a></div>
+    </div>
+    <div class="hero-mark"><img src="assets/zorvena-logo.png" alt="ZORVENA green technology and agriculture emblem"><div class="hero-note">Rooted in agriculture. <strong>Powered by innovation.</strong></div></div>
+  </div></section>
+  <section id="about"><div class="wrap about-grid">
+    <div class="about-panel"><small>Who we are</small><strong>Where farming knowledge meets innovation.</strong><small>Growing Agriculture · Empowering Tomorrow</small></div>
+    <div class="about-copy"><div class="section-head"><div class="kicker">About ZORVENA</div><h2>Building a better future for farming.</h2></div>
+      <p>ZORVENA is an agriculture and agritech-focused company committed to transforming farming through innovative agricultural services, modern technology, and sustainable farming practices.</p>
+      <p>We believe the future of agriculture lies in combining traditional farming knowledge with intelligent, technology-driven solutions.</p>
+      <p>Our goal is to empower farmers, support agricultural businesses, improve farming efficiency, and contribute to a more sustainable agricultural ecosystem.</p>
+    </div>
+  </div></section>
+  <section class="focus" id="focus"><div class="wrap">
+    <div class="section-head"><div class="kicker">What we do</div><h2>Our key focus areas</h2><p>Practical agricultural support and emerging technologies, brought together to help create a more productive and resilient farming ecosystem.</p></div>
+    <div class="cards">
+      <article class="card"><div class="icon">🌱</div><h3>Agricultural Services</h3><p>Supporting farms and agricultural businesses with guidance and development solutions.</p><ul><li>Farm management and support</li><li>Crop cultivation guidance</li><li>Agricultural consultation</li><li>Farm development solutions</li></ul></article>
+      <article class="card"><div class="icon">🚜</div><h3>Smart Farming & Agritech</h3><p>Exploring modern tools that make farming more precise, efficient, and connected.</p><ul><li>Precision agriculture</li><li>Smart irrigation solutions</li><li>Agricultural automation</li><li>Digital farming technologies</li></ul></article>
+      <article class="card"><div class="icon">🌾</div><h3>Sustainable Agriculture</h3><p>Encouraging responsible farming practices and thoughtful use of natural resources.</p><ul><li>Efficient resource utilization</li><li>Sustainable farming practices</li><li>Soil and crop management</li><li>Environment-conscious solutions</li></ul></article>
+      <article class="card"><div class="icon">📡</div><h3>Technology-Driven Agriculture</h3><p>Connecting agricultural work with useful data, devices, and intelligent systems.</p><ul><li>IoT-based farming solutions</li><li>Data-driven crop monitoring</li><li>Smart agricultural equipment</li><li>Modern farming innovations</li></ul></article>
+    </div>
+  </div></section>
+  <section class="vision" id="vision"><div class="wrap vision-grid">
+    <div class="vision-card"><div class="kicker">Our vision</div><h2>A smarter, more sustainable agricultural future.</h2><p>To make modern farming solutions accessible and practical, supporting a future where agriculture can thrive sustainably.</p></div>
+    <div class="vision-card"><div class="kicker">Our mission</div><h2>Connecting people, agriculture, and technology.</h2><p>To connect farmers, agricultural businesses, and technology through innovative services that improve productivity, efficiency, and sustainability.</p></div>
+  </div></section>
+  <section class="closing"><div class="wrap"><h2>Growing Agriculture,<br>Empowering Tomorrow.</h2><p>Rooted in the potential of agriculture. Moving forward with innovation, collaboration, and sustainable thinking.</p><a class="btn btn-primary" href="#top">Back to top ↑</a></div></section>
+</main>
+<footer><div class="wrap foot"><div class="foot-brand"><img src="assets/zorvena-logo.png" alt=""> ZORVENA</div><div>© <span id="year">2026</span> ZORVENA. All rights reserved.</div><div>Growing Agriculture · Empowering Tomorrow</div></div></footer>
+</body></html>
