@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'agriai.html'
       - '404.html'
       - 'styles.css'
       - 'sitemap.xml'
