@@ -91,6 +91,9 @@
     <div class="settings">
       <div class="setting"><label for="language">Response language</label><select id="language"><option value="en">English</option><option value="ta">தமிழ் (Tamil)</option></select></div>
       <div class="setting"><label for="crop">Selected crop</label><select id="crop"><option value="">No crop selected</option><option value="Rice / Paddy">Rice / நெல்</option><option value="Maize">Maize / மக்காச்சோளம்</option><option value="Sugarcane">Sugarcane / கரும்பு</option><option value="Cotton">Cotton / பருத்தி</option><option value="Banana">Banana / வாழை</option><option value="Tomato">Tomato / தக்காளி</option><option value="Coconut">Coconut / தென்னை</option><option value="Millets">Millets / சிறுதானியங்கள்</option><option value="Pulses">Pulses / பயறு வகைகள்</option><option value="Other / not listed">Other / வேறு பயிர்</option></select></div>
+      <div class="setting"><label for="stage">Crop growth stage</label><select id="stage"><option value="">Not specified</option><option value="Land preparation">Land preparation</option><option value="Sowing / planting">Sowing / planting</option><option value="Early growth">Early growth</option><option value="Vegetative growth">Vegetative growth</option><option value="Flowering">Flowering</option><option value="Fruiting / grain filling">Fruiting / grain filling</option><option value="Harvest">Harvest</option><option value="Post-harvest">Post-harvest</option></select></div>
+      <div class="setting"><label for="soil">Soil type</label><select id="soil"><option value="">Not specified</option><option value="Red soil">Red soil</option><option value="Black soil">Black soil</option><option value="Sandy soil">Sandy soil</option><option value="Clay soil">Clay soil</option><option value="Loamy soil">Loamy soil</option><option value="Alluvial soil">Alluvial soil</option><option value="Not sure">Not sure</option></select></div>
+      <div class="setting"><label for="irrigation">Irrigation method</label><select id="irrigation"><option value="">Not specified</option><option value="Rainfed">Rainfed</option><option value="Flood / furrow irrigation">Flood / furrow</option><option value="Drip irrigation">Drip irrigation</option><option value="Sprinkler irrigation">Sprinkler irrigation</option><option value="Other / not sure">Other / not sure</option></select></div>
     </div>
     <div class="side-foot">GROW KNOWLEDGE. GROW BETTER.<br>ZORVENA · Agricultural intelligence</div>
   </aside>
@@ -264,7 +267,12 @@
         body:JSON.stringify({
           message:question,
           language:document.getElementById("language").value,
-          crop:document.getElementById("crop").value
+          crop:document.getElementById("crop").value,
+          profile:{
+            stage:document.getElementById("stage").value,
+            soil:document.getElementById("soil").value,
+            irrigation:document.getElementById("irrigation").value
+          }
         })
       });
       const data=await response.json();
