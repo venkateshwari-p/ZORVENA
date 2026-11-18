@@ -38,6 +38,12 @@ export default {
     const message = typeof body.message === "string" ? body.message.trim() : "";
     const language = body.language === "ta" ? "Tamil" : "English";
     const crop = typeof body.crop === "string" ? body.crop.trim().slice(0, 60) : "";
+    const profileInput = body.profile && typeof body.profile === "object" ? body.profile : {};
+    const farmProfile = {
+      stage: typeof profileInput.stage === "string" ? profileInput.stage.trim().slice(0, 60) : "",
+      soil: typeof profileInput.soil === "string" ? profileInput.soil.trim().slice(0, 60) : "",
+      irrigation: typeof profileInput.irrigation === "string" ? profileInput.irrigation.trim().slice(0, 60) : ""
+    };
     if (!message) return json({ error: "Please enter a question." }, 400, allowedOrigin);
     if (message.length > 1200) {
       return json({ error: "Please keep your question under 1,200 characters." }, 413, allowedOrigin);
@@ -46,7 +52,7 @@ export default {
     const instructions = [
       "You are ZORVENA AgriAI, an educational agriculture knowledge assistant.",
       "Answer in " + language + ". Give clear, practical, concise educational information for farmers.",
-      "If a crop is selected, tailor the explanation to that crop. Do not assume the farmer's location, soil type, variety, season, or growing stage.",
+      "If a crop or farm profile details are supplied, use only those details to tailor the answer. Do not assume the farmer's location, variety, season, or any profile detail that is not supplied.",
       "Do not claim to have inspected a farm, soil sample, plant, image, weather feed, or market feed unless that data is provided.",
       "Do not invent sources, local regulations, product labels, pesticide registrations, or citations.",
       "For crop disease or pest questions, describe possibilities rather than making a definitive diagnosis; recommend confirmation by a local agricultural officer or qualified agronomist.",
@@ -68,7 +74,13 @@ export default {
         },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: instructions }] },
-          contents: [{ role: "user", parts: [{ text: (crop ? "Selected crop: " + crop + "\n" : "") + "Farmer question: " + message }] }],
+          contents: [{ role: "user", parts: [{ text:
+            (crop ? "Selected crop: " + crop + "\n" : "") +
+            (farmProfile.stage ? "Crop growth stage: " + farmProfile.stage + "\n" : "") +
+            (farmProfile.soil ? "Soil type: " + farmProfile.soil + "\n" : "") +
+            (farmProfile.irrigation ? "Irrigation method: " + farmProfile.irrigation + "\n" : "") +
+            "Farmer question: " + message
+        }] }],
           generationConfig: { maxOutputTokens: 500, temperature: 0.4 }
         })
       });
