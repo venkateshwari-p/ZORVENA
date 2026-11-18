@@ -492,3 +492,99 @@ a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
   .hero .butterfly-two { left:66%; top:55%; transform:none !important; }
   .hero .nature-butterfly .wing { animation:none !important; }
 }
+
+
+/* Mobile layout correction: keep the header, hero and content aligned on narrow screens */
+@media (max-width: 650px) {
+  html, body { width: 100%; max-width: 100%; overflow-x: clip; }
+  .wrap { width: calc(100% - 36px); max-width: 560px; margin-inline: auto; }
+  header { left: 0; right: 0; width: 100%; }
+  header .nav {
+    width: calc(100% - 36px);
+    min-height: 0;
+    height: auto;
+    margin-inline: auto;
+    padding: 12px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+  header .brand {
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    font-size: .9rem;
+    line-height: 1;
+  }
+  header .brand img { flex: 0 0 36px; width: 36px; height: 36px; }
+  header nav {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 18px;
+    padding: 5px 2px 9px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    font-size: .75rem;
+  }
+  header nav::-webkit-scrollbar { display: none; }
+  header nav a { flex: 0 0 auto; display: inline-block !important; }
+  .hero { width: 100%; min-height: 0; }
+  .hero-grid {
+    width: calc(100% - 36px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 142px 0 78px;
+    text-align: left;
+  }
+  .hero-grid > * { min-width: 0; }
+  .hero-copy, .hero-grid > div:first-child { width: 100%; max-width: none; }
+  .hero h1 { max-width: 12ch; font-size: clamp(2.35rem, 10.5vw, 3.15rem); line-height: 1.08; }
+  .hero p { max-width: 58ch; font-size: .98rem; line-height: 1.65; }
+  .actions { width: 100%; align-items: stretch; }
+  .actions .btn { min-width: 0; }
+  .hero-mark { width: 100%; min-height: 0; display: flex; justify-content: center; padding: 8px 0 0; }
+  .hero-mark img { flex: 0 1 auto; width: min(190px, 58vw); height: auto; aspect-ratio: 1; }
+  main > section:not(.hero) { width: 100%; }
+  section { padding-block: 56px; }
+  .about-grid, .vision-grid { width: 100%; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .about-panel, .about-copy, .vision-card { width: 100%; min-width: 0; }
+  .section-head { width: 100%; margin-bottom: 26px; }
+  .section-head h2 { max-width: 18ch; font-size: clamp(1.8rem, 8vw, 2.35rem); line-height: 1.16; }
+  .section-head p, .about-copy p { font-size: .96rem; line-height: 1.7; }
+  .cards { width: 100%; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .card { width: 100%; min-height: 0; height: auto; padding: 23px; }
+  .card h3 { min-height: 0; }
+  .gallery-grid { width: 100%; grid-template-columns: minmax(0, 1fr); }
+  .gallery-card, .gallery-card img { width: 100%; min-width: 0; }
+  .gallery-card img, .gallery-card-feature img { height: 210px; min-height: 0; }
+  .vision-card { padding: 25px 22px; }
+  .vision-card h2 { font-size: clamp(1.55rem, 7vw, 1.9rem); }
+  .contact-panel { width: 100%; padding: 28px 20px; }
+  .contact-panel h2 { font-size: clamp(1.8rem, 8vw, 2.35rem); }
+  .contact-panel .btn { width: 100%; white-space: normal; }
+  .closing h2 { font-size: clamp(1.8rem, 8vw, 2.5rem); }
+  .foot { width: calc(100% - 36px); flex-direction: column; align-items: center; gap: 13px; text-align: center; }
+  .foot > *, .foot-brand { width: 100%; justify-content: center; text-align: center !important; }
+  .garden-bed { max-width: 48%; overflow: visible; }
+  .hero .nature-butterfly { max-width: 42px; }
+}
+@media (max-width: 380px) {
+  .wrap, .foot, header .nav, .hero-grid { width: calc(100% - 28px); }
+  header nav { gap: 14px; font-size: .7rem; }
+  .hero-grid { padding-top: 138px; }
+  .hero h1 { font-size: clamp(2.15rem, 10vw, 2.55rem); }
+  .actions .btn { padding-inline: 12px; font-size: .84rem; }
+  .garden-bed { transform: scale(.88); transform-origin: bottom left; }
+  .garden-bed.flowers-right { transform-origin: bottom right; }
+}
