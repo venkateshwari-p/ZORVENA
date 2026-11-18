@@ -31,7 +31,7 @@
 <header><div class="wrap nav"><a class="brand" href="index.html"><img src="assets/zorvena-logo.png" alt=""> ZORVENA</a><a class="back" href="index.html">← Back to main website</a></div></header>
 <section class="hero"><div class="wrap"><div class="eyebrow">ZORVENA · AI in Agriculture</div><h1>Meet AgriAI — a smarter farming knowledge companion.</h1><p>A multilingual assistant concept designed to make reliable agricultural knowledge easier to explore, understand and use.</p></div></section>
 <main class="wrap">
-  <div class="notice"><div aria-hidden="true">ⓘ</div><div><strong>Interactive concept preview</strong><p>This page demonstrates the planned experience with sample answers. It is not connected to a live AI model yet. Live answers will be enabled after a secure AI service is connected.</p></div></div>
+  <div class="notice"><div aria-hidden="true">ⓘ</div><div><strong>Interactive concept preview</strong><p>AgriAI can answer agriculture questions through a secure AI connection. Responses are general educational guidance and should be checked against local conditions.</p></div></div>
   <div class="layout">
     <section class="panel" aria-labelledby="assistant-title">
       <span class="tag">CONCEPT DEMO</span><h2 id="assistant-title">Explore a sample question</h2><p class="sub">Choose a sample below to preview how AgriAI could explain farming topics in a clear, farmer-friendly way.</p>
@@ -45,12 +45,12 @@
       <div class="answer" id="answer" aria-live="polite"><strong id="answer-title"></strong><p id="answer-text"></p></div>
       <div style="margin-top:24px;padding-top:22px;border-top:1px solid #e8eee5">
         <h2 style="font-size:1.12rem">Ask AgriAI</h2>
-        <p class="sub" style="margin-bottom:12px">Live AI chat will be enabled when the secure backend is deployed.</p>
+        <p class="sub" style="margin-bottom:12px">Ask a question in English or Tamil and receive an AI-generated response.</p>
         <form id="chat-form">
           <label for="question" style="display:block;font-weight:700;font-size:.9rem;margin-bottom:8px">Your agriculture question</label>
           <textarea id="question" rows="3" maxlength="1200" placeholder="Type your question in English or Tamil..." style="width:100%;resize:vertical;border:1px solid #cbd9c9;border-radius:12px;padding:13px;font:inherit;color:var(--ink)" required></textarea>
           <button id="send-question" type="submit" class="cta" style="border:0;cursor:pointer;margin-top:12px">Ask AgriAI</button>
-          <p id="chat-status" class="disclaimer" role="status" aria-live="polite">Live connection is being prepared. Sample questions above are available now.</p>
+          <p id="chat-status" class="disclaimer" role="status" aria-live="polite">Live AI assistant. Sample questions above are also available.</p>
         </form>
       </div>
       <p class="disclaimer">These are illustrative educational examples, not field-specific recommendations. Soil tests, local weather, crop variety and advice from a qualified agricultural officer should guide farm decisions.</p>
@@ -74,7 +74,7 @@
       crop: ["பயிரைத் தேர்வு செய்வதற்கு முன்", "உள்ளூர் காலநிலை மற்றும் பருவம், மண் வகை மற்றும் பரிசோதனை முடிவுகள், நீர் கிடைக்கும் நிலை, பயிர் கால அளவு, பூச்சி மற்றும் நோய் அபாயம், இடுபொருட்கள் கிடைக்கும் நிலை, சந்தை வாய்ப்பு ஆகியவற்றைக் கவனியுங்கள். உள்ளூர் வேளாண் அலுவலரின் ஆலோசனையும் உதவும்."]
     }
   };
-  const WORKER_URL = ""; // Add the deployed Cloudflare Worker URL here when it is ready.
+  const WORKER_URL = "https://zorvena-agriai.sridharanpv123.workers.dev";
   const chatForm = document.getElementById("chat-form");
   const chatStatus = document.getElementById("chat-status");
   const sendButton = document.getElementById("send-question");
@@ -83,7 +83,7 @@
     const question = document.getElementById("question").value.trim();
     if (!question) return;
     if (!WORKER_URL) {
-      chatStatus.textContent = "The secure AI backend has been prepared but not deployed. Sample questions are available while the connection is being set up.";
+      chatStatus.textContent = "The live AI connection is not configured. Please try again later.";
       return;
     }
     sendButton.disabled = true;
