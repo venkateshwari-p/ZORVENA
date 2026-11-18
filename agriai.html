@@ -54,7 +54,7 @@
     .user .avatar{background:#e9ece9;color:#46564c}
     .bubble{max-width:min(760px,calc(100% - 48px));border-radius:15px;padding:13px 16px;background:#fff;border:1px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.72}
     .user .bubble{background:#edf4ed;border-color:#e2ece2}
-    .message-label{font-size:.72rem;color:#7d8b82;font-weight:700;margin:0 0 5px}
+    .message-label{font-size:.72rem;color:#7d8b82;font-weight:700;margin:0 0 5px}.bubble p{margin:0 0 10px}.bubble p:last-child{margin-bottom:0}.bubble h4{margin:13px 0 6px;color:#294b35;font:700 .96rem Manrope,sans-serif}.bubble ul{margin:5px 0 10px;padding-left:22px}.bubble li{padding:2px 0}.bubble strong{color:#294b35}.bubble code{background:#f1f4ef;padding:2px 5px;border-radius:4px}.answer-note{margin-top:12px!important;padding-top:9px;border-top:1px solid #eadfbe;color:#80652b;font-size:.8rem}
     .typing{color:#738178;font-style:italic}
     .composer-wrap{padding:14px 20px 18px;background:linear-gradient(transparent,var(--canvas) 18%)}
     .composer{max-width:850px;margin:0 auto;background:#fff;border:1px solid #dce4dc;border-radius:17px;box-shadow:0 7px 24px rgba(23,54,34,.07);padding:10px 11px 9px}
@@ -185,6 +185,33 @@
     persist();
     renderHistory();
   }
+  function renderAnswer(container,rawText){
+    // Render a small, safe Markdown subset. Escape HTML before adding formatting.
+    const source=String(rawText||"").replace(/\\\\([*_#])/g,"$1").replace(/\\r/g,"");
+    const escapeHtml=value=>value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+    const inline=value=>escapeHtml(value)
+      .replace(/\\*\\*(.+?)\\*\\*/g,"<strong>$1</strong>")
+      .replace(/\\*(.+?)\\*/g,"<em>$1</em>")
+      .replace(/`([^`]+)`/g,"<code>$1</code>");
+    const lines=source.split("\\n");
+    let html="",inList=false;
+    for(const line of lines){
+      const trimmed=line.trim();
+      const bullet=trimmed.match(/^(?:[-*]|•)\\s+(.+)$/);
+      const numbered=trimmed.match(/^\\d+[.)]\\s+(.+)$/);
+      if(bullet||numbered){
+        if(!inList){html+="<ul>";inList=true;}
+        html+="<li>"+inline((bullet||numbered)[1])+"</li>";
+      }else{
+        if(inList){html+="</ul>";inList=false;}
+        if(!trimmed){continue;}
+        const heading=trimmed.match(/^#{1,3}\\s+(.+)$/);
+        html+=heading?"<h4>"+inline(heading[1])+"</h4>":"<p>"+inline(trimmed)+"</p>";
+      }
+    }
+    if(inList)html+="</ul>";
+    container.innerHTML=html;
+  }
   function addMessage(role,text){
     const item=document.createElement("div");
     item.className="message "+role;
@@ -197,7 +224,8 @@
     label.className="message-label";
     label.textContent=role==="user"?"You":"ZORVENA AgriAI";
     const content=document.createElement("div");
-    content.textContent=text;
+    if(role==="assistant") renderAnswer(content,text);
+    else content.textContent=text;
     body.append(label,content);
     item.append(avatar,body);
     conversationInner.append(item);
@@ -279,9 +307,15 @@
       if(!response.ok)throw new Error(data.error||"The assistant could not answer right now.");
       const answer=data.answer||"No answer was returned. Please try again.";
       pending.content.classList.remove("typing");
-      pending.content.textContent=answer;
-      saveMessage("assistant",answer);
-      statusText.textContent="Saved in this browser · General educational guidance";
+      renderAnswer(pending.content,answer);
+      if(data.incomplete){
+        const note=document.createElement("p");
+        note.className="answer-note";
+        note.textContent="This response may be incomplete. Ask AgriAI to continue before relying on it.";
+        pending.content.append(note);
+      }
+      saveMessage("assistant",answer+(data.incomplete?"\\n\\n[Response may be incomplete.]":""));
+      statusText.textContent=data.incomplete?"The response may be incomplete · Ask AgriAI to continue":"Saved in this browser · General educational guidance";
     }catch(error){
       const message=error.message||"AgriAI is temporarily unavailable. Please try again.";
       pending.content.classList.remove("typing");
