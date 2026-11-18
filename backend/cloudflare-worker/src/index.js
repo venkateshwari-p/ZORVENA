@@ -81,7 +81,7 @@ export default {
             (farmProfile.irrigation ? "Irrigation method: " + farmProfile.irrigation + "\n" : "") +
             "Farmer question: " + message
         }] }],
-          generationConfig: { maxOutputTokens: 500, temperature: 0.4 }
+          generationConfig: { maxOutputTokens: 800, temperature: 0.4 }
         })
       });
 
@@ -96,7 +96,7 @@ export default {
       if (!answer) {
         return json({ error: "No answer was returned. Please try asking in a different way." }, 502, allowedOrigin);
       }
-      return json({ answer }, 200, allowedOrigin);
+      const finishReason = result.candidates?.[0]?.finishReason || "";\n      const incomplete = finishReason === "MAX_TOKENS";\n      return json({ answer, incomplete }, 200, allowedOrigin);
     } catch {
       return json({ error: "AgriAI is temporarily unavailable. Please try again later." }, 502, allowedOrigin);
     }
