@@ -43,6 +43,16 @@
         <button class="sample" type="button" data-topic="crop">What should I check before choosing a crop?</button>
       </div>
       <div class="answer" id="answer" aria-live="polite"><strong id="answer-title"></strong><p id="answer-text"></p></div>
+      <div style="margin-top:24px;padding-top:22px;border-top:1px solid #e8eee5">
+        <h2 style="font-size:1.12rem">Ask AgriAI</h2>
+        <p class="sub" style="margin-bottom:12px">Live AI chat will be enabled when the secure backend is deployed.</p>
+        <form id="chat-form">
+          <label for="question" style="display:block;font-weight:700;font-size:.9rem;margin-bottom:8px">Your agriculture question</label>
+          <textarea id="question" rows="3" maxlength="1200" placeholder="Type your question in English or Tamil..." style="width:100%;resize:vertical;border:1px solid #cbd9c9;border-radius:12px;padding:13px;font:inherit;color:var(--ink)" required></textarea>
+          <button id="send-question" type="submit" class="cta" style="border:0;cursor:pointer;margin-top:12px">Ask AgriAI</button>
+          <p id="chat-status" class="disclaimer" role="status" aria-live="polite">Live connection is being prepared. Sample questions above are available now.</p>
+        </form>
+      </div>
       <p class="disclaimer">These are illustrative educational examples, not field-specific recommendations. Soil tests, local weather, crop variety and advice from a qualified agricultural officer should guide farm decisions.</p>
     </section>
     <aside class="panel"><h2>What AgriAI aims to support</h2><ul class="side-list"><li>🌾 Crop cultivation knowledge</li><li>🧪 Soil health and nutrient basics</li><li>💧 Irrigation and water management</li><li>♻️ Sustainable farming practices</li><li>🌐 Tamil and English assistance</li><li>📄 Simple explanations of farm documents</li></ul><p class="disclaimer">Future versions can use trusted agricultural publications and region-specific sources to ground answers and show references.</p><a class="cta" href="https://www.linkedin.com/company/zorvena/" target="_blank" rel="noopener noreferrer">Connect with ZORVENA</a></aside>
@@ -64,6 +74,40 @@
       crop: ["பயிரைத் தேர்வு செய்வதற்கு முன்", "உள்ளூர் காலநிலை மற்றும் பருவம், மண் வகை மற்றும் பரிசோதனை முடிவுகள், நீர் கிடைக்கும் நிலை, பயிர் கால அளவு, பூச்சி மற்றும் நோய் அபாயம், இடுபொருட்கள் கிடைக்கும் நிலை, சந்தை வாய்ப்பு ஆகியவற்றைக் கவனியுங்கள். உள்ளூர் வேளாண் அலுவலரின் ஆலோசனையும் உதவும்."]
     }
   };
+  const WORKER_URL = ""; // Add the deployed Cloudflare Worker URL here when it is ready.
+  const chatForm = document.getElementById("chat-form");
+  const chatStatus = document.getElementById("chat-status");
+  const sendButton = document.getElementById("send-question");
+  chatForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const question = document.getElementById("question").value.trim();
+    if (!question) return;
+    if (!WORKER_URL) {
+      chatStatus.textContent = "The secure AI backend has been prepared but not deployed. Sample questions are available while the connection is being set up.";
+      return;
+    }
+    sendButton.disabled = true;
+    sendButton.textContent = "Thinking...";
+    chatStatus.textContent = "AgriAI is preparing an answer...";
+    try {
+      const response = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: question, language: document.getElementById("language").value })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "The assistant could not answer right now.");
+      document.getElementById("answer-title").textContent = "AgriAI response";
+      document.getElementById("answer-text").textContent = data.answer;
+      answer.classList.add("visible");
+      chatStatus.textContent = "General educational guidance. Confirm local decisions with a qualified agricultural expert.";
+    } catch (error) {
+      chatStatus.textContent = error.message || "AgriAI is temporarily unavailable. Please try again.";
+    } finally {
+      sendButton.disabled = false;
+      sendButton.textContent = "Ask AgriAI";
+    }
+  });
   const language = document.getElementById("language");
   const answer = document.getElementById("answer");
   document.querySelectorAll(".sample").forEach(button => button.addEventListener("click", () => {
