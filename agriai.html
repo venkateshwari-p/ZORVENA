@@ -237,6 +237,85 @@
       .welcome-hints .hint,.hint-icon,.hint::after,.welcome-mark,.message,.send:disabled span:last-child{animation:none!important}
     }
 
+
+    /* ZORVENA product dashboard: agricultural workspace, not a generic chat clone */
+    .conversation-inner{max-width:1040px;gap:22px}
+    .farm-dashboard{max-width:100%;width:100%;margin:0 auto;padding:4px 0 24px;text-align:left;animation:welcomeIn .55s ease both}
+    .dashboard-topline{display:flex;align-items:center;gap:9px;margin:0 0 15px;color:#66806b;font-size:.67rem;font-weight:800;letter-spacing:.14em}
+    .live-dot{width:8px;height:8px;border-radius:50%;background:#62a66d;box-shadow:0 0 0 4px #62a66d20}
+    .dashboard-date{margin-left:auto;color:#96a397;font-size:.62rem;letter-spacing:.1em}
+    .farm-hero{position:relative;min-height:260px;overflow:hidden;display:flex;align-items:center;border-radius:22px;padding:30px 34px;background:linear-gradient(112deg,#173e2b 0%,#245a39 58%,#39734a 100%);color:#fff;box-shadow:0 14px 34px rgba(31,78,46,.13)}
+    .farm-hero::before{content:"";position:absolute;width:340px;height:340px;border:1px solid #ffffff18;border-radius:50%;right:6%;top:-175px}
+    .farm-hero::after{content:"";position:absolute;width:250px;height:250px;border:1px solid #ffffff18;border-radius:50%;right:12%;bottom:-190px}
+    .farm-hero-copy{position:relative;z-index:2;max-width:570px}
+    .hero-eyebrow,.section-eyebrow{font-size:.65rem;letter-spacing:.16em;font-weight:800;color:#c4dfaa}
+    .farm-hero h1{font:800 clamp(1.7rem,3.4vw,2.55rem)/1.16 Manrope,sans-serif;color:#fff;letter-spacing:-.045em;margin:11px 0}
+    .farm-hero h1 span{color:#d4e9a8}
+    .farm-hero p{max-width:460px;color:#e1eee1;font-size:.9rem;margin:0 0 20px}
+    .hero-action{border:1px solid #d9ebc0;background:#e4f0cf;color:#285437;border-radius:10px;padding:10px 15px;font-weight:800;font-size:.8rem;display:inline-flex;align-items:center;gap:16px;transition:transform .2s,background .2s}
+    .hero-action:hover{transform:translateY(-2px);background:#f1f7e7}
+    .farm-illustration{position:absolute;right:3%;bottom:0;width:37%;height:100%;min-width:240px;overflow:hidden}
+    .sun-disc{position:absolute;width:88px;height:88px;border-radius:50%;right:27%;top:32px;background:linear-gradient(140deg,#f5e6a7,#d6c477);box-shadow:0 0 55px #f2e6a344}
+    .field-hill{position:absolute;left:-10%;width:125%;border-radius:50% 50% 0 0}
+    .hill-back{height:125px;bottom:12px;background:linear-gradient(160deg,#6f9b5e,#477b4c);transform:rotate(-8deg)}
+    .hill-front{height:105px;bottom:-35px;background:linear-gradient(160deg,#9dbb70,#6c9955);transform:rotate(7deg)}
+    .crop-stalk{position:absolute;z-index:1;font-size:2.8rem;filter:drop-shadow(0 5px 3px #173e2b55);animation:cropSway 4s ease-in-out infinite;transform-origin:bottom center}
+    .stalk-one{right:23%;bottom:55px}.stalk-two{right:48%;bottom:38px;font-size:2.25rem;animation-delay:.6s}.stalk-three{right:5%;bottom:35px;font-size:2.4rem;animation-delay:1s}
+    .hero-chip{position:absolute;z-index:2;right:5%;top:22px;padding:7px 10px;border:1px solid #ffffff50;border-radius:9px;background:#ffffff16;color:#f4f7e9;font-size:.54rem;line-height:1.35;font-weight:800;letter-spacing:.12em;text-align:center;backdrop-filter:blur(5px)}
+    .dashboard-section-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin:27px 2px 13px}
+    .section-eyebrow{color:#8c9c75}
+    .dashboard-section-head h2{font:800 1.15rem Manrope,sans-serif;color:#294333;margin:4px 0 0;letter-spacing:-.025em}
+    .section-side-note{font-size:.72rem;color:#87948a}
+    .farm-tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .farm-tool{min-width:0;min-height:91px;display:flex;align-items:center;gap:13px;text-align:left;padding:15px 16px;border:1px solid #e1e9df;border-radius:15px;background:#fff;box-shadow:0 4px 14px rgba(34,68,42,.035);transition:transform .2s,border-color .2s,box-shadow .2s}
+    .farm-tool:hover{transform:translateY(-3px);border-color:#b9d0b5;box-shadow:0 10px 22px rgba(34,68,42,.08)}
+    .tool-symbol{width:44px;height:44px;flex:0 0 44px;border-radius:13px;display:grid;place-items:center;font-size:1.45rem;background:#edf5e8}
+    .soil-tool .tool-symbol{background:#f4efe3}.pest-tool .tool-symbol{background:#f8eee5}.water-tool .tool-symbol{background:#e9f3f7}
+    .tool-copy{display:grid;gap:4px;min-width:0}
+    .tool-copy strong{font:800 .88rem Manrope,sans-serif;color:#2d4935}
+    .tool-copy small{font-size:.73rem;line-height:1.4;color:#7b897e}
+    .tool-arrow{margin-left:auto;color:#8ba18c;font-size:1.1rem;transition:transform .2s}
+    .farm-tool:hover .tool-arrow{transform:translate(2px,-2px);color:#34734a}
+    .farm-profile-prompt{display:flex;align-items:center;gap:13px;margin-top:17px;padding:14px 16px;border:1px solid #e2e8d7;border-radius:14px;background:linear-gradient(100deg,#f5f8ed,#fbfcf7)}
+    .profile-prompt-icon{width:38px;height:38px;flex:0 0 38px;border-radius:11px;background:#e7efd9;display:grid;place-items:center;font-size:1.1rem}
+    .farm-profile-prompt strong{font:800 .82rem Manrope,sans-serif;color:#38553b}
+    .farm-profile-prompt p{font-size:.73rem;color:#778579;margin:3px 0 0}
+    .profile-prompt-tag{margin-left:auto;color:#82936c;font-size:.58rem;font-weight:800;letter-spacing:.12em;white-space:nowrap}
+    .farm-dashboard .welcome-note{margin-top:17px;text-align:center;color:#89968a;font-size:.7rem;font-weight:500}
+    .composer-wrap{background:linear-gradient(transparent,#f5f8f2 18%)}
+    .composer{border-color:#d5e2d2;box-shadow:0 8px 25px rgba(34,68,42,.07)}
+    .composer textarea{min-height:48px}
+    .composer-help{color:#7c8b7d}
+    .send{background:#2e7042}
+    .message.assistant .avatar{background:#e9f2df;color:#376b3e}
+    .message.assistant .bubble{border-color:#dce8d9;background:#fff}
+    .message.assistant .message-label{color:#56805b}
+    @keyframes cropSway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(4deg)}}
+    @media(max-width:760px){
+      .farm-hero{min-height:250px;padding:24px 22px}
+      .farm-hero-copy{max-width:75%}
+      .farm-illustration{right:-12%;width:47%;min-width:190px;opacity:.82}
+      .farm-hero h1{font-size:1.75rem}
+      .farm-hero p{font-size:.8rem}
+      .dashboard-date{display:none}
+      .dashboard-section-head{align-items:start;flex-direction:column;gap:4px;margin-top:22px}
+      .farm-tools-grid{gap:9px}
+      .farm-tool{min-height:105px;padding:12px;gap:9px}
+      .tool-symbol{width:37px;height:37px;flex-basis:37px;font-size:1.2rem}
+      .tool-copy strong{font-size:.78rem}
+      .tool-copy small{font-size:.68rem}
+      .profile-prompt-tag{display:none}
+    }
+    @media(max-width:420px){
+      .farm-hero{padding:21px 17px;min-height:245px}
+      .farm-hero-copy{max-width:82%}
+      .farm-illustration{right:-24%;opacity:.55}
+      .farm-tools-grid{grid-template-columns:1fr}
+      .farm-tool{min-height:75px}
+      .farm-profile-prompt{align-items:flex-start;padding:12px}
+      .farm-profile-prompt p{line-height:1.45}
+    }
+    @media(prefers-reduced-motion:reduce){.crop-stalk{animation:none}}
   </style>
 </head>
 <body>
@@ -244,14 +323,14 @@
   <aside class="sidebar" id="sidebar" aria-label="AgriAI menu">
     <a class="brand" href="index.html"><img src="assets/zorvena-logo.png" alt=""> ZORVENA</a>
     <button class="new-chat" id="new-chat" type="button"><span aria-hidden="true">＋</span> New chat</button>
-    <div class="side-heading">Try asking</div>
+    <div class="side-heading">Field topics</div>
     <div class="sample-list">
       <button class="sample" type="button" data-question="What should I monitor during the early growth stage?">🌱 Early crop growth checks</button>
       <button class="sample" type="button" data-question="How can I identify common crop pests and diseases?">🐛 Pest and disease symptoms</button>
       <button class="sample" type="button" data-question="How can I improve soil health naturally?">🧪 Improve soil health</button>
       <button class="sample" type="button" data-question="How can I manage irrigation water efficiently?">💧 Water management</button>
     </div>
-    <div class="history-section"><div class="side-heading">Recent chats</div><div class="history-list" id="history-list"><div class="history-empty">Your saved conversations will appear here.</div></div></div>
+    <div class="history-section"><div class="side-heading">Saved field notes</div><div class="history-list" id="history-list"><div class="history-empty">Your saved conversations will appear here.</div></div></div>
     <div class="settings">
       <div class="setting"><label for="language">Response language</label><select id="language"><option value="en">English</option><option value="ta">தமிழ் (Tamil)</option></select></div>
       <div class="setting"><label for="crop">Selected crop</label><select id="crop"><option value="">No crop selected</option><option value="Rice / Paddy">Rice / நெல்</option><option value="Maize">Maize / மக்காச்சோளம்</option><option value="Sugarcane">Sugarcane / கரும்பு</option><option value="Cotton">Cotton / பருத்தி</option><option value="Banana">Banana / வாழை</option><option value="Tomato">Tomato / தக்காளி</option><option value="Coconut">Coconut / தென்னை</option><option value="Millets">Millets / சிறுதானியங்கள்</option><option value="Pulses">Pulses / பயறு வகைகள்</option><option value="Other / not listed">Other / வேறு பயிர்</option></select></div>
@@ -264,30 +343,42 @@
   <div class="overlay" id="overlay"></div>
   <main class="main">
     <header class="topbar">
-      <div class="top-left"><button class="menu-toggle" id="menu-toggle" type="button" aria-label="Open menu">☰</button><div><div class="top-title">ZORVENA AgriAI</div><div class="top-sub">Field knowledge · Crop guidance · Smarter farming</div></div></div>
+      <div class="top-left"><button class="menu-toggle" id="menu-toggle" type="button" aria-label="Open menu">☰</button><div><div class="top-title">Farm workspace</div><div class="top-sub">Crop intelligence · Field guidance · Farm planning</div></div></div>
       <a class="back-link" href="index.html">← ZORVENA website</a>
     </header>
     <div class="notice">ⓘ AI-generated educational guidance. Confirm important farm decisions with a local agricultural expert.</div>
     <section class="conversation" id="conversation" aria-label="Chat messages" aria-live="polite">
       <div class="conversation-inner" id="conversation-inner">
-        <div class="welcome" id="welcome">
-          <div class="welcome-kicker"><span class="kicker-line"></span> ZORVENA FIELD INTELLIGENCE <span class="kicker-line"></span></div>
-          <div class="welcome-mark">🌾</div>
-          <h1>Grow with knowledge.<br><span>Farm with confidence.</span></h1>
-          <p>Your agriculture companion for practical crop, soil, pest and water guidance — in English or Tamil.</p>
-          <div class="welcome-hints">
-            <div class="hint"><span class="hint-icon">🌱</span><strong>Crop growth</strong><small>Plan healthy crop stages and field care.</small></div>
-            <div class="hint"><span class="hint-icon">🌿</span><strong>Soil wellness</strong><small>Explore soil health and nutrient basics.</small></div>
-            <div class="hint"><span class="hint-icon">🔎</span><strong>Pest watch</strong><small>Understand symptoms and safe next steps.</small></div>
-            <div class="hint"><span class="hint-icon">💧</span><strong>Smart irrigation</strong><small>Make better use of every drop.</small></div>
+        <div class="welcome farm-dashboard" id="welcome">
+          <div class="dashboard-topline"><span class="live-dot"></span> YOUR FARM WORKSPACE <span class="dashboard-date">ZORVENA AGRICULTURE INTELLIGENCE</span></div>
+          <section class="farm-hero">
+            <div class="farm-hero-copy">
+              <span class="hero-eyebrow">SMARTER FARMING STARTS HERE</span>
+              <h1>Understand your field.<br><span>Grow a stronger harvest.</span></h1>
+              <p>Practical, crop-aware guidance for every stage of your farming journey.</p>
+              <button class="hero-action" type="button" data-focus-question>Ask your field assistant <span>→</span></button>
+            </div>
+            <div class="farm-illustration" aria-hidden="true">
+              <div class="sun-disc"></div><div class="field-hill hill-back"></div><div class="field-hill hill-front"></div>
+              <div class="crop-stalk stalk-one">🌾</div><div class="crop-stalk stalk-two">🌱</div><div class="crop-stalk stalk-three">🌾</div>
+              <div class="hero-chip">FIELD<br>INTELLIGENCE</div>
+            </div>
+          </section>
+          <div class="dashboard-section-head"><div><span class="section-eyebrow">EXPLORE BY NEED</span><h2>What would you like to work on?</h2></div><span class="section-side-note">Choose a topic to get started</span></div>
+          <div class="farm-tools-grid">
+            <button class="farm-tool growth-tool" type="button" data-question="What should I monitor during the early growth stage?"><span class="tool-symbol">🌱</span><span class="tool-copy"><strong>Crop development</strong><small>Growth stages, field care and crop planning</small></span><span class="tool-arrow">↗</span></button>
+            <button class="farm-tool soil-tool" type="button" data-question="How can I improve soil health naturally?"><span class="tool-symbol">🪴</span><span class="tool-copy"><strong>Soil & nutrients</strong><small>Soil health, organic matter and nutrients</small></span><span class="tool-arrow">↗</span></button>
+            <button class="farm-tool pest-tool" type="button" data-question="How can I identify common crop pests and diseases?"><span class="tool-symbol">🐛</span><span class="tool-copy"><strong>Pest & disease watch</strong><small>Symptoms, prevention and safe next steps</small></span><span class="tool-arrow">↗</span></button>
+            <button class="farm-tool water-tool" type="button" data-question="How can I manage irrigation water efficiently?"><span class="tool-symbol">💧</span><span class="tool-copy"><strong>Water management</strong><small>Irrigation planning and water efficiency</small></span><span class="tool-arrow">↗</span></button>
           </div>
-          <div class="welcome-note">Select your crop and ask your first question below.</div>
+          <section class="farm-profile-prompt"><div class="profile-prompt-icon">📋</div><div><strong>Make guidance relevant to your farm</strong><p>Set your crop, growth stage, soil and irrigation details in My Farm Profile.</p></div><span class="profile-prompt-tag">PERSONALISE</span></section>
+          <div class="welcome-note">Your field profile helps AgriAI tailor its guidance. Start by choosing a topic or asking a question.</div>
         </div>
       </div>
     </section>
     <div class="composer-wrap">
       <form class="composer" id="chat-form">
-        <textarea id="question" rows="1" maxlength="1200" placeholder="Message AgriAI..." aria-label="Your agriculture question" required></textarea>
+        <textarea id="question" rows="1" maxlength="1200" placeholder="Ask about your crop, soil, pests or irrigation..." aria-label="Your agriculture question" required></textarea>
         <div class="composer-bottom"><span class="composer-help" id="chat-status">Enter to send · Shift + Enter for a new line</span><button class="send" id="send-question" type="submit"><span>Send</span><span aria-hidden="true">➤</span></button></div>
       </form>
       <p class="fineprint">AgriAI can make mistakes. Verify crop, soil, fertiliser and plant-protection decisions with qualified local experts.</p>
@@ -397,7 +488,13 @@
     return {item,content};
   }
   function showWelcome(){
-    conversationInner.innerHTML='<div class="welcome" id="welcome"><div class="welcome-kicker"><span class="kicker-line"></span> ZORVENA FIELD INTELLIGENCE <span class="kicker-line"></span></div><div class="welcome-mark">🌾</div><h1>Grow with knowledge.<br><span>Farm with confidence.</span></h1><p>Your agriculture companion for practical crop, soil, pest and water guidance — in English or Tamil.</p><div class="welcome-hints"><div class="hint"><span class="hint-icon">🌱</span><strong>Crop growth</strong><small>Plan healthy crop stages and field care.</small></div><div class="hint"><span class="hint-icon">🌿</span><strong>Soil wellness</strong><small>Explore soil health and nutrient basics.</small></div><div class="hint"><span class="hint-icon">🔎</span><strong>Pest watch</strong><small>Understand symptoms and safe next steps.</small></div><div class="hint"><span class="hint-icon">💧</span><strong>Smart irrigation</strong><small>Make better use of every drop.</small></div></div><div class="welcome-note">Select your crop and ask your first question below.</div></div>';
+    conversationInner.innerHTML="<div class=\"welcome farm-dashboard\" id=\"welcome\">\n          <div class=\"dashboard-topline\"><span class=\"live-dot\"></span> YOUR FARM WORKSPACE <span class=\"dashboard-date\">ZORVENA AGRICULTURE INTELLIGENCE</span></div>\n          <section class=\"farm-hero\">\n            <div class=\"farm-hero-copy\">\n              <span class=\"hero-eyebrow\">SMARTER FARMING STARTS HERE</span>\n              <h1>Understand your field.<br><span>Grow a stronger harvest.</span></h1>\n              <p>Practical, crop-aware guidance for every stage of your farming journey.</p>\n              <button class=\"hero-action\" type=\"button\" data-focus-question>Ask your field assistant <span>→</span></button>\n            </div>\n            <div class=\"farm-illustration\" aria-hidden=\"true\">\n              <div class=\"sun-disc\"></div><div class=\"field-hill hill-back\"></div><div class=\"field-hill hill-front\"></div>\n              <div class=\"crop-stalk stalk-one\">🌾</div><div class=\"crop-stalk stalk-two\">🌱</div><div class=\"crop-stalk stalk-three\">🌾</div>\n              <div class=\"hero-chip\">FIELD<br>INTELLIGENCE</div>\n            </div>\n          </section>\n          <div class=\"dashboard-section-head\"><div><span class=\"section-eyebrow\">EXPLORE BY NEED</span><h2>What would you like to work on?</h2></div><span class=\"section-side-note\">Choose a topic to get started</span></div>\n          <div class=\"farm-tools-grid\">\n            <button class=\"farm-tool growth-tool\" type=\"button\" data-question=\"What should I monitor during the early growth stage?\"><span class=\"tool-symbol\">🌱</span><span class=\"tool-copy\"><strong>Crop development</strong><small>Growth stages, field care and crop planning</small></span><span class=\"tool-arrow\">↗</span></button>\n            <button class=\"farm-tool soil-tool\" type=\"button\" data-question=\"How can I improve soil health naturally?\"><span class=\"tool-symbol\">🪴</span><span class=\"tool-copy\"><strong>Soil & nutrients</strong><small>Soil health, organic matter and nutrients</small></span><span class=\"tool-arrow\">↗</span></button>\n            <button class=\"farm-tool pest-tool\" type=\"button\" data-question=\"How can I identify common crop pests and diseases?\"><span class=\"tool-symbol\">🐛</span><span class=\"tool-copy\"><strong>Pest & disease watch</strong><small>Symptoms, prevention and safe next steps</small></span><span class=\"tool-arrow\">↗</span></button>\n            <button class=\"farm-tool water-tool\" type=\"button\" data-question=\"How can I manage irrigation water efficiently?\"><span class=\"tool-symbol\">💧</span><span class=\"tool-copy\"><strong>Water management</strong><small>Irrigation planning and water efficiency</small></span><span class=\"tool-arrow\">↗</span></button>\n          </div>\n          <section class=\"farm-profile-prompt\"><div class=\"profile-prompt-icon\">📋</div><div><strong>Make guidance relevant to your farm</strong><p>Set your crop, growth stage, soil and irrigation details in My Farm Profile.</p></div><span class=\"profile-prompt-tag\">PERSONALISE</span></section>\n          <div class=\"welcome-note\">Your field profile helps AgriAI tailor its guidance. Start by choosing a topic or asking a question.</div>\n        </div>";
+    bindFarmDashboardActions();
+  }
+  function bindFarmDashboardActions(){
+    conversationInner.querySelectorAll("[data-question]").forEach(button=>button.addEventListener("click",()=>sendMessage(button.dataset.question)));
+    const focusButton=conversationInner.querySelector("[data-focus-question]");
+    if(focusButton)focusButton.addEventListener("click",()=>{input.focus();input.scrollIntoView({behavior:"smooth",block:"center"});});
   }
   function renderHistory(){
     historyList.innerHTML="";
@@ -449,8 +546,8 @@
     input.style.height="auto";
     closeMenu();
     sendButton.disabled=true;
-    statusText.textContent="AgriAI is thinking...";
-    const pending=addMessage("assistant","Preparing your answer...");
+    statusText.textContent="Checking your field question...";
+    const pending=addMessage("assistant","Reviewing your farm question...");
     pending.content.classList.add("typing");
     try{
       const response=await fetch(WORKER_URL,{
