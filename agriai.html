@@ -36,6 +36,7 @@
     <section class="panel" aria-labelledby="assistant-title">
       <span class="tag">CONCEPT DEMO</span><h2 id="assistant-title">Explore a sample question</h2><p class="sub">Choose a sample below to preview how AgriAI could explain farming topics in a clear, farmer-friendly way.</p>
       <div class="lang-row"><label for="language">Response language</label><select id="language"><option value="en">English</option><option value="ta">தமிழ் (Tamil)</option></select></div>
+      <div class="lang-row" style="margin-top:4px"><label for="crop">Choose your crop / பயிரைத் தேர்வு செய்யவும்</label><select id="crop" style="min-width:190px"><option value="">Select crop (optional)</option><option value="Rice / Paddy">Rice / நெல்</option><option value="Maize">Maize / மக்காச்சோளம்</option><option value="Sugarcane">Sugarcane / கரும்பு</option><option value="Cotton">Cotton / பருத்தி</option><option value="Banana">Banana / வாழை</option><option value="Tomato">Tomato / தக்காளி</option><option value="Coconut">Coconut / தென்னை</option><option value="Millets">Millets / சிறுதானியங்கள்</option><option value="Pulses">Pulses / பயறு வகைகள்</option><option value="Other / not listed">Other / வேறு பயிர்</option></select></div>
       <div class="question-list">
         <button class="sample" type="button" data-topic="soil">How can I improve soil health?</button>
         <button class="sample" type="button" data-topic="water">How can I use irrigation water efficiently?</button>
@@ -93,7 +94,7 @@
       const response = await fetch(WORKER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: question, language: document.getElementById("language").value })
+        body: JSON.stringify({ message: question, language: document.getElementById("language").value, crop: document.getElementById("crop").value })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "The assistant could not answer right now.");
