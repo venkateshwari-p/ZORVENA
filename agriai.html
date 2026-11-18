@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#073d22">
+  <meta name="description" content="Explore ZORVENA AgriAI, a multilingual agriculture knowledge assistant concept for farmers.">
+  <title>ZORVENA AgriAI | Farmer Knowledge Assistant</title>
+  <link rel="icon" type="image/png" href="assets/zorvena-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--forest:#073d24;--green:#168b45;--lime:#b8e66b;--gold:#d5b65b;--ink:#173326;--muted:#64766a;--paper:#f5f8f2}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.65 "DM Sans",sans-serif}a{color:inherit;text-decoration:none}.wrap{width:min(1080px,calc(100% - 40px));margin:auto}
+    header{background:#052b1a;color:#fff}.nav{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{display:flex;align-items:center;gap:10px;font:800 1.05rem Manrope,sans-serif;letter-spacing:.12em}.brand img{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:12px;padding:3px}.back{color:#e1efdf;font-size:.92rem}
+    .hero{padding:64px 0 48px;background:linear-gradient(130deg,#06351f,#0b5930);color:#fff}.eyebrow{color:#c3e989;text-transform:uppercase;letter-spacing:.16em;font-size:.75rem;font-weight:800}.hero h1{font:800 clamp(2.4rem,6vw,4.4rem)/1.08 Manrope,sans-serif;letter-spacing:-.05em;max-width:760px;margin:14px 0}.hero p{color:#d8e9dc;max-width:720px;font-size:1.08rem;margin:0}
+    main{padding:42px 0 76px}.notice{display:flex;gap:12px;align-items:flex-start;background:#fff8e6;border:1px solid #ead9a8;color:#614d1f;border-radius:16px;padding:16px 18px;margin-bottom:26px}.notice strong{display:block}.notice p{margin:3px 0 0;font-size:.9rem}
+    .layout{display:grid;grid-template-columns:1.35fr .75fr;gap:22px;align-items:start}.panel{background:#fff;border:1px solid #e2eadf;border-radius:22px;padding:26px;box-shadow:0 12px 35px rgba(19,61,34,.06)}h2{font:800 1.35rem Manrope,sans-serif;color:var(--forest);margin:0 0 8px}.sub{color:var(--muted);margin:0 0 20px;font-size:.93rem}
+    .lang-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.lang-row label{font-weight:700;font-size:.9rem}select{border:1px solid #cbd9c9;border-radius:10px;padding:10px 12px;background:#fff;color:var(--ink);font:inherit}
+    .question-list{display:grid;gap:10px}.sample{border:1px solid #dce8d8;background:#f8fbf6;color:#23452f;border-radius:13px;padding:13px 15px;text-align:left;font:600 .92rem "DM Sans",sans-serif;cursor:pointer}.sample:hover,.sample:focus-visible{border-color:var(--green);outline:2px solid #b8e66b;outline-offset:2px}
+    .answer{display:none;margin-top:18px;padding:18px;border-radius:14px;background:#edf6e9;border-left:4px solid var(--green)}.answer.visible{display:block}.answer strong{display:block;color:var(--forest);margin-bottom:6px}.answer p{margin:0;color:#405849;font-size:.94rem;white-space:pre-line}
+    .side-list{padding:0;margin:12px 0 0;list-style:none}.side-list li{padding:10px 0;border-bottom:1px solid #edf1eb;color:#53665a;font-size:.93rem}.side-list li:last-child{border:0}.tag{display:inline-block;background:#e8f3df;color:#32652e;padding:4px 9px;border-radius:999px;font-size:.72rem;font-weight:800;letter-spacing:.04em;margin-bottom:12px}
+    .disclaimer{margin-top:20px;color:#6b786e;font-size:.82rem}.cta{display:inline-flex;margin-top:18px;padding:11px 18px;border-radius:999px;background:var(--lime);color:#193b20;font-weight:800}
+    footer{background:#052b1a;color:#cbd9ce;padding:22px 0;font-size:.85rem}.foot{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+    @media(max-width:760px){.layout{grid-template-columns:1fr}.hero{padding:48px 0 38px}.panel{padding:21px}.nav{min-height:68px}.back{font-size:.82rem}}
+    @media(max-width:420px){.wrap{width:calc(100% - 28px)}.brand{font-size:.9rem}.brand img{width:36px;height:36px}.lang-row{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+<header><div class="wrap nav"><a class="brand" href="index.html"><img src="assets/zorvena-logo.png" alt=""> ZORVENA</a><a class="back" href="index.html">← Back to main website</a></div></header>
+<section class="hero"><div class="wrap"><div class="eyebrow">ZORVENA · AI in Agriculture</div><h1>Meet AgriAI — a smarter farming knowledge companion.</h1><p>A multilingual assistant concept designed to make reliable agricultural knowledge easier to explore, understand and use.</p></div></section>
+<main class="wrap">
+  <div class="notice"><div aria-hidden="true">ⓘ</div><div><strong>Interactive concept preview</strong><p>This page demonstrates the planned experience with sample answers. It is not connected to a live AI model yet. Live answers will be enabled after a secure AI service is connected.</p></div></div>
+  <div class="layout">
+    <section class="panel" aria-labelledby="assistant-title">
+      <span class="tag">CONCEPT DEMO</span><h2 id="assistant-title">Explore a sample question</h2><p class="sub">Choose a sample below to preview how AgriAI could explain farming topics in a clear, farmer-friendly way.</p>
+      <div class="lang-row"><label for="language">Response language</label><select id="language"><option value="en">English</option><option value="ta">தமிழ் (Tamil)</option></select></div>
+      <div class="question-list">
+        <button class="sample" type="button" data-topic="soil">How can I improve soil health?</button>
+        <button class="sample" type="button" data-topic="water">How can I use irrigation water efficiently?</button>
+        <button class="sample" type="button" data-topic="compost">What is the role of compost in farming?</button>
+        <button class="sample" type="button" data-topic="crop">What should I check before choosing a crop?</button>
+      </div>
+      <div class="answer" id="answer" aria-live="polite"><strong id="answer-title"></strong><p id="answer-text"></p></div>
+      <p class="disclaimer">These are illustrative educational examples, not field-specific recommendations. Soil tests, local weather, crop variety and advice from a qualified agricultural officer should guide farm decisions.</p>
+    </section>
+    <aside class="panel"><h2>What AgriAI aims to support</h2><ul class="side-list"><li>🌾 Crop cultivation knowledge</li><li>🧪 Soil health and nutrient basics</li><li>💧 Irrigation and water management</li><li>♻️ Sustainable farming practices</li><li>🌐 Tamil and English assistance</li><li>📄 Simple explanations of farm documents</li></ul><p class="disclaimer">Future versions can use trusted agricultural publications and region-specific sources to ground answers and show references.</p><a class="cta" href="https://www.linkedin.com/company/zorvena/" target="_blank" rel="noopener noreferrer">Connect with ZORVENA</a></aside>
+  </div>
+</main>
+<footer><div class="wrap foot"><span>© <span id="year">2026</span> ZORVENA · AgriAI concept</span><a href="index.html">Return to ZORVENA</a></div></footer>
+<script>
+  const examples = {
+    en: {
+      soil: ["Improving soil health", "Start with a soil test to understand pH and nutrient levels. Add well-decomposed organic matter where appropriate, protect the soil from erosion, rotate crops, and avoid applying fertiliser without understanding the soil's needs. The right plan depends on your soil test and crop."],
+      water: ["Using irrigation water efficiently", "Match irrigation to the crop's growth stage and the soil's moisture. Drip or micro-irrigation can reduce water losses in suitable systems. Check for leaks, irrigate during cooler parts of the day where practical, and avoid waterlogging. Local soil and water conditions matter."],
+      compost: ["Why compost matters", "Mature compost can add organic matter, support soil structure and contribute some nutrients. Use properly decomposed material, apply it according to crop and soil needs, and do not assume compost alone supplies every nutrient required by a crop."],
+      crop: ["Checks before choosing a crop", "Consider local climate and season, soil type and test results, water availability, crop duration, pest and disease pressure, access to inputs, and a realistic market plan. Local agricultural extension guidance can help compare suitable options."]
+    },
+    ta: {
+      soil: ["மண் ஆரோக்கியத்தை மேம்படுத்துவது", "முதலில் மண் பரிசோதனை செய்து pH மற்றும் ஊட்டச்சத்து அளவுகளை அறியுங்கள். தேவைக்கேற்ப நன்கு மக்கிய இயற்கை உரத்தைச் சேர்க்கவும். மண் அரிப்பைத் தடுக்கவும், பயிர் சுழற்சியைப் பின்பற்றவும். மண் பரிசோதனை முடிவுகளின் அடிப்படையில் உரத் திட்டத்தைத் தேர்வு செய்யுங்கள்."],
+      water: ["நீர்ப்பாசன நீரைச் சிக்கனமாகப் பயன்படுத்துவது", "பயிரின் வளர்ச்சி நிலை மற்றும் மண்ணின் ஈரப்பதத்துக்கு ஏற்ப நீர்ப்பாசனம் செய்யுங்கள். பொருத்தமான இடங்களில் சொட்டு அல்லது நுண்ணீர் பாசனம் நீர் வீணாவதை குறைக்க உதவும். கசிவுகளைச் சரிபார்த்து, நீர் தேங்குவதைத் தவிர்க்கவும். உள்ளூர் மண் மற்றும் நீர் நிலைகளும் முக்கியம்."],
+      compost: ["மக்கிய உரத்தின் பயன்", "நன்கு மக்கிய உரம் மண்ணில் கரிமப் பொருளை அதிகரிக்கவும், மண் அமைப்பை மேம்படுத்தவும், சில ஊட்டச்சத்துகளை வழங்கவும் உதவும். பயிர் மற்றும் மண் தேவைக்கேற்ப பயன்படுத்துங்கள். எல்லா ஊட்டச்சத்துகளையும் மக்கிய உரம் மட்டும் வழங்கும் என்று கருத வேண்டாம்."],
+      crop: ["பயிரைத் தேர்வு செய்வதற்கு முன்", "உள்ளூர் காலநிலை மற்றும் பருவம், மண் வகை மற்றும் பரிசோதனை முடிவுகள், நீர் கிடைக்கும் நிலை, பயிர் கால அளவு, பூச்சி மற்றும் நோய் அபாயம், இடுபொருட்கள் கிடைக்கும் நிலை, சந்தை வாய்ப்பு ஆகியவற்றைக் கவனியுங்கள். உள்ளூர் வேளாண் அலுவலரின் ஆலோசனையும் உதவும்."]
+    }
+  };
+  const language = document.getElementById("language");
+  const answer = document.getElementById("answer");
+  document.querySelectorAll(".sample").forEach(button => button.addEventListener("click", () => {
+    const pair = examples[language.value][button.dataset.topic];
+    document.getElementById("answer-title").textContent = pair[0];
+    document.getElementById("answer-text").textContent = pair[1];
+    answer.classList.add("visible");
+  }));
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
