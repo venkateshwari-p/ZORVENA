@@ -169,6 +169,74 @@
     }
     @media(prefers-reduced-motion:reduce){.sidebar .brand,.sidebar .new-chat,.sidebar .side-heading,.sidebar .sample,.sidebar .history-item,.sidebar .setting,.sidebar .side-foot{animation:none}}
 
+
+    /* Light, clearly separated sidebar sections */
+    :root{--sidebar:#f4f8f1;--sidebar2:#e6f0e3}
+    .sidebar{color:#294333;background:linear-gradient(180deg,#f8fbf5 0%,#eef5eb 100%);border-right:1px solid #dce8d9;padding:18px 16px 16px;gap:0}
+    .brand{color:#244c32;border-bottom:1px solid #e0eade;margin-bottom:15px;padding:3px 9px 17px;letter-spacing:.12em}
+    .brand img{border:1px solid #e1e9dc;box-shadow:0 3px 10px rgba(35,75,48,.08)}
+    .new-chat{background:#fff;color:#2e6942;border:1px solid #cbdcc9;box-shadow:0 2px 8px rgba(39,83,49,.04)}
+    .new-chat:hover{background:#eaf4e7;border-color:#9fbea0}
+    .side-heading{color:#718576;margin:21px 0 8px;padding:0 9px;font-size:.68rem;letter-spacing:.12em}
+    .sample{color:#405b48;border:1px solid transparent}
+    .sample:hover{background:#e7f1e4;color:#245d37}
+    .history-section{flex:0 1 auto;min-height:0;max-height:190px;width:100%;margin:17px 0 0;padding:0;display:flex;flex-direction:column;border-top:1px solid #dfe9dc}
+    .history-section .side-heading{margin:14px 0 7px;flex:0 0 auto}
+    .history-list{flex:1 1 auto;min-height:0;max-height:142px;overflow-y:auto;display:grid;align-content:start;gap:4px;padding:0 3px 3px 0;scrollbar-width:thin;scrollbar-color:#c2d5bf transparent}
+    .history-item{min-height:36px;color:#405b48;border:1px solid transparent;white-space:normal;line-height:1.35;overflow-wrap:anywhere}
+    .history-item:hover,.history-item.active{background:#e3efdf;color:#245d37;border-color:#d2e2ce}
+    .history-empty{color:#829286}
+    .settings{flex:0 0 auto;width:100%;margin:14px 0 0;padding:13px 0 0;border-top:1px solid #dfe9dc;gap:10px}
+    .settings::before{content:"MY FARM PROFILE";display:block;padding:0 9px 2px;color:#718576;font-size:.68rem;font-weight:800;letter-spacing:.12em}
+    .setting{width:100%;padding:0 2px}
+    .setting label{color:#526c59;font-size:.76rem;font-weight:600;margin:0 0 5px 1px}
+    .setting select{height:39px;min-height:39px;background:#fff;color:#314b38;border:1px solid #d3e0d0;border-radius:9px;padding:7px 10px;box-shadow:0 1px 3px rgba(30,70,39,.03)}
+    .setting select:hover,.setting select:focus{background:#fff;border-color:#8eb392;box-shadow:0 0 0 3px rgba(87,153,91,.09)}
+    .setting select option{background:#fff;color:#294333}
+    .side-foot{flex:0 0 auto;color:#829286;border-top:1px solid #dfe9dc;margin:13px 0 0;padding:10px 8px 0;font-size:.68rem}
+    /* Gentle visual cues: motion reinforces the meaning of the farming cards */
+    .welcome-hints .hint{position:relative;overflow:hidden;animation:hintRise .55s ease both}
+    .welcome-hints .hint:nth-child(2){animation-delay:.08s}
+    .welcome-hints .hint:nth-child(3){animation-delay:.16s}
+    .welcome-hints .hint:nth-child(4){animation-delay:.24s}
+    .hint-icon{display:inline-block;transform-origin:center;animation:iconBreathe 3.2s ease-in-out infinite}
+    .hint:nth-child(2) .hint-icon{animation-delay:.35s}
+    .hint:nth-child(3) .hint-icon{animation:iconPeek 3.6s ease-in-out infinite}
+    .hint:nth-child(4) .hint-icon{animation:waterDrop 2.8s ease-in-out infinite}
+    .hint::after{content:"";position:absolute;left:-45%;top:0;width:35%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-18deg);animation:cardShimmer 7s ease-in-out infinite;pointer-events:none}
+    .welcome-mark{animation:markFloat 4s ease-in-out infinite,softGlow 3.5s ease-in-out infinite}
+    .message{animation:messageIn .32s ease both}
+    .avatar{transition:transform .2s ease}
+    .message:hover .avatar{transform:scale(1.06)}
+    .send:disabled{position:relative}
+    .send:disabled span:last-child{animation:sendPulse .8s ease-in-out infinite alternate}
+    @keyframes hintRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes iconBreathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.08)}}
+    @keyframes iconPeek{0%,100%{transform:rotate(0) scale(1)}30%{transform:rotate(-9deg) scale(1.08)}60%{transform:rotate(7deg) scale(1.08)}}
+    @keyframes waterDrop{0%,100%{transform:translateY(-2px)}50%{transform:translateY(4px)}}
+    @keyframes cardShimmer{0%,72%,100%{left:-45%}86%{left:125%}}
+    @keyframes softGlow{0%,100%{box-shadow:0 8px 24px rgba(48,76,36,.06)}50%{box-shadow:0 10px 30px rgba(87,153,91,.17)}}
+    @keyframes sendPulse{from{transform:translateX(0)}to{transform:translateX(3px)}}
+    @media(max-width:760px){
+      .sidebar{width:min(320px,88vw);flex-basis:min(320px,88vw);padding:15px 14px}
+      .history-section{max-height:155px}
+      .history-list{max-height:108px}
+      .settings{gap:9px}
+      .setting select{height:38px;min-height:38px}
+      .side-foot{margin-top:10px}
+    }
+    @media(max-height:760px) and (min-width:761px){
+      .sidebar{overflow-y:auto}
+      .history-section{max-height:130px}
+      .history-list{max-height:85px}
+      .side-heading{margin-top:15px}
+      .settings{gap:7px}
+      .setting select{height:36px;min-height:36px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .welcome-hints .hint,.hint-icon,.hint::after,.welcome-mark,.message,.send:disabled span:last-child{animation:none!important}
+    }
+
   </style>
 </head>
 <body>
