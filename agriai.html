@@ -23,7 +23,7 @@
     .side-heading{margin:25px 8px 9px;color:#9fb5a7;text-transform:uppercase;font-size:.7rem;letter-spacing:.13em;font-weight:800}
     .sample-list{display:grid;gap:5px}
     .sample{width:100%;border:0;background:transparent;color:#dbe7de;text-align:left;border-radius:9px;padding:9px 10px;font-size:.86rem;line-height:1.4}
-    .settings{margin-top:auto;border-top:1px solid #30483a;padding:17px 5px 0;display:grid;gap:13px}
+    .history-section{margin-top:22px;min-height:0;display:flex;flex-direction:column;flex:1}.history-list{overflow-y:auto;display:grid;gap:4px;max-height:100%;padding-right:2px}.history-item{width:100%;border:0;background:transparent;color:#dbe7de;text-align:left;border-radius:9px;padding:9px 10px;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.history-item:hover,.history-item.active{background:var(--sidebar2);color:#fff}.history-empty{color:#8fa497;font-size:.78rem;padding:5px 9px}.settings{margin-top:14px;border-top:1px solid #30483a;padding:17px 5px 0;display:grid;gap:13px}
     .setting label{display:block;color:#b7c9bd;font-size:.78rem;margin:0 0 6px 2px}
     .setting select{width:100%;border:1px solid #496253;background:#1a3428;color:#fff;border-radius:9px;padding:9px 10px;outline:none}
     .side-foot{font-size:.75rem;color:#91a79a;margin-top:15px;padding:0 5px}
@@ -120,23 +120,60 @@
 </div>
 <script>
   const WORKER_URL = "https://zorvena-agriai.sridharanpv123.workers.dev";
+  const STORAGE_KEY = "zorvena_agriai_conversations_v1";
+  const ACTIVE_KEY = "zorvena_agriai_active_v1";
   const form = document.getElementById("chat-form");
   const input = document.getElementById("question");
   const sendButton = document.getElementById("send-question");
   const statusText = document.getElementById("chat-status");
   const conversation = document.getElementById("conversation");
   const conversationInner = document.getElementById("conversation-inner");
-  const welcome = document.getElementById("welcome");
   const sidebar = document.getElementById("sidebar");
   const overlay = document.getElementById("overlay");
+  const historyList = document.getElementById("history-list");
+  let conversations = loadConversations();
+  let activeId = localStorage.getItem(ACTIVE_KEY) || null;
 
+  function loadConversations(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+      return Array.isArray(saved)?saved:[];
+    }catch{return []}
+  }
+  function persist(){
+    try{
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(conversations));
+      if(activeId) localStorage.setItem(ACTIVE_KEY,activeId);
+      else localStorage.removeItem(ACTIVE_KEY);
+      return true;
+    }catch{
+      statusText.textContent="Could not save history in this browser. Check available storage.";
+      return false;
+    }
+  }
   function closeMenu(){sidebar.classList.remove("open");overlay.classList.remove("show")}
   document.getElementById("menu-toggle").addEventListener("click",()=>{sidebar.classList.add("open");overlay.classList.add("show")});
   overlay.addEventListener("click",closeMenu);
-
   function scrollToLatest(){conversation.scrollTop=conversation.scrollHeight}
+  function currentConversation(){return conversations.find(chat=>chat.id===activeId)||null}
+  function ensureConversation(firstQuestion){
+    let chat=currentConversation();
+    if(!chat){
+      chat={id:String(Date.now())+"-"+Math.random().toString(36).slice(2,8),title:firstQuestion.slice(0,48),updatedAt:Date.now(),messages:[]};
+      conversations.unshift(chat);
+      activeId=chat.id;
+    }
+    return chat;
+  }
+  function saveMessage(role,text){
+    const chat=currentConversation();
+    if(!chat)return;
+    chat.messages.push({role,text,createdAt:Date.now()});
+    chat.updatedAt=Date.now();
+    persist();
+    renderHistory();
+  }
   function addMessage(role,text){
-    if(welcome) welcome.remove();
     const item=document.createElement("div");
     item.className="message "+role;
     const avatar=document.createElement("div");
@@ -155,11 +192,55 @@
     scrollToLatest();
     return {item,content};
   }
-
+  function showWelcome(){
+    conversationInner.innerHTML='<div class="welcome" id="welcome"><div class="welcome-mark">🌾</div><h1>How can I help with your farm today?</h1><p>Ask a question in English or Tamil. Choose a crop from the left menu to receive more relevant guidance.</p><div class="welcome-hints"><div class="hint"><strong>Crop guidance</strong>Learn about crop growth and cultivation practices.</div><div class="hint"><strong>Soil and nutrients</strong>Understand soil health and nutrient basics.</div><div class="hint"><strong>Pests and diseases</strong>Explore possible symptoms and safe next steps.</div><div class="hint"><strong>Water management</strong>Learn about irrigation and water conservation.</div></div></div>';
+  }
+  function renderHistory(){
+    historyList.innerHTML="";
+    if(!conversations.length){
+      const empty=document.createElement("div");
+      empty.className="history-empty";
+      empty.textContent="No saved conversations yet.";
+      historyList.append(empty);
+      return;
+    }
+    conversations.slice().sort((a,b)=>b.updatedAt-a.updatedAt).forEach(chat=>{
+      const button=document.createElement("button");
+      button.type="button";
+      button.className="history-item"+(chat.id===activeId?" active":"");
+      button.textContent=chat.title||"New conversation";
+      button.title=chat.title||"New conversation";
+      button.addEventListener("click",()=>openConversation(chat.id));
+      historyList.append(button);
+    });
+  }
+  function openConversation(id){
+    const chat=conversations.find(item=>item.id===id);
+    if(!chat)return;
+    activeId=id;
+    persist();
+    conversationInner.innerHTML="";
+    if(!chat.messages.length)showWelcome();
+    else chat.messages.forEach(message=>addMessage(message.role,message.text));
+    renderHistory();
+    closeMenu();
+    scrollToLatest();
+  }
+  function newChat(){
+    activeId=null;
+    persist();
+    showWelcome();
+    renderHistory();
+    statusText.textContent="New conversation · Previous chats are saved";
+    closeMenu();
+    input.focus();
+  }
   async function sendMessage(text){
     const question=text.trim();
-    if(!question || sendButton.disabled) return;
+    if(!question||sendButton.disabled)return;
+    const chat=ensureConversation(question);
     addMessage("user",question);
+    saveMessage("user",question);
     input.value="";
     input.style.height="auto";
     closeMenu();
@@ -178,39 +259,37 @@
         })
       });
       const data=await response.json();
-      if(!response.ok) throw new Error(data.error||"The assistant could not answer right now.");
+      if(!response.ok)throw new Error(data.error||"The assistant could not answer right now.");
+      const answer=data.answer||"No answer was returned. Please try again.";
       pending.content.classList.remove("typing");
-      pending.content.textContent=data.answer||"No answer was returned. Please try again.";
-      statusText.textContent="Answer received · General educational guidance";
+      pending.content.textContent=answer;
+      saveMessage("assistant",answer);
+      statusText.textContent="Saved in this browser · General educational guidance";
     }catch(error){
+      const message=error.message||"AgriAI is temporarily unavailable. Please try again.";
       pending.content.classList.remove("typing");
-      pending.content.textContent=error.message||"AgriAI is temporarily unavailable. Please try again.";
-      statusText.textContent="There was a problem getting your answer.";
+      pending.content.textContent=message;
+      saveMessage("assistant",message);
+      statusText.textContent="Response saved in this browser";
     }finally{
       sendButton.disabled=false;
       scrollToLatest();
       input.focus();
     }
   }
-
   form.addEventListener("submit",event=>{event.preventDefault();sendMessage(input.value)});
   input.addEventListener("keydown",event=>{
     if(event.key==="Enter"&&!event.shiftKey){event.preventDefault();form.requestSubmit()}
   });
   input.addEventListener("input",()=>{input.style.height="auto";input.style.height=Math.min(input.scrollHeight,160)+"px"});
   document.querySelectorAll(".sample").forEach(button=>button.addEventListener("click",()=>sendMessage(button.dataset.question)));
-  document.getElementById("new-chat").addEventListener("click",()=>{
-    conversationInner.innerHTML="";
-    const intro=document.createElement("div");
-    intro.className="welcome";
-    intro.id="welcome";
-    intro.innerHTML='<div class="welcome-mark">🌾</div><h1>How can I help with your farm today?</h1><p>Ask a question in English or Tamil. Choose a crop from the left menu to receive more relevant guidance.</p><div class="welcome-hints"><div class="hint"><strong>Crop guidance</strong>Learn about crop growth and cultivation practices.</div><div class="hint"><strong>Soil and nutrients</strong>Understand soil health and nutrient basics.</div><div class="hint"><strong>Pests and diseases</strong>Explore possible symptoms and safe next steps.</div><div class="hint"><strong>Water management</strong>Learn about irrigation and water conservation.</div></div>';
-    conversationInner.append(intro);
-    statusText.textContent="New conversation started";
-    closeMenu();
-    input.focus();
-  });
-  document.getElementById("year")?.remove();
+  document.getElementById("new-chat").addEventListener("click",newChat);
+
+  // Restore the most recent conversation when the page is opened again.
+  renderHistory();
+  if(activeId&&conversations.some(chat=>chat.id===activeId))openConversation(activeId);
+  else if(conversations.length)openConversation(conversations.slice().sort((a,b)=>b.updatedAt-a.updatedAt)[0].id);
+  else showWelcome();
 </script>
 </body>
 </html>
