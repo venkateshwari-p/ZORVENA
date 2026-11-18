@@ -11,7 +11,7 @@ This Cloudflare Worker securely connects the ZORVENA AgriAI page to the Google G
 
 Google offers free usage for selected models, subject to changing quotas and rate limits. Check https://ai.google.dev/gemini-api/docs/pricing and https://ai.google.dev/gemini-api/docs/rate-limits. Free-tier data may be used by Google to improve its products; do not send private or sensitive farmer information.
 
-The default model here is `gemini-2.5-flash-lite`. Model access and quotas depend on your AI Studio project.
+The default model here is `gemini-3.1-flash-lite`. Model access and quotas depend on your AI Studio project.
 
 ## 2. Deploy through Cloudflare dashboard
 
@@ -23,7 +23,7 @@ The default model here is `gemini-2.5-flash-lite`. Model access and quotas depen
 6. Add a **Secret** named `GEMINI_API_KEY` and paste your Gemini API key as its value.
 7. Add or confirm these text variables:
    - `ALLOWED_ORIGIN` = `https://venkateshwari-p.github.io`
-   - `GEMINI_MODEL` = `gemini-2.5-flash-lite`
+   - `GEMINI_MODEL` = `gemini-3.1-flash-lite`
 8. Save and deploy again.
 9. Copy the Worker URL ending in `.workers.dev`. Keep your API key private.
 
