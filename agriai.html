@@ -35,13 +35,19 @@
     .notice{background:#fff9e9;border-bottom:1px solid #f0e4c6;padding:8px 24px;color:#725c2d;font-size:.78rem;text-align:center}
     .conversation{flex:1;min-height:0;overflow-y:auto;scroll-behavior:smooth;padding:30px 20px 24px}
     .conversation-inner{max-width:850px;margin:0 auto;display:flex;flex-direction:column;gap:23px;min-height:100%}
-    .welcome{margin:auto;text-align:center;max-width:620px;padding:35px 15px 50px}
-    .welcome-mark{width:58px;height:58px;border-radius:18px;background:#e8f4e8;color:#247344;display:grid;place-items:center;margin:0 auto 17px;font-size:1.8rem}
-    .welcome h1{font:800 clamp(1.6rem,4vw,2.2rem)/1.2 Manrope,sans-serif;color:#203b2b;margin:0 0 11px}
-    .welcome p{color:var(--muted);margin:0 auto;max-width:520px}
-    .welcome-hints{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:27px;text-align:left}
-    .hint{background:#fff;border:1px solid var(--line);border-radius:13px;padding:13px;color:#42564a;font-size:.85rem}
-    .hint strong{display:block;color:#294b35;margin-bottom:3px}
+    .welcome{margin:auto;text-align:center;max-width:690px;padding:35px 15px 50px}
+    .welcome-kicker{display:flex;align-items:center;justify-content:center;gap:10px;color:#8a7138;font-size:.68rem;font-weight:800;letter-spacing:.19em;margin-bottom:17px}
+    .kicker-line{width:25px;height:1px;background:#c6a65d}
+    .welcome-mark{width:66px;height:66px;border-radius:22px;background:linear-gradient(145deg,#e6f0df,#f7edcf);border:1px solid #e4d7b3;color:#247344;display:grid;place-items:center;margin:0 auto 18px;font-size:2rem;box-shadow:0 8px 24px #304c2410}
+    .welcome h1{font:800 clamp(1.75rem,4vw,2.45rem)/1.18 Manrope,sans-serif;color:#203b2b;margin:0 0 13px;letter-spacing:-.045em}
+    .welcome h1 span{color:#9a7b37}
+    .welcome p{color:#68796d;margin:0 auto;max-width:540px;font-size:.94rem}
+    .welcome-hints{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:30px;text-align:left}
+    .hint{background:linear-gradient(145deg,#fff,#fbfcf8);border:1px solid #e4e9df;border-radius:15px;padding:15px;color:#42564a;font-size:.85rem;box-shadow:0 5px 18px #203b2b08}
+    .hint-icon{float:right;font-size:1.25rem;opacity:.9}
+    .hint strong{display:block;color:#294b35;margin-bottom:4px;font:700 .9rem Manrope,sans-serif}
+    .hint small{display:block;color:#7a887d;font-size:.76rem;line-height:1.45}
+    .welcome-note{margin-top:22px;color:#8a7138;font-size:.77rem;font-weight:700;letter-spacing:.02em}
     .message{display:flex;gap:12px;align-items:flex-start;max-width:100%}
     .message.user{flex-direction:row-reverse}
     .avatar{width:34px;height:34px;flex:0 0 34px;border-radius:11px;background:#e7f2e7;color:#267347;display:grid;place-items:center;font-weight:800;font-size:.8rem}
@@ -86,27 +92,29 @@
       <div class="setting"><label for="language">Response language</label><select id="language"><option value="en">English</option><option value="ta">தமிழ் (Tamil)</option></select></div>
       <div class="setting"><label for="crop">Selected crop</label><select id="crop"><option value="">No crop selected</option><option value="Rice / Paddy">Rice / நெல்</option><option value="Maize">Maize / மக்காச்சோளம்</option><option value="Sugarcane">Sugarcane / கரும்பு</option><option value="Cotton">Cotton / பருத்தி</option><option value="Banana">Banana / வாழை</option><option value="Tomato">Tomato / தக்காளி</option><option value="Coconut">Coconut / தென்னை</option><option value="Millets">Millets / சிறுதானியங்கள்</option><option value="Pulses">Pulses / பயறு வகைகள்</option><option value="Other / not listed">Other / வேறு பயிர்</option></select></div>
     </div>
-    <div class="side-foot">ZORVENA AgriAI · General agricultural guidance</div>
+    <div class="side-foot">GROW KNOWLEDGE. GROW BETTER.<br>ZORVENA · Agricultural intelligence</div>
   </aside>
   <div class="overlay" id="overlay"></div>
   <main class="main">
     <header class="topbar">
-      <div class="top-left"><button class="menu-toggle" id="menu-toggle" type="button" aria-label="Open menu">☰</button><div><div class="top-title">AgriAI Assistant</div><div class="top-sub">Your farming knowledge companion</div></div></div>
+      <div class="top-left"><button class="menu-toggle" id="menu-toggle" type="button" aria-label="Open menu">☰</button><div><div class="top-title">ZORVENA AgriAI</div><div class="top-sub">Field knowledge · Crop guidance · Smarter farming</div></div></div>
       <a class="back-link" href="index.html">← ZORVENA website</a>
     </header>
     <div class="notice">ⓘ AI-generated educational guidance. Confirm important farm decisions with a local agricultural expert.</div>
     <section class="conversation" id="conversation" aria-label="Chat messages" aria-live="polite">
       <div class="conversation-inner" id="conversation-inner">
         <div class="welcome" id="welcome">
+          <div class="welcome-kicker"><span class="kicker-line"></span> ZORVENA FIELD INTELLIGENCE <span class="kicker-line"></span></div>
           <div class="welcome-mark">🌾</div>
-          <h1>How can I help with your farm today?</h1>
-          <p>Ask a question in English or Tamil. Choose a crop from the left menu to receive more relevant guidance.</p>
+          <h1>Grow with knowledge.<br><span>Farm with confidence.</span></h1>
+          <p>Your agriculture companion for practical crop, soil, pest and water guidance — in English or Tamil.</p>
           <div class="welcome-hints">
-            <div class="hint"><strong>Crop guidance</strong>Learn about crop growth and cultivation practices.</div>
-            <div class="hint"><strong>Soil and nutrients</strong>Understand soil health and nutrient basics.</div>
-            <div class="hint"><strong>Pests and diseases</strong>Explore possible symptoms and safe next steps.</div>
-            <div class="hint"><strong>Water management</strong>Learn about irrigation and water conservation.</div>
+            <div class="hint"><span class="hint-icon">🌱</span><strong>Crop growth</strong><small>Plan healthy crop stages and field care.</small></div>
+            <div class="hint"><span class="hint-icon">🌿</span><strong>Soil wellness</strong><small>Explore soil health and nutrient basics.</small></div>
+            <div class="hint"><span class="hint-icon">🔎</span><strong>Pest watch</strong><small>Understand symptoms and safe next steps.</small></div>
+            <div class="hint"><span class="hint-icon">💧</span><strong>Smart irrigation</strong><small>Make better use of every drop.</small></div>
           </div>
+          <div class="welcome-note">Select your crop and ask your first question below.</div>
         </div>
       </div>
     </section>
@@ -194,7 +202,7 @@
     return {item,content};
   }
   function showWelcome(){
-    conversationInner.innerHTML='<div class="welcome" id="welcome"><div class="welcome-mark">🌾</div><h1>How can I help with your farm today?</h1><p>Ask a question in English or Tamil. Choose a crop from the left menu to receive more relevant guidance.</p><div class="welcome-hints"><div class="hint"><strong>Crop guidance</strong>Learn about crop growth and cultivation practices.</div><div class="hint"><strong>Soil and nutrients</strong>Understand soil health and nutrient basics.</div><div class="hint"><strong>Pests and diseases</strong>Explore possible symptoms and safe next steps.</div><div class="hint"><strong>Water management</strong>Learn about irrigation and water conservation.</div></div></div>';
+    conversationInner.innerHTML='<div class="welcome" id="welcome"><div class="welcome-kicker"><span class="kicker-line"></span> ZORVENA FIELD INTELLIGENCE <span class="kicker-line"></span></div><div class="welcome-mark">🌾</div><h1>Grow with knowledge.<br><span>Farm with confidence.</span></h1><p>Your agriculture companion for practical crop, soil, pest and water guidance — in English or Tamil.</p><div class="welcome-hints"><div class="hint"><span class="hint-icon">🌱</span><strong>Crop growth</strong><small>Plan healthy crop stages and field care.</small></div><div class="hint"><span class="hint-icon">🌿</span><strong>Soil wellness</strong><small>Explore soil health and nutrient basics.</small></div><div class="hint"><span class="hint-icon">🔎</span><strong>Pest watch</strong><small>Understand symptoms and safe next steps.</small></div><div class="hint"><span class="hint-icon">💧</span><strong>Smart irrigation</strong><small>Make better use of every drop.</small></div></div><div class="welcome-note">Select your crop and ask your first question below.</div></div>';
   }
   function renderHistory(){
     historyList.innerHTML="";
