@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZORVENA | Secure Market Data Import</title>
+<style>
+:root{color-scheme:light;--green:#174b35;--gold:#b58a35;--ink:#17231d;--muted:#68756d;--line:#dfe7e1;--bg:#f5f8f5}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:850px;margin:38px auto;padding:0 18px}.brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}.mark{width:42px;height:42px;border-radius:12px;background:var(--green);color:#f5d68e;display:grid;place-items:center;font-weight:800;font-size:20px}.brand strong{display:block;letter-spacing:.08em;color:var(--green)}.brand small{color:var(--muted)}
+h1{font-size:clamp(25px,4vw,34px);line-height:1.15;margin:0 0 8px}.intro{color:var(--muted);margin:0 0 24px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin:14px 0;box-shadow:0 8px 28px #163b2410}
+label{display:block;font-weight:650;margin:0 0 7px}input[type=text],input[type=password],input[type=url]{width:100%;border:1px solid #cbd7ce;border-radius:9px;padding:12px 13px;font:inherit;margin-bottom:16px;background:#fff;color:var(--ink)}
+input[type=file]{width:100%;padding:12px;border:1px dashed #9db1a2;border-radius:10px;background:#f9fbf9;margin-bottom:14px}
+button{border:0;border-radius:9px;background:var(--green);color:white;font:650 15px inherit;padding:12px 18px;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
+.note{font-size:13px;color:var(--muted)}.warning{background:#fff8e9;border:1px solid #f0d9a7;color:#6c4c13;border-radius:10px;padding:12px 14px;font-size:13px;margin:14px 0}
+.status{white-space:pre-wrap;overflow-wrap:anywhere;background:#f3f7f4;border-radius:10px;padding:13px;min-height:48px;margin-top:14px;font:13px/1.5 ui-monospace,monospace}
+.preview{max-height:250px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:12px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}th{background:#f2f6f2;position:sticky;top:0}
+.hidden{display:none}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:600px){.row{grid-template-columns:1fr}.panel{padding:17px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><div class="mark">Z</div><div><strong>ZORVENA</strong><small>Market Intelligence · Secure data import</small></div></div>
+  <h1>Import AGMARKNET price history</h1>
+  <p class="intro">Load the official government CSV into your ZORVENA historical market database. Records are checked and exact duplicates are skipped.</p>
+
+  <div class="warning"><strong>Private admin page.</strong> Use only your own Worker URL and secret. The secret is entered in this browser session and is not saved in this page or GitHub.</div>
+
+  <section class="panel">
+    <label for="workerUrl">Your Market API Worker URL</label>
+    <input id="workerUrl" type="url" placeholder="https://your-market-worker.your-account.workers.dev">
+    <label for="token">Private import token</label>
+    <input id="token" type="password" autocomplete="off" placeholder="Paste the Cloudflare IMPORT_TOKEN secret">
+    <label for="csvFile">Government AGMARKNET CSV file</label>
+    <input id="csvFile" type="file" accept=".csv,text/csv">
+    <p class="note">The file is processed in your browser and sent to your Worker in batches of 50 records. It is not uploaded to GitHub.</p>
+    <button id="previewBtn" type="button">Read and preview CSV</button>
+  </section>
+
+  <section id="previewPanel" class="panel hidden">
+    <h2 style="font-size:19px;margin:0 0 6px">Import preview</h2>
+    <p id="previewSummary" class="note"></p>
+    <div id="previewTable" class="preview"></div>
+    <p id="invalidSummary" class="note"></p>
+    <button id="importBtn" type="button">Import valid records</button>
+    <div id="status" class="status">Waiting to import.</div>
+  </section>
+</main>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  let parsedRecords = [];
+  let invalidRows = [];
+  const normalizeHeader = value => String(value || "").replace(/^\uFEFF/,"").replace(/_x0020_/gi," ").replace(/[^a-z0-9]/gi,"").toLowerCase();
+
+  function detectDelimiter(line){
+    const candidates = [",","\t",";"];
+    let best = ",", bestCount = -1;
+    for(const delimiter of candidates){
+      let count = 0, quoted = false;
+      for(let i=0;i<line.length;i++){
+        if(line[i] === '"'){
+          if(quoted && line[i+1] === '"'){i++;continue;}
+          quoted = !quoted;
+        }else if(line[i] === delimiter && !quoted){count++;}
+      }
+      if(count > bestCount){bestCount=count;best=delimiter;}
+    }
+    return best;
+  }
+
+  function parseDelimited(text, delimiter){
+    const rows=[];let row=[],field="",quoted=false;
+    for(let i=0;i<text.length;i++){
+      const ch=text[i];
+      if(ch === '"'){
+        if(quoted && text[i+1] === '"'){field+='"';i++;}
+        else quoted=!quoted;
+      }else if(ch === delimiter && !quoted){
+        row.push(field);field="";
+      }else if((ch === "\n" || ch === "\r") && !quoted){
+        if(ch === "\r" && text[i+1] === "\n") i++;
+        row.push(field);field="";
+        if(row.some(cell => String(cell).trim() !== "")) rows.push(row);
+        row=[];
+      }else field+=ch;
+    }
+    row.push(field);
+    if(row.some(cell => String(cell).trim() !== "")) rows.push(row);
+    return rows;
+  }
+
+  function valueFor(row, indexMap, names){
+    for(const name of names){
+      const index=indexMap.get(normalizeHeader(name));
+      if(index !== undefined) return String(row[index] ?? "").trim();
+    }
+    return "";
+  }
+
+  function numberValue(value){
+    if(value === "") return null;
+    const n=Number(value.replace(/,/g,""));
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  }
+
+  function validDate(value){
+    const m=value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if(!m) return false;
+    const d=new Date(Date.UTC(Number(m[3]),Number(m[2])-1,Number(m[1])));
+    return d.getUTCFullYear()===Number(m[3]) && d.getUTCMonth()===Number(m[2])-1 && d.getUTCDate()===Number(m[1]);
+  }
+
+  function esc(value){
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+  }
+
+  $("previewBtn").addEventListener("click", async function(){
+    const file=$("csvFile").files[0];
+    if(!file){alert("Please choose your downloaded CSV file first.");return;}
+    if(file.size > 25*1024*1024){alert("This first importer version supports files up to 25 MB. Please do not split or edit the original file; tell us if yours is larger.");return;}
+    $("previewBtn").disabled=true;
+    try{
+      const text=await file.text();
+      const firstLine=text.replace(/^\uFEFF/,"").split(/\r?\n/).find(line=>line.trim()) || "";
+      const delimiter=detectDelimiter(firstLine);
+      const rows=parseDelimited(text,delimiter);
+      if(rows.length<2) throw new Error("The file has no data rows.");
+      const headers=rows[0].map(normalizeHeader);
+      const map=new Map(headers.map((h,i)=>[h,i]));
+      const required=["state","district","market","commodity","arrivaldate","minprice","maxprice","modalprice"];
+      const missing=required.filter(name=>!map.has(name));
+      if(missing.length) throw new Error("Missing expected CSV columns: "+missing.join(", ")+". Please check that this is the original AGMARKNET file.");
+
+      parsedRecords=[];invalidRows=[];
+      for(let i=1;i<rows.length;i++){
+        const row=rows[i];
+        const record={
+          state:valueFor(row,map,["State"]),
+          district:valueFor(row,map,["District"]),
+          market:valueFor(row,map,["Market"]),
+          commodity:valueFor(row,map,["Commodity"]),
+          variety:valueFor(row,map,["Variety"]),
+          grade:valueFor(row,map,["Grade"]),
+          arrival_date:valueFor(row,map,["Arrival_Date"]),
+          min_price:numberValue(valueFor(row,map,["Min Price"])),
+          max_price:numberValue(valueFor(row,map,["Max Price"])),
+          modal_price:numberValue(valueFor(row,map,["Modal Price"]))
+        };
+        const problems=[];
+        ["state","district","market","commodity"].forEach(k=>{if(!record[k])problems.push(k+" missing");});
+        if(!validDate(record.arrival_date))problems.push("date must be DD-MM-YYYY");
+        ["min_price","max_price","modal_price"].forEach(k=>{if(record[k]===null)problems.push(k+" invalid");});
+        if(record.min_price!==null && record.max_price!==null && record.min_price>record.max_price)problems.push("min price greater than max price");
+        if(problems.length) invalidRows.push({line:i+1,problems:problems});
+        else parsedRecords.push(record);
+      }
+
+      $("previewSummary").textContent="Rows read: "+(rows.length-1)+" · Valid records: "+parsedRecords.length+" · Rows needing review: "+invalidRows.length+" · Delimiter: "+(delimiter==="\t"?"tab":delimiter);
+      $("invalidSummary").textContent=invalidRows.length ? "First validation issues: "+invalidRows.slice(0,8).map(x=>"line "+x.line+": "+x.problems.join(", ")).join(" | ") : "All rows passed the initial format checks.";
+      const sample=parsedRecords.slice(0,5);
+      $("previewTable").innerHTML=sample.length ? "<table><thead><tr><th>State</th><th>Market</th><th>Commodity</th><th>Date</th><th>Modal price</th></tr></thead><tbody>"+sample.map(r=>"<tr><td>"+esc(r.state)+"</td><td>"+esc(r.market)+"</td><td>"+esc(r.commodity)+"</td><td>"+esc(r.arrival_date)+"</td><td>"+esc(r.modal_price)+"</td></tr>").join("")+"</tbody></table>" : "<p style='padding:12px'>No valid records to preview.</p>";
+      $("previewPanel").classList.remove("hidden");
+      $("importBtn").disabled=parsedRecords.length===0;
+      $("status").textContent="Preview ready. No data has been sent yet.";
+    }catch(error){
+      alert(error.message || "Could not read this file.");
+    }finally{$("previewBtn").disabled=false;}
+  });
+
+  $("importBtn").addEventListener("click", async function(){
+    const workerUrl=$("workerUrl").value.trim().replace(/\/+$/,"");
+    const token=$("token").value.trim();
+    if(!/^https:\/\/[a-z0-9.-]+\.workers\.dev$/i.test(workerUrl)){alert("Enter your exact HTTPS workers.dev URL from the Cloudflare Worker Overview page.");return;}
+    if(token.length<20){alert("Enter the private import token saved in Cloudflare as IMPORT_TOKEN.");return;}
+    if(!parsedRecords.length){alert("There are no valid records to import.");return;}
+    if(!confirm("Import "+parsedRecords.length+" valid AGMARKNET records into ZORVENA? Exact duplicates will be skipped."))return;
+
+    $("importBtn").disabled=true;
+    const status=$("status");
+    let inserted=0,skipped=0,completed=0;
+    const total=Math.ceil(parsedRecords.length/50);
+    try{
+      for(let offset=0;offset<parsedRecords.length;offset+=50){
+        const batch=parsedRecords.slice(offset,offset+50);
+        const response=await fetch(workerUrl+"/admin/import/agmarknet",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
+          body:JSON.stringify({records:batch})
+        });
+        const result=await response.json().catch(()=>({error:"Worker returned a non-JSON response"}));
+        if(!response.ok) throw new Error("Batch "+(completed+1)+" failed ("+response.status+"): "+(result.error||JSON.stringify(result)));
+        inserted+=Number(result.inserted||0);
+        skipped+=Number(result.skipped||0);
+        completed++;
+        status.textContent="Batches completed: "+completed+" / "+total+"\nRecords inserted: "+inserted+"\nRecords skipped or invalid: "+skipped;
+      }
+      status.textContent+="\n\nImport finished. Check the API health and price endpoints before importing again.";
+      $("token").value="";
+    }catch(error){
+      status.textContent+="\n\nStopped: "+(error.message||String(error))+"\nYou can retry the same file. Exact duplicates are skipped.";
+    }finally{$("importBtn").disabled=false;}
+  });
+})();
+</script>
+</body>
+</html>
