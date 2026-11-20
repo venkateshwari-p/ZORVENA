@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#073d22">
+<meta name="description" content="Explore ZORVENA's agricultural wholesale market observations from AGMARKNET.">
+<title>ZORVENA | Market Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--forest:#073d25;--green:#167345;--gold:#c9a64f;--ink:#193629;--muted:#65776c;--paper:#f5f8f3;--line:#e0e9df;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 "DM Sans",sans-serif}a{color:inherit;text-decoration:none}
+.wrap{width:min(1180px,calc(100% - 36px));margin:auto}
+header{background:linear-gradient(115deg,#032b19,#0a5631);color:#fff;padding:17px 0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:18px}.brand{font:800 1.08rem Manrope,sans-serif;letter-spacing:.13em}.brand span{display:block;font:500 .72rem "DM Sans",sans-serif;letter-spacing:.04em;color:#cfe2d2}.nav{display:flex;gap:22px;font-size:.9rem;color:#e4f0e6}.nav a:hover{color:#d7ed91}
+.hero{padding:46px 0 30px}.eyebrow{color:var(--green);font-weight:800;letter-spacing:.15em;text-transform:uppercase;font-size:.72rem}.hero h1{font:800 clamp(2rem,5vw,3.3rem)/1.1 Manrope,sans-serif;letter-spacing:-.04em;color:var(--forest);margin:9px 0}.hero p{color:var(--muted);max-width:760px;margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0}.stat,.panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 24px #153c2410}.stat{padding:18px 20px}.stat small{display:block;color:var(--muted);font-size:.8rem}.stat strong{display:block;font:800 1.65rem Manrope,sans-serif;color:var(--forest);margin-top:5px}
+.panel{padding:20px;margin:16px 0}.panel h2{font:700 1.05rem Manrope,sans-serif;color:var(--forest);margin:0 0 14px}
+.filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field label{display:block;font-size:.78rem;font-weight:700;color:#52665a;margin-bottom:5px}.field input,.field select{width:100%;border:1px solid #cad8cc;border-radius:9px;background:#fff;padding:10px 11px;color:var(--ink);font:inherit;min-width:0}
+.actions{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}button{border:0;border-radius:9px;background:var(--forest);color:#fff;padding:11px 17px;font:700 .9rem "DM Sans",sans-serif;cursor:pointer}button.secondary{background:#e9f1e8;color:var(--forest);border:1px solid var(--line)}button:disabled{opacity:.45;cursor:not-allowed}
+.meta{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:.85rem;margin-bottom:12px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:11px}table{width:100%;border-collapse:collapse;min-width:850px;background:#fff;font-size:.86rem}th,td{padding:11px 12px;border-bottom:1px solid #edf1ec;text-align:left;white-space:nowrap}th{background:#f0f5ef;color:#4d6255;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}td.price{font-variant-numeric:tabular-nums;font-weight:700}tbody tr:hover{background:#f8fbf7}.pagination{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px}.notice{padding:12px 14px;background:#f7f4e9;border:1px solid #e9dfbd;border-radius:10px;color:#6c5928;font-size:.82rem;margin-top:14px}.status{color:var(--muted);font-size:.88rem;padding:18px 4px}.error{color:#9b3428}
+footer{padding:25px 0;margin-top:35px;background:#032718;color:#d5e4d8;font-size:.82rem}.foot{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+@media(max-width:800px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:1fr 1fr}.top{align-items:flex-start;flex-direction:column}.nav{flex-wrap:wrap;gap:14px}}
+@media(max-width:500px){.filters{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.hero{padding-top:32px}.panel{padding:15px}.pagination{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div class="wrap top"><a class="brand" href="../index.html">ZORVENA<span>MARKET INTELLIGENCE</span></a><nav class="nav"><a href="../index.html">Home</a><a href="../agriai.html">AgriAI</a><a href="import.html">Data Import</a></nav></div></header>
+<main class="wrap">
+<section class="hero"><div class="eyebrow">Agricultural market data</div><h1>Market Intelligence</h1><p>Explore wholesale market observations by commodity, state, district and date. Data is attributed to its original source and shown in the unit supplied by the source.</p></section>
+<section class="stats" aria-label="Market data summary">
+<div class="stat"><small>Stored observations</small><strong id="totalStat">—</strong></div>
+<div class="stat"><small>Latest observation date</small><strong id="latestStat">—</strong></div>
+<div class="stat"><small>Data source</small><strong style="font-size:1.08rem">AGMARKNET</strong></div>
+</section>
+<section class="panel">
+<h2>Filter market observations</h2>
+<div class="filters">
+<div class="field"><label for="state">State</label><input id="state" list="states" placeholder="e.g. Tamil Nadu"><datalist id="states"></datalist></div>
+<div class="field"><label for="district">District</label><input id="district" placeholder="e.g. Coimbatore"></div>
+<div class="field"><label for="commodity">Commodity</label><select id="commodity"><option value="">All commodities</option></select></div>
+<div class="field"><label for="market">Market name</label><input id="market" placeholder="Search exact market name"></div>
+<div class="field"><label for="from">From date</label><input id="from" type="date"></div>
+<div class="field"><label for="to">To date</label><input id="to" type="date"></div>
+<div class="field"><label for="priceType">Price type</label><select id="priceType"><option value="wholesale">Wholesale</option><option value="">All types</option></select></div>
+</div>
+<div class="actions"><button id="apply">Apply filters</button><button id="reset" class="secondary">Reset</button><span id="filterStatus" class="note"></span></div>
+</section>
+<section class="panel">
+<div class="meta"><div id="resultCount">Loading market records…</div><div>Prices shown in ₹ per quintal unless noted</div></div>
+<div class="table-wrap"><table><thead><tr><th>Observation date</th><th>State</th><th>District</th><th>Market</th><th>Commodity</th><th>Variety / grade</th><th>Min price</th><th>Max price</th><th>Modal price</th></tr></thead><tbody id="priceRows"><tr><td colspan="9" class="status">Connecting to ZORVENA Market API…</td></tr></tbody></table></div>
+<div class="pagination"><span id="pageInfo">—</span><div class="actions" style="margin:0"><button id="previous" class="secondary" disabled>Previous</button><button id="next" disabled>Next</button></div></div>
+<div class="notice">Source: Government of India Open Government Data / AGMARKNET. These are source-reported wholesale observations, not live quotes. Reporting dates vary by dataset. Confirm local unit conventions before comparing commodities; some commodity-specific conversions may apply.</div>
+</section>
+</main>
+<footer><div class="wrap foot"><span>© <span id="year"></span> ZORVENA · Market Intelligence</span><span><a href="https://www.data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi" target="_blank" rel="noopener">Original data source</a></span></div></footer>
+<script>
+(function(){
+const API="https://zorvena-market-api.sridharanpv123.workers.dev";
+const $=id=>document.getElementById(id);let offset=0,limit=50,total=0,latestDate="",loading=false;
+const money=n=>n===null||n===undefined?"—":"₹"+Number(n).toLocaleString("en-IN");
+const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const date=s=>s?new Date(s+"T00:00:00Z").toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):"—";
+async function loadLists(){
+ try{
+  const [commodities,prices]=await Promise.all([fetch(API+"/api/commodities"),fetch(API+"/api/prices?limit=100")]);
+  if(commodities.ok){const j=await commodities.json();$("commodity").innerHTML='<option value="">All commodities</option>'+(j.data||[]).map(c=>'<option value="'+safe(c.commodity_key)+'">'+safe(c.canonical_name)+'</option>').join("");}
+  if(prices.ok){const j=await prices.json();const states=[...new Set((j.data||[]).map(r=>r.admin1).filter(Boolean))].sort();$("states").innerHTML=states.map(s=>'<option value="'+safe(s)+'">').join("");}
+ }catch(e){}
+}
+function query(){
+ const p=new URLSearchParams({limit:String(limit),offset:String(offset)});
+ const state=$("state").value.trim(),district=$("district").value.trim(),commodity=$("commodity").value,market=$("market").value.trim(),from=$("from").value,to=$("to").value,type=$("priceType").value;
+ if(state)p.set("state",state);if(district)p.set("district",district);if(commodity)p.set("commodity",commodity);if(market)p.set("market",market);if(from)p.set("from",from);if(to)p.set("to",to);if(type)p.set("type",type);
+ return p;
+}
+async function loadPrices(){
+ if(loading)return;loading=true;$("apply").disabled=true;$("priceRows").innerHTML='<tr><td colspan="9" class="status">Loading market observations…</td></tr>';
+ try{
+  const response=await fetch(API+"/api/prices?"+query().toString());const payload=await response.json();
+  if(!response.ok)throw new Error(payload.error||"Could not load prices");
+  const rows=payload.data||[];total=payload.pagination?.total||0;
+  $("totalStat").textContent=Number(total).toLocaleString("en-IN");$("resultCount").textContent=Number(total).toLocaleString("en-IN")+" matching observations";
+  if(rows.length){$("priceRows").innerHTML=rows.map(r=>'<tr><td>'+date(r.observed_on)+'</td><td>'+safe(r.admin1)+'</td><td>'+safe(r.admin2)+'</td><td>'+safe(r.market_name)+'</td><td><strong>'+safe(r.commodity_name_raw)+'</strong></td><td>'+safe([r.variety,r.grade].filter(Boolean).join(" · "))+'</td><td class="price">'+money(r.min_price)+'</td><td class="price">'+money(r.max_price)+'</td><td class="price">'+money(r.modal_price)+'</td></tr>').join("");}
+  else $("priceRows").innerHTML='<tr><td colspan="9" class="status">No observations match these filters.</td></tr>';
+  const maxPage=Math.max(1,Math.ceil(total/limit));$("pageInfo").textContent="Page "+(Math.floor(offset/limit)+1)+" of "+maxPage;$("previous").disabled=offset===0;$("next").disabled=offset+limit>=total;
+  if(!latestDate&&rows.length){latestDate=rows.reduce((a,r)=>r.observed_on>a?r.observed_on:a,rows[0].observed_on);$("latestStat").textContent=date(latestDate);}
+  $("filterStatus").textContent="Updated just now";
+ }catch(e){$("priceRows").innerHTML='<tr><td colspan="9" class="status error">'+safe(e.message||"API connection failed")+'</td></tr>';$("resultCount").textContent="Unable to load records";$("filterStatus").textContent="Check API connection";}
+ finally{loading=false;$("apply").disabled=false;}
+}
+$("apply").addEventListener("click",()=>{offset=0;loadPrices()});
+$("reset").addEventListener("click",()=>{$("state").value="";$("district").value="";$("commodity").value="";$("market").value="";$("from").value="";$("to").value="";$("priceType").value="wholesale";offset=0;loadPrices()});
+$("previous").addEventListener("click",()=>{offset=Math.max(0,offset-limit);loadPrices()});
+$("next").addEventListener("click",()=>{if(offset+limit<total){offset+=limit;loadPrices()}});
+$("year").textContent=new Date().getFullYear();loadLists().finally(loadPrices);
+})();
+</script>
+</body></html>
