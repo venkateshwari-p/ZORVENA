@@ -105,11 +105,29 @@ button{border:0;border-radius:9px;background:var(--green);color:white;font:650 1
     return Number.isFinite(n) && n >= 0 ? n : null;
   }
 
-  function validDate(value){
-    const m=value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-    if(!m) return false;
-    const d=new Date(Date.UTC(Number(m[3]),Number(m[2])-1,Number(m[1])));
-    return d.getUTCFullYear()===Number(m[3]) && d.getUTCMonth()===Number(m[2])-1 && d.getUTCDate()===Number(m[1]);
+  function normalizeDate(value){
+    let input=String(value ?? "").replace(/^\\uFEFF/,"").trim();
+    input=input.replace(/[\\u00A0\\u2007\\u202F]/g," ").replace(/[\\u2010-\\u2015\\u2212]/g,"-").replace(/^["']|["']$/g,"").trim();
+    let day,month,year,match;
+    if(/^\\d+(?:\\.0+)?$/.test(input)){
+      const serial=Number(input);
+      if(serial>=1 && serial<=100000){
+        const date=new Date(Date.UTC(1899,11,30)+Math.round(serial)*86400000);
+        day=date.getUTCDate();month=date.getUTCMonth()+1;year=date.getUTCFullYear();
+      }
+    }
+    if(!year){
+      match=input.match(/^(\\d{1,2})[-/](\\d{1,2})[-/](\\d{4})$/);
+      if(match){day=Number(match[1]);month=Number(match[2]);year=Number(match[3]);}
+    }
+    if(!year){
+      match=input.match(/^(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})$/);
+      if(match){year=Number(match[1]);month=Number(match[2]);day=Number(match[3]);}
+    }
+    if(!year) return null;
+    const date=new Date(Date.UTC(year,month-1,day));
+    if(date.getUTCFullYear()!==year || date.getUTCMonth()!==month-1 || date.getUTCDate()!==day) return null;
+    return String(day).padStart(2,"0")+"-"+String(month).padStart(2,"0")+"-"+String(year);
   }
 
   function esc(value){
@@ -143,7 +161,7 @@ button{border:0;border-radius:9px;background:var(--green);color:white;font:650 1
           commodity:valueFor(row,map,["Commodity"]),
           variety:valueFor(row,map,["Variety"]),
           grade:valueFor(row,map,["Grade"]),
-          arrival_date:valueFor(row,map,["Arrival_Date"]),
+          arrival_date:normalizeDate(valueFor(row,map,["Arrival_Date"])) || valueFor(row,map,["Arrival_Date"]),
           min_price:numberValue(valueFor(row,map,["Min Price"])),
           max_price:numberValue(valueFor(row,map,["Max Price"])),
           modal_price:numberValue(valueFor(row,map,["Modal Price"]))
