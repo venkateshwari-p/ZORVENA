@@ -34,7 +34,7 @@ button{border:0;border-radius:9px;background:var(--green);color:white;font:650 1
     <input id="token" type="password" autocomplete="off" placeholder="Paste the Cloudflare IMPORT_TOKEN secret">
     <label for="csvFile">Government AGMARKNET CSV file</label>
     <input id="csvFile" type="file" accept=".csv,text/csv">
-    <p class="note">The file is processed in your browser and sent to your Worker in batches of 50 records. It is not uploaded to GitHub.</p>
+    <p class="note">The file is processed in your browser and sent to your Worker in smaller batches of 20 records. It is not uploaded to GitHub.</p>
     <button id="previewBtn" type="button">Read and preview CSV</button>
   </section>
 
@@ -202,10 +202,10 @@ button{border:0;border-radius:9px;background:var(--green);color:white;font:650 1
     $("importBtn").disabled=true;
     const status=$("status");
     let inserted=0,skipped=0,completed=0;
-    const total=Math.ceil(parsedRecords.length/50);
+    const total=Math.ceil(parsedRecords.length/20);
     try{
-      for(let offset=0;offset<parsedRecords.length;offset+=50){
-        const batch=parsedRecords.slice(offset,offset+50);
+      for(let offset=0;offset<parsedRecords.length;offset+=20){
+        const batch=parsedRecords.slice(offset,offset+20);
         const response=await fetch(workerUrl+"/admin/import/agmarknet",{
           method:"POST",
           headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
