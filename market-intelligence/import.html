@@ -130,6 +130,10 @@ button{border:0;border-radius:9px;background:var(--green);color:white;font:650 1
     return String(day).padStart(2,"0")+"-"+String(month).padStart(2,"0")+"-"+String(year);
   }
 
+  function validDate(value){
+    return normalizeDate(value) !== null;
+  }
+
   function esc(value){
     return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
   }
