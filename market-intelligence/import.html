@@ -106,10 +106,10 @@ button{border:0;border-radius:9px;background:var(--green);color:white;font:650 1
   }
 
   function normalizeDate(value){
-    let input=String(value ?? "").replace(/^\\uFEFF/,"").trim();
-    input=input.replace(/[\\u00A0\\u2007\\u202F]/g," ").replace(/[\\u2010-\\u2015\\u2212]/g,"-").replace(/^["']|["']$/g,"").trim();
+    let input=String(value ?? "").replace(/^\uFEFF/,"").trim();
+    input=input.replace(/[\u00A0\u2007\u202F]/g," ").replace(/[\u2010-\u2015\u2212]/g,"-").replace(/^["']|["']$/g,"").trim();
     let day,month,year,match;
-    if(/^\\d+(?:\\.0+)?$/.test(input)){
+    if(/^\d+(?:\.0+)?$/.test(input)){
       const serial=Number(input);
       if(serial>=1 && serial<=100000){
         const date=new Date(Date.UTC(1899,11,30)+Math.round(serial)*86400000);
@@ -117,11 +117,11 @@ button{border:0;border-radius:9px;background:var(--green);color:white;font:650 1
       }
     }
     if(!year){
-      match=input.match(/^(\\d{1,2})[-/](\\d{1,2})[-/](\\d{4})$/);
+      match=input.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
       if(match){day=Number(match[1]);month=Number(match[2]);year=Number(match[3]);}
     }
     if(!year){
-      match=input.match(/^(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})$/);
+      match=input.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
       if(match){year=Number(match[1]);month=Number(match[2]);day=Number(match[3]);}
     }
     if(!year) return null;
