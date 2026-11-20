@@ -59,7 +59,7 @@ Before enabling an automated adapter, verify endpoint access, terms of use, attr
 - Health, sources, commodities and prices endpoints were tested by the project owner.
 - Three source records are registered and remain disabled for scheduled collection.
 - The AGMARKNET CSV schema and three sample rows were inspected.
-- The secure batch importer is being prepared; it has not yet been deployed or tested.
+- The browser-based secure batch importer is committed to the site; its date parser accepts common text and Excel date formats. The latest Pages deployment needs a successful run before this update is live.
 - No market price observations have been imported yet.
 - No scheduled collector or original-report workflow is active.
 - Do not claim that live or historical data is available until records are actually imported and verified.
