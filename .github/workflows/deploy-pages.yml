@@ -10,6 +10,7 @@ on:
       - 'styles.css'
       - 'sitemap.xml'
       - 'robots.txt'
+      - 'market-intelligence/**'
       - 'assets/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
