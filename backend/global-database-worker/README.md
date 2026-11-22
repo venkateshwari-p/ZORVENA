@@ -27,14 +27,16 @@ Do not grant Owner, Editor, or project-wide BigQuery Data Editor. Do not enable 
 
 Google recommends Application Default Credentials for workloads on Google Cloud and Workload Identity Federation for supported external workloads. This Cloudflare Worker implementation uses a service-account key stored only as a Cloudflare Worker secret, following Cloudflare's BigQuery integration pattern. A key is sensitive: restrict its IAM roles, rotate it if exposed, and never paste it into chat or GitHub.
 
-## Deploy through Cloudflare dashboard
+## Deploy through Cloudflare Git integration
 
-1. Open **Workers & Pages**.
-2. Create a Worker named `zorvena-global-database-api`.
-3. Replace its editor code with `src/index.js` from this folder, or deploy this folder with Wrangler.
-4. Add the two secrets above under **Settings → Variables and Secrets**.
-5. Confirm the text variables from `wrangler.toml`.
-6. Deploy and copy the Worker URL ending in `.workers.dev`.
+The repository's Worker source is in `backend/global-database-worker`. In Cloudflare **Workers & Pages → zorvena-global-database-api → Settings → Builds**, connect this repository and use:
+
+- Production branch: `main`
+- Root directory: `backend/global-database-worker`
+- Build command: `npm install`
+- Deploy command: `npx wrangler deploy`
+
+A commit pushed to the connected production branch should trigger a build and deployment. Check **Deployments** for the latest build result. Do not use the Quick Edit / Hello World editor as the source of truth when Git integration is enabled.
 
 For local CLI deployment, from this directory:
 ```bash
@@ -45,7 +47,14 @@ npx wrangler secret put GOOGLE_SERVICE_ACCOUNT_JSON
 npx wrangler deploy
 ```
 
-When prompted for `GOOGLE_SERVICE_ACCOUNT_JSON`, paste the complete JSON file contents into the terminal prompt. Do not add the JSON file to this repository.
+## Required Cloudflare secrets
+
+Add these under **Settings → Variables and Secrets** after the correct Git-connected Worker code is deployed:
+
+- `ADMIN_API_TOKEN`
+- `GOOGLE_SERVICE_ACCOUNT_JSON`
+
+When prompted for `GOOGLE_SERVICE_ACCOUNT_JSON`, paste the complete JSON file contents into the Cloudflare secret input. Do not add the JSON file to this repository or paste it into chat.
 
 ## API authentication
 
