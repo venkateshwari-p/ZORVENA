@@ -135,6 +135,7 @@ async function runQuery(env, sql, parameters = []) {
 }
 
 function intParam(value, fallback, max) {
+  if (value === null || value === undefined || value === "") return fallback;
   const number = Number(value);
   if (!Number.isInteger(number) || number < 0) return fallback;
   return Math.min(number, max);
