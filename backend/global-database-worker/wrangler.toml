@@ -1,0 +1,8 @@
+name = "zorvena-global-database-api"
+main = "src/index.js"
+compatibility_date = "2026-11-18"
+
+[vars]
+PROJECT_ID = "zorvena-market-intelligence"
+DATASET_ID = "zorvena_market_db"
+ALLOWED_ORIGIN = "https://venkateshwari-p.github.io"
