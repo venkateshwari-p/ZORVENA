@@ -156,7 +156,7 @@ function table(env, name) {
 async function handleApi(request, env, url) {
   if (url.pathname === "/health") {
     const rows = await runQuery(env, "SELECT 1 AS connected");
-    return { service: "ZORVENA Global Database API", status: rows[0]?.connected === 1 ? "ready" : "error", database: env.DATASET_ID, mode: "read-only" };
+    return { service: "ZORVENA Global Database API", status: Number(rows[0]?.connected) === 1 ? "ready" : "error", database: env.DATASET_ID, mode: "read-only" };
   }
 
   if (url.pathname === "/api/overview") {
