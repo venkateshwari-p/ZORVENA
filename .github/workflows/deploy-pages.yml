@@ -11,6 +11,7 @@ on:
       - 'sitemap.xml'
       - 'robots.txt'
       - 'market-intelligence/**'
+      - 'global-database/**'
       - 'assets/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
