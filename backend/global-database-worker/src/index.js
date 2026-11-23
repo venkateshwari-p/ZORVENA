@@ -220,16 +220,19 @@ async function handleApi(request, env, url) {
     addExactFilter(params, where, url.searchParams, "company_id", "company_id");
     addExactFilter(params, where, url.searchParams, "country", "country");
     addExactFilter(params, where, url.searchParams, "department", "department");
+    addExactFilter(params, where, url.searchParams, "decision_role", "decision_role");
     addExactFilter(params, where, url.searchParams, "verification_status", "verification_status");
+    addExactFilter(params, where, url.searchParams, "outreach_permission_status", "outreach_permission_status");
 
     const limit = intParam(url.searchParams.get("limit"), 50, 100);
     const offset = intParam(url.searchParams.get("offset"), 0, 10000);
     const whereSql = where.length ? " WHERE " + where.join(" AND ") : "";
-    const sql = `SELECT person_id, company_id, full_name, job_title, department, country,
-      linkedin_profile, business_email, business_phone, contact_location, decision_role,
-      purchasing_responsibility, product_interest, verification_status, outreach_permission_status
-      FROM ${table(env, "global_people")}${whereSql}
-      ORDER BY full_name LIMIT ${limit} OFFSET ${offset}`;
+    const sql = `SELECT p.person_id, p.company_id, c.company_name, p.full_name, p.job_title, p.department, p.country,
+      p.linkedin_profile, p.business_email, p.business_phone, p.contact_location, p.decision_role,
+      p.purchasing_responsibility, p.product_interest, p.verification_status, p.outreach_permission_status
+      FROM ${table(env, "global_people")} p
+      LEFT JOIN ${table(env, "global_companies")} c ON p.company_id = c.company_id${whereSql.replace(/\\b(company_id|country|department|decision_role|verification_status|outreach_permission_status)\\b/g, "p.$1")}
+      ORDER BY p.full_name LIMIT ${limit} OFFSET ${offset}`;
     const countSql = `SELECT COUNT(*) AS total FROM ${table(env, "global_people")}${whereSql}`;
     const [data, count] = await Promise.all([runQuery(env, sql, params), runQuery(env, countSql, params)]);
     return { data, pagination: { total: Number(count[0]?.total || 0), limit, offset } };
