@@ -139,7 +139,8 @@
           <div class="panel-head"><h2>Local CSV preview</h2><small>CSV only · stays in your browser</small></div>
           <div class="dropzone"><div class="upload-icon">⇧</div><h3>Select a company or people CSV</h3><p>Choose a file to inspect its headers and first rows locally.</p><input id="csvFile" type="file" accept=".csv,text/csv" aria-label="Choose CSV file"></div>
           <div class="preview" id="preview"><div class="panel-head"><h2 id="previewTitle">File preview</h2><span class="tag">Local only</span></div><pre id="previewText"></pre></div>
-          <div class="warning-text">Preview is not an import. Database upload will be enabled only after API authentication, validation and duplicate-handling are implemented.</div>
+          <div class="panel" id="csvValidation" style="display:none;margin-top:14px"><div class="panel-head"><h2>CSV validation report</h2><span class="tag" id="csvValidationStatus">Not checked</span></div><div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><article class="stat"><div class="stat-top">Rows checked</div><strong id="csvRowsChecked">0</strong></article><article class="stat"><div class="stat-top">Valid rows</div><strong id="csvRowsValid">0</strong></article><article class="stat"><div class="stat-top">Rows with issues</div><strong id="csvRowsInvalid">0</strong></article></div><div id="csvValidationDetails" class="warning-text"></div></div>
+          <div class="warning-text">Validation runs locally in your browser. It does not upload files or write to BigQuery. Database import remains disabled until server-side validation, duplicate checks and write permissions are implemented.</div>
         </div>
         <div class="panel"><div class="panel-head"><h2>Download CSV templates</h2><small>Match existing BigQuery schema</small></div><div class="template-list">
           <div class="template"><div><b>Company directory</b><small>global_companies import headers</small></div><button data-template="companies">Download</button></div>
@@ -180,7 +181,49 @@ const templates={
  sources:["company_source_id","company_id","source_type","source_url","evidence_summary","source_reliability","verification_status","checked_at","created_at"]
 };
 document.querySelectorAll("[data-template]").forEach(btn=>btn.addEventListener("click",()=>{const type=btn.dataset.template;const csv=templates[type].join(",")+"\r\n";const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="zorvena_"+type+"_import_template.csv";a.click();URL.revokeObjectURL(url);}));
-document.getElementById("csvFile").addEventListener("change",event=>{const file=event.target.files&&event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const text=String(reader.result||"");const lines=text.split(/\r?\n/).filter(Boolean);document.getElementById("previewTitle").textContent=file.name+" · "+Math.max(0,lines.length-1)+" data rows";document.getElementById("previewText").textContent=lines.slice(0,11).join("\n")+(lines.length>11?"\n… preview limited to first 10 data rows":"");document.getElementById("preview").classList.add("show");};reader.readAsText(file);});
+function parseCsvRows(input){
+ const rows=[];let row=[],cell="",quoted=false;
+ for(let i=0;i<input.length;i++){const ch=input[i],next=input[i+1];
+  if(quoted){if(ch==='"'&&next==='"'){cell+='"';i++;}else if(ch==='"'){quoted=false;}else cell+=ch;}
+  else if(ch==='"'){quoted=true;}else if(ch===","){row.push(cell);cell="";}else if(ch==="\\n"){row.push(cell.replace(/\\r$/,""));if(row.some(v=>v.trim()!==""))rows.push(row);row=[];cell="";}else cell+=ch;
+ }
+ row.push(cell.replace(/\\r$/,""));if(row.some(v=>v.trim()!==""))rows.push(row);return rows;
+}
+function validateCsv(input){
+ const rows=parseCsvRows(input);if(!rows.length)return {total:0,valid:0,invalid:0,issues:["The CSV file is empty."]};
+ const headers=rows[0].map(v=>v.trim().replace(/^\\uFEFF/,"").toLowerCase());
+ const kind=Object.keys(templates).find(type=>templates[type].every((field)=>headers.includes(field.toLowerCase())))||null;
+ if(!kind)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["Could not identify a supported template. Download the matching Company, People or Company Sources CSV template and use its exact column headers."]};
+ const required={companies:["company_id","company_name","source_url"],people:["person_id","company_id","full_name"],sources:["company_source_id","company_id","source_type","source_url"]}[kind];
+ const missing=required.filter(field=>!headers.includes(field));
+ if(missing.length)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["Missing required columns: "+missing.join(", ")]};
+ const index=Object.fromEntries(headers.map((name,i)=>[name,i])),seen=new Set(),issues=[],total=rows.length-1;let valid=0,invalid=0;
+ for(let n=1;n<rows.length;n++){
+  const cells=rows[n],get=key=>(cells[index[key]]||"").trim(),rowIssues=[];
+  required.forEach(key=>{if(!get(key))rowIssues.push(key+" is blank");});
+  const id=kind==="companies"?"company_id":kind==="people"?"person_id":"company_source_id";
+  const value=get(id);if(value&&seen.has(value))rowIssues.push("duplicate "+id);if(value)seen.add(value);
+  const url=get("source_url")||get("official_website")||get("linkedin_profile");
+  if(url&& !/^https?:\\/\\//i.test(url))rowIssues.push("URL must start with http:// or https://");
+  if(rowIssues.length){invalid++;if(issues.length<8)issues.push("Row "+(n+1)+": "+rowIssues.join("; "));}else valid++;
+ }
+ return {total,valid,invalid,issues,kind};
+}
+document.getElementById("csvFile").addEventListener("change",event=>{
+ const file=event.target.files&&event.target.files[0];if(!file)return;
+ const reader=new FileReader();reader.onload=()=>{
+  const content=String(reader.result||""),rows=parseCsvRows(content);
+  document.getElementById("previewTitle").textContent=file.name+" · "+Math.max(0,rows.length-1)+" data rows";
+  document.getElementById("previewText").textContent=rows.slice(0,11).map(row=>row.join(" | ")).join("\\n")+(rows.length>11?"\\n… preview limited to first 10 data rows":"");
+  document.getElementById("preview").classList.add("show");
+  const report=validateCsv(content),box=document.getElementById("csvValidation");
+  box.style.display="block";document.getElementById("csvRowsChecked").textContent=report.total.toLocaleString();
+  document.getElementById("csvRowsValid").textContent=report.valid.toLocaleString();document.getElementById("csvRowsInvalid").textContent=report.invalid.toLocaleString();
+  const status=document.getElementById("csvValidationStatus");status.textContent=report.invalid===0&&report.total>0?"No structural issues":"Review required";
+  document.getElementById("csvValidationDetails").textContent=(report.kind?"Detected template: "+report.kind+". ":"")+ (report.issues.length?report.issues.join(" · "):"Required columns and basic row checks passed. This is a preliminary local check only.");
+ };
+ reader.readAsText(file);
+});
 </script>
 
 <script>
