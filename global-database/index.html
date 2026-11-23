@@ -185,13 +185,13 @@ function parseCsvRows(input){
  const rows=[];let row=[],cell="",quoted=false;
  for(let i=0;i<input.length;i++){const ch=input[i],next=input[i+1];
   if(quoted){if(ch==='"'&&next==='"'){cell+='"';i++;}else if(ch==='"'){quoted=false;}else cell+=ch;}
-  else if(ch==='"'){quoted=true;}else if(ch===","){row.push(cell);cell="";}else if(ch==="\\n"){row.push(cell.replace(/\\r$/,""));if(row.some(v=>v.trim()!==""))rows.push(row);row=[];cell="";}else cell+=ch;
+  else if(ch==='"'){quoted=true;}else if(ch===","){row.push(cell);cell="";}else if(ch==="\n"){row.push(cell.replace(/\r$/,""));if(row.some(v=>v.trim()!==""))rows.push(row);row=[];cell="";}else cell+=ch;
  }
- row.push(cell.replace(/\\r$/,""));if(row.some(v=>v.trim()!==""))rows.push(row);return rows;
+ row.push(cell.replace(/\r$/,""));if(row.some(v=>v.trim()!==""))rows.push(row);return rows;
 }
 function validateCsv(input){
  const rows=parseCsvRows(input);if(!rows.length)return {total:0,valid:0,invalid:0,issues:["The CSV file is empty."]};
- const headers=rows[0].map(v=>v.trim().replace(/^\\uFEFF/,"").toLowerCase());
+ const headers=rows[0].map(v=>v.trim().replace(/^\uFEFF/,"").toLowerCase());
  const kind=Object.keys(templates).find(type=>templates[type].every((field)=>headers.includes(field.toLowerCase())))||null;
  if(!kind)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["Could not identify a supported template. Download the matching Company, People or Company Sources CSV template and use its exact column headers."]};
  const required={companies:["company_id","company_name","source_url"],people:["person_id","company_id","full_name"],sources:["company_source_id","company_id","source_type","source_url"]}[kind];
@@ -204,7 +204,7 @@ function validateCsv(input){
   const id=kind==="companies"?"company_id":kind==="people"?"person_id":"company_source_id";
   const value=get(id);if(value&&seen.has(value))rowIssues.push("duplicate "+id);if(value)seen.add(value);
   const url=get("source_url")||get("official_website")||get("linkedin_profile");
-  if(url&& !/^https?:\\/\\//i.test(url))rowIssues.push("URL must start with http:// or https://");
+  if(url&& !/^https?:\/\//i.test(url))rowIssues.push("URL must start with http:// or https://");
   if(rowIssues.length){invalid++;if(issues.length<8)issues.push("Row "+(n+1)+": "+rowIssues.join("; "));}else valid++;
  }
  return {total,valid,invalid,issues,kind};
@@ -214,7 +214,7 @@ document.getElementById("csvFile").addEventListener("change",event=>{
  const reader=new FileReader();reader.onload=()=>{
   const content=String(reader.result||""),rows=parseCsvRows(content);
   document.getElementById("previewTitle").textContent=file.name+" · "+Math.max(0,rows.length-1)+" data rows";
-  document.getElementById("previewText").textContent=rows.slice(0,11).map(row=>row.join(" | ")).join("\\n")+(rows.length>11?"\\n… preview limited to first 10 data rows":"");
+  document.getElementById("previewText").textContent=rows.slice(0,11).map(row=>row.join(" | ")).join("\n")+(rows.length>11?"\n… preview limited to first 10 data rows":"");
   document.getElementById("preview").classList.add("show");
   const report=validateCsv(content),box=document.getElementById("csvValidation");
   box.style.display="block";document.getElementById("csvRowsChecked").textContent=report.total.toLocaleString();
