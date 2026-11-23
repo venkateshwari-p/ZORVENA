@@ -201,9 +201,10 @@ function validateCsv(input){
  const index=Object.fromEntries(headers.map((name,i)=>[name,i])),seen=new Set(),issues=[],total=rows.length-1;let valid=0,invalid=0;
  for(let n=1;n<rows.length;n++){
   const cells=rows[n],get=key=>(cells[index[key]]||"").trim(),rowIssues=[];
+  if(cells.length!==headers.length)rowIssues.push("expected "+headers.length+" columns but found "+cells.length);
   required.forEach(key=>{if(!get(key))rowIssues.push(key+" is blank");});
   const id=kind==="companies"?"company_id":kind==="people"?"person_id":"company_source_id";
-  const value=get(id);if(value&&seen.has(value))rowIssues.push("duplicate "+id);if(value)seen.add(value);
+  const value=get(id),normalizedId=value.toLowerCase();if(value&&seen.has(normalizedId))rowIssues.push("duplicate "+id);if(value)seen.add(normalizedId);
   ["source_url","official_website","linkedin_url","linkedin_profile"].forEach(key=>{
    const url=get(key);if(url&&!/^https?:\/\//i.test(url))rowIssues.push(key+" must start with http:// or https://");
   });
@@ -221,8 +222,8 @@ document.getElementById("csvFile").addEventListener("change",event=>{
   const report=validateCsv(content),box=document.getElementById("csvValidation");
   box.style.display="block";document.getElementById("csvRowsChecked").textContent=report.total.toLocaleString();
   document.getElementById("csvRowsValid").textContent=report.valid.toLocaleString();document.getElementById("csvRowsInvalid").textContent=report.invalid.toLocaleString();
-  const status=document.getElementById("csvValidationStatus");status.textContent=report.invalid===0&&report.total>0?"No structural issues":"Review required";
-  document.getElementById("csvValidationDetails").textContent=(report.kind?"Detected template: "+report.kind+". ":"")+ (report.issues.length?report.issues.join(" · "):"Required columns and basic row checks passed. This is a preliminary local check only.");
+  const status=document.getElementById("csvValidationStatus");status.textContent=report.total===0?"No data rows":report.invalid===0?"No structural issues":"Review required";
+  document.getElementById("csvValidationDetails").textContent=(report.kind?"Detected template: "+report.kind+". ":"")+ (report.issues.length?report.issues.join(" · "):report.total===0?"The file has headers but no data rows. Add at least one record to validate.":"Required columns, row lengths, required values, within-file IDs and basic URL formats passed. This is a preliminary local check only.");
  };
  reader.readAsText(file);
 });
