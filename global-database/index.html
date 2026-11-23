@@ -412,7 +412,8 @@ document.getElementById("csvFile").addEventListener("change",event=>{
  $("companyReset").addEventListener("click",()=>{["companySearch","companyCountry","companyType","companySector","companyIndustry","companySubsector","companyVerification"].forEach(id=>$(id).value="");setupCompanyFilters(taxonomyData||{sectors:[],industries:[],subsectors:[]});loadCompanies(true);});
  $("companyPrev").addEventListener("click",()=>{companyOffset=Math.max(0,companyOffset-companyLimit());loadCompanies();});
  $("companyNext").addEventListener("click",()=>{companyOffset+=companyLimit();loadCompanies();});
- $("sourcesRefresh").addEventListener("click",loadSources);\n $("peopleApply").addEventListener("click",()=>loadPeople(true));
+ $("sourcesRefresh").addEventListener("click",loadSources);
+ $("peopleApply").addEventListener("click",()=>loadPeople(true));
  $("peopleReset").addEventListener("click",()=>{["peopleSearch","peopleCountry","peopleDepartment","peopleRole","peopleVerification","peoplePermission"].forEach(id=>$(id).value="");loadPeople(true);});
  $("peoplePrev").addEventListener("click",()=>{peopleOffset=Math.max(0,peopleOffset-peopleLimit());loadPeople();});
  $("peopleNext").addEventListener("click",()=>{peopleOffset+=peopleLimit();loadPeople();});
