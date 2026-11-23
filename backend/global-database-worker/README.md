@@ -1,4 +1,4 @@
-# ZORVENA Global Database API (read-only foundation)
+# ZORVENA Global Database API (authenticated read-only API)
 
 This is a separate Cloudflare Worker for the BigQuery-backed Global Database. It does not use or modify the Market Intelligence D1 database.
 
@@ -8,9 +8,11 @@ This is a separate Cloudflare Worker for the BigQuery-backed Global Database. It
 - Dashboard overview counts.
 - Sector, industry, sub-sector and division taxonomy.
 - Read-only company and people directory search.
+- Read-only company and person source-evidence register.
 - Parameterized search filters and bounded pagination.
+- Browser-side CSV preview and preliminary structural validation in the dashboard; no CSV data is sent to this API.
 
-CSV import, data updates and export generation are intentionally not enabled in this first backend stage. They will be added only after the read-only connection is tested and the BigQuery billing / import method is confirmed.
+CSV import, data updates and export generation are intentionally not enabled. The dashboard's Import Centre currently performs only local CSV preview and preliminary structure checks; it does not upload files or change BigQuery.
 
 ## Required secrets
 
@@ -22,6 +24,8 @@ Create these Worker secrets in Cloudflare. Never commit either value to GitHub o
 The service account should initially have:
 - `roles/bigquery.jobUser` on project `zorvena-market-intelligence`.
 - `roles/bigquery.dataViewer` on dataset `zorvena_market_db` only.
+
+Do not grant BigQuery Data Editor yet. The current Worker intentionally exposes GET-only routes and has no database import or write endpoint. Any future write access should be reviewed separately and limited to the dataset, with server-side row validation, duplicate handling and audit logging implemented first.
 
 Do not grant Owner, Editor, or project-wide BigQuery Data Editor. Do not enable write routes with this read-only account.
 
@@ -72,12 +76,14 @@ The dashboard must ask the operator for this token at runtime. Do not hardcode i
 - `GET /api/taxonomy`
 - `GET /api/companies?q=&country=&sector_id=&industry_id=&subsector_id=&limit=50&offset=0`
 - `GET /api/people?q=&company_id=&country=&limit=50&offset=0`
+- `GET /api/sources` (up to 100 source rows from `company_sources` and `person_sources`, plus source-table column metadata)
 
 The company and people tables are currently empty according to the last user-run BigQuery verification. Empty results are expected until records are imported.
 
 ## Important
 
 - This Worker is read-only. It does not run INSERT, UPDATE, DELETE, MERGE or table-replacement statements.
+- CORS and request handling currently allow GET and OPTIONS only; do not attempt CSV upload until a separately reviewed import API is deployed.
 - The API uses parameterized BigQuery queries and caps result page sizes.
 - The first successful API test should be `/health`, followed by `/api/overview` and `/api/taxonomy`.
 - BigQuery query execution and Cloudflare usage may incur costs or be subject to quotas. Review the relevant Google Cloud and Cloudflare pricing and limits before production use.
