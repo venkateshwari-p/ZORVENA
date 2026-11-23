@@ -145,7 +145,7 @@
         <div class="panel"><div class="panel-head"><h2>Download CSV templates</h2><small>Match existing BigQuery schema</small></div><div class="template-list">
           <div class="template"><div><b>Company directory</b><small>global_companies import headers</small></div><button data-template="companies">Download</button></div>
           <div class="template"><div><b>People directory</b><small>global_people import headers</small></div><button data-template="people">Download</button></div>
-          <div class="template"><div><b>Company sources</b><small>company_sources import headers</small></div><button data-template="sources">Download</button></div>
+          <div class="template"><div><b>Company sources</b><small>company_sources import headers</small></div><button data-template="sources">Download</button></div><div class="template"><div><b>Sample company CSV</b><small>One fictional row · validation test only</small></div><button id="downloadSampleCompany" type="button">Download sample</button></div>
         </div><div style="height:17px"></div><div class="panel-head"><h2>Import validation checklist</h2></div><div class="check-list"><div class="check"><i>✓</i> Supported CSV template and required headers</div><div class="check"><i>✓</i> Required values in each data row</div><div class="check"><i>✓</i> Duplicate record IDs within the selected file</div><div class="check"><i>✓</i> Basic URL format for source and profile links</div><div class="check"><i>✓</i> First 10 data rows preview and issue examples</div></div><div class="warning-text">Not checked yet: taxonomy IDs against BigQuery, duplicates against existing database records, verification status rules, and audit logging. These require secure server-side validation before import.</div></div>
       </div>
     </section>
@@ -181,6 +181,12 @@ const templates={
  sources:["company_source_id","company_id","source_type","source_url","evidence_summary","source_reliability","verification_status","checked_at","created_at"]
 };
 document.querySelectorAll("[data-template]").forEach(btn=>btn.addEventListener("click",()=>{const type=btn.dataset.template;const csv=templates[type].join(",")+"\r\n";const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="zorvena_"+type+"_import_template.csv";a.click();URL.revokeObjectURL(url);}));
+document.getElementById("downloadSampleCompany").addEventListener("click",()=>{
+ const headers=templates.companies;
+ const sample={company_id:"DEMO-COMPANY-001",company_name:"Example Agricultural Supplies Ltd",country:"India",state_region:"Tamil Nadu",city:"Coimbatore",official_website:"https://example.com",linkedin_url:"https://www.linkedin.com/company/example",sector_id:"SEC006",industry_id:"IND026",subsector_id:"SUB042",division_summary:"Procurement and Purchasing",business_type:"Manufacturer",products_services:"Example growing media products",trade_activity:"Domestic and export",public_contact_details:"Public demo record only",verification_status:"Pending",created_at:"",updated_at:"",source_url:"https://example.com/company-profile",last_verified_at:""};
+ const csv=[headers.join(","),headers.map(key=>{const value=String(sample[key]??"");return /[",\r\n]/.test(value)?'"'+value.replace(/"/g,'""')+'"':value;}).join(",")].join("\r\n");
+ const blob=new Blob(["\\uFEFF",csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="zorvena_sample_company_validation_only.csv";a.click();URL.revokeObjectURL(url);
+});
 function parseCsvRows(input){
  const rows=[];let row=[],cell="",quoted=false;
  for(let i=0;i<input.length;i++){const ch=input[i],next=input[i+1];
