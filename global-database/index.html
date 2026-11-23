@@ -164,6 +164,45 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 #view-taxonomy>.panel[style*="margin-top"]{padding:15px}
 }
 
+
+/* Usability pass: navigation, responsive filters and long data tables */
+.nav button[aria-current="page"]{background:linear-gradient(90deg,rgba(197,220,145,.22),rgba(255,255,255,.08));border-color:rgba(197,220,145,.25);box-shadow:inset 3px 0 var(--lime);color:#fff}
+.nav button[aria-current="page"] .ico{color:#d8e8a9}
+.table-wrap{max-height:64vh;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#c5d4c0 #f4f7f2}
+.table-wrap::-webkit-scrollbar{width:9px;height:9px}
+.table-wrap::-webkit-scrollbar-track{background:#f4f7f2;border-radius:9px}
+.table-wrap::-webkit-scrollbar-thumb{background:#c5d4c0;border:2px solid #f4f7f2;border-radius:9px}
+.data-table thead{position:sticky;top:0;z-index:2}
+.data-table th{position:sticky;top:0;z-index:2;box-shadow:0 1px 0 #e4ebe1}
+.data-table tbody tr:nth-child(even){background:#fcfdfb}
+.data-table tbody tr:hover{background:#f4f8f0}
+.data-table td{vertical-align:middle}
+#view-companies .panel-head,#view-people .panel-head{flex-wrap:wrap}
+#view-companies .panel-head>div,#view-people .panel-head>div{display:flex;gap:7px;flex-wrap:wrap}
+#view-companies .panel-head .btn,#view-people .panel-head .btn{white-space:nowrap}
+.field input::placeholder{color:#a0aaa0}
+.field input:disabled,.field select:disabled{cursor:not-allowed}
+.mobile-menu[aria-expanded="true"]{background:#edf4e7;border-color:#cbdcc2}
+@media(max-width:1050px){
+.filter-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+.data-table{min-width:660px}
+.table-wrap{max-height:60vh}
+}
+@media(max-width:720px){
+.sidebar{z-index:30}
+.sidebar.open{transform:translateX(0)}
+.topbar{z-index:25}
+.table-wrap{max-height:58vh;border-radius:10px}
+.data-table{min-width:640px}
+.data-table th,.data-table td{padding:11px 10px}
+#view-companies .panel-head,#view-people .panel-head{align-items:flex-start}
+#view-companies .panel-head>div,#view-people .panel-head>div{width:100%}
+#view-companies .panel-head .btn,#view-people .panel-head .btn{flex:1;justify-content:center}
+}
+@media(prefers-reduced-motion:reduce){
+*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -322,10 +361,11 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 </div>
 <script>
 const labels={overview:"Overview",companies:"Company Directory",people:"People & Contacts",taxonomy:"Industry Taxonomy",trade:"Trade Intelligence",sources:"Sources & Evidence",import:"Import Centre",export:"Export Centre",quality:"Data Quality",clients:"Client Prospect Lists"};
-function showView(name){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===name));document.getElementById("crumb").textContent=labels[name]||"Overview";document.getElementById("sidebar").classList.remove("open");window.scrollTo({top:0,behavior:"smooth"});}
+function showView(name){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));document.querySelectorAll("[data-view]").forEach(b=>{const active=b.dataset.view===name;b.classList.toggle("active",active);if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});document.getElementById("crumb").textContent=labels[name]||"Overview";document.getElementById("sidebar").classList.remove("open");document.getElementById("menuBtn").setAttribute("aria-expanded","false");window.scrollTo({top:0,behavior:"smooth"});}
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.go)));
-document.getElementById("menuBtn").addEventListener("click",()=>document.getElementById("sidebar").classList.toggle("open"));
+document.getElementById("menuBtn").addEventListener("click",()=>{const sidebar=document.getElementById("sidebar");const open=sidebar.classList.toggle("open");document.getElementById("menuBtn").setAttribute("aria-expanded",String(open));});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"){document.getElementById("sidebar").classList.remove("open");document.getElementById("menuBtn").setAttribute("aria-expanded","false");}});
 document.getElementById("year").textContent=new Date().getFullYear();
 const templates={
  companies:["company_id","company_name","country","state_region","city","official_website","linkedin_url","sector_id","industry_id","subsector_id","division_summary","business_type","products_services","trade_activity","public_contact_details","verification_status","created_at","updated_at","source_url","last_verified_at"],
