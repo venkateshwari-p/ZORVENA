@@ -47,6 +47,7 @@
     <div style="display:flex;align-items:center;gap:12px"><button class="btn mobile-menu" id="menuBtn" aria-label="Open menu">☰</button><div class="crumb">ZORVENA <span style="color:#b5c1b6">/</span> <b id="crumb">Overview</b></div></div>
     <div class="top-actions"><button class="btn primary" id="connectBtn" type="button">Connect database</button><span class="status" id="apiStatus"><i class="dot"></i> API not connected</span><div class="avatar" title="ZORVENA workspace">Z</div></div>
   </header>
+  <div id="connectTokenPanel" class="panel" style="display:none;margin:14px 24px 0;max-width:560px"><div class="panel-head"><h2>Connect to BigQuery</h2><button class="btn" id="cancelConnect" type="button">Cancel</button></div><p class="muted">Enter your Cloudflare Worker admin API token. It is used only in this browser tab and is not saved.</p><label for="connectTokenInput">Admin API token</label><input id="connectTokenInput" type="password" autocomplete="off" placeholder="Paste API token" style="width:100%;margin:8px 0 12px"><button class="btn primary" id="submitConnect" type="button">Authenticate and load data</button><span id="connectTokenMessage" class="warning-text" style="display:block;margin-top:10px"></span></div>
   <div class="content">
     <section class="view active" id="view-overview">
       <div class="page-head"><div><div class="eyebrow">Agriculture business intelligence</div><h1>Global Database Overview</h1><p>One workspace for companies, professional contacts, trade evidence and client prospects.</p></div><div class="head-actions"><button class="btn" data-go="import">＋ Import data</button><button class="btn primary" data-go="companies">Open directory →</button></div></div>
@@ -380,9 +381,14 @@ document.getElementById("csvFile").addEventListener("change",event=>{
   $("taxonomyState").textContent=(data.sectors||[]).length+" sectors · "+(data.industries||[]).length+" industries · "+(data.subsectors||[]).length+" sub-sectors";
  };
  async function connect(){
-  const token=window.prompt("Enter the ZORVENA API admin token. It will remain in this browser tab only and will not be saved.");
-  if(!token||!token.trim())return;
-  const headers={Authorization:"Bearer "+token.trim()};$("connectBtn").disabled=true;$("connectBtn").textContent="Connecting…";
+  const panel=$("connectTokenPanel"),tokenInput=$("connectTokenInput"),message=$("connectTokenMessage");
+  if(panel.style.display==="none"){panel.style.display="block";tokenInput.focus();return;}
+  await authenticate();
+ }
+ async function authenticate(){
+  const token=$("connectTokenInput").value.trim(),message=$("connectTokenMessage");
+  if(!token){message.textContent="Enter your admin API token to continue.";return;}
+  const headers={Authorization:"Bearer "+token};$("submitConnect").disabled=true;$("submitConnect").textContent="Connecting…";message.textContent="Checking credentials and loading database data…";
   try{
    const responses=await Promise.all([fetch(API_BASE+"/api/overview",{headers}),fetch(API_BASE+"/api/taxonomy",{headers})]);
    for(const res of responses)if(!res.ok){let detail="HTTP "+res.status;try{const j=await res.json();detail=j.detail||j.error||detail;}catch(_){}throw new Error(detail);}
@@ -391,14 +397,17 @@ document.getElementById("csvFile").addEventListener("change",event=>{
    [counts.companies,counts.people,counts.industries,counts.subsectors].forEach((v,i)=>{if(stats[i])stats[i].textContent=Number(v??0).toLocaleString();});
    const tax=document.querySelectorAll("#view-overview .tax-item b");
    [counts.sectors,counts.industries,counts.subsectors,counts.divisions].forEach((v,i)=>{if(tax[i])tax[i].textContent=Number(v??0).toLocaleString();});
-   renderTaxonomy(tx.data);
-   apiHeaders=headers;setupCompanyFilters(tx.data);await loadCompanies(true);await loadPeople(true);await loadSources();
+   renderTaxonomy(tx.data);apiHeaders=headers;setupCompanyFilters(tx.data);
+   await loadCompanies(true);await loadPeople(true);await loadSources();
    const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview, industry taxonomy, Company Directory and People & Contacts are connected to the authenticated ZORVENA API. Directory results depend on records available in BigQuery.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
-   setStatus(true,"API connected");$("connectBtn").textContent="Refresh data";
-  }catch(e){setStatus(false,"Connection failed");$("connectBtn").textContent="Connect database";alert("Could not connect. Check the token and try again. Details: "+e.message);}
-  finally{$("connectBtn").disabled=false;}
+   setStatus(true,"API connected");$("connectBtn").textContent="Refresh data";$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";
+  }catch(e){setStatus(false,"Connection failed");message.textContent="Could not connect: "+e.message+" — check the token and try again."; }
+  finally{$("submitConnect").disabled=false;$("submitConnect").textContent="Authenticate and load data";}
  }
  $("connectBtn").addEventListener("click",connect);
+ $("submitConnect").addEventListener("click",authenticate);
+ $("cancelConnect").addEventListener("click",()=>{$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";});
+ $("connectTokenInput").addEventListener("keydown",e=>{if(e.key==="Enter")authenticate();});
  $("companyApply").addEventListener("click",()=>loadCompanies(true));
  $("companyReset").addEventListener("click",()=>{["companySearch","companyCountry","companyType","companySector","companyIndustry","companySubsector","companyVerification"].forEach(id=>$(id).value="");setupCompanyFilters(taxonomyData||{sectors:[],industries:[],subsectors:[]});loadCompanies(true);});
  $("companyPrev").addEventListener("click",()=>{companyOffset=Math.max(0,companyOffset-companyLimit());loadCompanies();});
