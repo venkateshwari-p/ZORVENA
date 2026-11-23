@@ -76,20 +76,21 @@
       <div class="page-head"><div><div class="eyebrow">Master directory</div><h1>Company Directory</h1><p>Search and filter agriculture businesses across the global value chain.</p></div><div class="head-actions"><button class="btn" data-go="import">⇧ Import companies</button><button class="btn" disabled title="Connect the BigQuery API first">⇩ Export results</button></div></div>
       <div class="panel">
         <div class="filter-row">
-          <div class="field"><label>Search</label><input disabled placeholder="Company, product, keyword"></div>
-          <div class="field"><label>Country</label><select disabled><option>All countries</option></select></div>
-          <div class="field"><label>Sector</label><select disabled><option>All sectors</option></select></div>
-          <div class="field"><label>Industry</label><select disabled><option>All industries</option></select></div>
-          <div class="field"><label>Sub-sector</label><select disabled><option>All sub-sectors</option></select></div>
+          <div class="field"><label>Search company / website</label><input id="companySearch" placeholder="Enter company name or website"></div>
+          <div class="field"><label>Country</label><input id="companyCountry" placeholder="Exact country name"></div>
+          <div class="field"><label>Sector</label><select id="companySector"><option value="">All sectors</option></select></div>
+          <div class="field"><label>Industry</label><select id="companyIndustry"><option value="">All industries</option></select></div>
+          <div class="field"><label>Sub-sector</label><select id="companySubsector"><option value="">All sub-sectors</option></select></div>
         </div>
         <div class="filter-row">
-          <div class="field"><label>Company division</label><select disabled><option>All divisions</option></select></div>
-          <div class="field"><label>Business type</label><select disabled><option>All types</option></select></div>
-          <div class="field"><label>Trade activity</label><select disabled><option>All activity</option></select></div>
-          <div class="field"><label>Verification</label><select disabled><option>All statuses</option></select></div>
-          <div class="field"><label>Country region</label><select disabled><option>All regions</option></select></div>
+          <div class="field"><label>Business type</label><input id="companyType" placeholder="Exact business type"></div>
+          <div class="field"><label>Verification</label><select id="companyVerification"><option value="">All statuses</option><option>VERIFIED</option><option>UNVERIFIED</option><option>NEEDS_REVIEW</option></select></div>
+          <div class="field"><label>Results per page</label><select id="companyLimit"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option></select></div>
+          <div class="field" style="display:flex;align-items:end"><button class="btn primary" id="companyApply" type="button">Search directory</button></div>
+          <div class="field" style="display:flex;align-items:end"><button class="btn" id="companyReset" type="button">Reset filters</button></div>
         </div>
-        <div class="table-wrap"><table class="data-table"><thead><tr><th>Company</th><th>Country</th><th>Industry</th><th>Business type</th><th>Trade status</th><th>Verification</th></tr></thead><tbody><tr><td class="empty" colspan="6">▣<b>No company records yet</b><span>Company records will appear here after an approved import.</span></td></tr></tbody></table></div>
+        <div class="panel-head"><small id="companyResults">Connect the database to load company records.</small><div style="display:flex;gap:8px"><button class="btn" id="companyPrev" type="button" disabled>← Previous</button><button class="btn" id="companyNext" type="button" disabled>Next →</button></div></div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Company</th><th>Country</th><th>Industry</th><th>Business type</th><th>Trade activity</th><th>Verification</th></tr></thead><tbody id="companyRows"><tr><td class="empty" colspan="6">▣<b>Connect database to load records</b><span>Company records will appear here when available in BigQuery.</span></td></tr></tbody></table></div>
       </div>
     </section>
     <section class="view" id="view-people">
@@ -169,6 +170,44 @@ document.getElementById("csvFile").addEventListener("change",event=>{const file=
 (() => {
  const API_BASE="https://zorvena-global-database-api.sridharanpv123.workers.dev";
  const $=id=>document.getElementById(id);
+ let apiHeaders=null, taxonomyData=null, companyOffset=0, companyTotal=0;
+ const companyLimit=()=>Number($("companyLimit").value||50);
+ const industryName=id=>(taxonomyData?.industries||[]).find(x=>x.industry_id===id)?.industry_name||id||"—";
+ const fillCompanySelect=(id,items,key,label,firstText)=>{const el=$(id);el.innerHTML="";const first=document.createElement("option");first.value="";first.textContent=firstText;el.appendChild(first);items.forEach(item=>{const o=document.createElement("option");o.value=item[key];o.textContent=item[key]+" · "+item[label];el.appendChild(o);});};
+ function setupCompanyFilters(data){
+  taxonomyData=data;
+  fillCompanySelect("companySector",data.sectors||[],"sector_id","sector_name","All sectors");
+  fillCompanySelect("companyIndustry",data.industries||[],"industry_id","industry_name","All industries");
+  fillCompanySelect("companySubsector",data.subsectors||[],"subsector_id","subsector_name","All sub-sectors");
+  $("companySector").onchange=()=>{const sid=$("companySector").value;fillCompanySelect("companyIndustry",(data.industries||[]).filter(x=>!sid||x.sector_id===sid),"industry_id","industry_name","All industries");$("companySubsector").innerHTML='<option value="">All sub-sectors</option>';};
+  $("companyIndustry").onchange=()=>{const iid=$("companyIndustry").value;fillCompanySelect("companySubsector",(data.subsectors||[]).filter(x=>!iid||x.industry_id===iid),"subsector_id","subsector_name","All sub-sectors");};
+ }
+ async function loadCompanies(reset=false){
+  if(!apiHeaders)return;
+  if(reset)companyOffset=0;
+  const params=new URLSearchParams({limit:String(companyLimit()),offset:String(companyOffset)});
+  const fields={q:$("companySearch").value.trim(),country:$("companyCountry").value.trim(),sector_id:$("companySector").value,industry_id:$("companyIndustry").value,subsector_id:$("companySubsector").value,business_type:$("companyType").value.trim(),verification_status:$("companyVerification").value};
+  Object.entries(fields).forEach(([k,v])=>{if(v)params.set(k,v);});
+  $("companyApply").disabled=true;$("companyApply").textContent="Loading…";
+  try{
+   const response=await fetch(API_BASE+"/api/companies?"+params.toString(),{headers:apiHeaders});
+   if(!response.ok)throw new Error("HTTP "+response.status);
+   const result=await response.json();const rows=result.data||[];companyTotal=Number(result.pagination?.total||0);
+   const tbody=$("companyRows");tbody.innerHTML="";
+   if(!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.className="empty";td.innerHTML="▣<b>No matching company records</b><span>The database currently contains "+companyTotal+" matching records. Add approved company records to BigQuery to populate this directory.</span>";tr.appendChild(td);tbody.appendChild(tr);}
+   rows.forEach(row=>{
+    const tr=document.createElement("tr");
+    const values=[row.company_name||"—",row.country||"—",industryName(row.industry_id),row.business_type||"—",row.trade_activity||"—",row.verification_status||"—"];
+    values.forEach((value,index)=>{const td=document.createElement("td");td.textContent=value;if(index===0&&row.official_website){const a=document.createElement("a");a.href=row.official_website;a.target="_blank";a.rel="noopener noreferrer";a.textContent=" ↗";a.title="Open company website";td.appendChild(a);}tr.appendChild(td);});
+    tbody.appendChild(tr);
+   });
+   const start=companyTotal?companyOffset+1:0,end=Math.min(companyOffset+rows.length,companyTotal);
+   $("companyResults").textContent="Showing "+start+"–"+end+" of "+companyTotal+" companies";
+   $("companyPrev").disabled=companyOffset===0;
+   $("companyNext").disabled=companyOffset+rows.length>=companyTotal||rows.length===0;
+  }catch(error){$("companyResults").textContent="Could not load company records: "+error.message;}
+  finally{$("companyApply").disabled=false;$("companyApply").textContent="Search directory";}
+ }
  const setStatus=(ok,msg)=>{
   const s=$("apiStatus");s.innerHTML='<i class="dot"></i> '+msg;
   s.style.background=ok?"#eff8ef":"#fffaf0";s.style.borderColor=ok?"#cce5cf":"#f0dfb6";s.style.color=ok?"#28643b":"#8a6820";
@@ -202,12 +241,17 @@ document.getElementById("csvFile").addEventListener("change",event=>{const file=
    const tax=document.querySelectorAll("#view-overview .tax-item b");
    [counts.sectors,counts.industries,counts.subsectors,counts.divisions].forEach((v,i)=>{if(tax[i])tax[i].textContent=Number(v??0).toLocaleString();});
    renderTaxonomy(tx.data);
+   apiHeaders=headers;setupCompanyFilters(tx.data);await loadCompanies(true);
    const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview counts and industry taxonomy are loaded directly from the ZORVENA API. Company and people records will appear as they are added to the database.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
    setStatus(true,"API connected");$("connectBtn").textContent="Refresh data";
   }catch(e){setStatus(false,"Connection failed");$("connectBtn").textContent="Connect database";alert("Could not connect. Check the token and try again. Details: "+e.message);}
   finally{$("connectBtn").disabled=false;}
  }
  $("connectBtn").addEventListener("click",connect);
+ $("companyApply").addEventListener("click",()=>loadCompanies(true));
+ $("companyReset").addEventListener("click",()=>{["companySearch","companyCountry","companyType","companySector","companyIndustry","companySubsector","companyVerification"].forEach(id=>$(id).value="");setupCompanyFilters(taxonomyData||{sectors:[],industries:[],subsectors:[]});loadCompanies(true);});
+ $("companyPrev").addEventListener("click",()=>{companyOffset=Math.max(0,companyOffset-companyLimit());loadCompanies();});
+ $("companyNext").addEventListener("click",()=>{companyOffset+=companyLimit();loadCompanies();});
 })();
 </script>
 
