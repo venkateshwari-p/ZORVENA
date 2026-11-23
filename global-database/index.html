@@ -127,8 +127,9 @@
       <div class="panel"><div class="panel-head"><h2>Trade evidence register</h2><button class="btn" disabled>Export evidence</button></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Company</th><th>Direction</th><th>Product</th><th>Origin</th><th>Destination</th><th>Evidence type</th><th>Status</th></tr></thead><tbody><tr><td class="empty" colspan="7">⇄<b>No trade evidence records</b><span>Verified shipment evidence will appear after review and import.</span></td></tr></tbody></table></div></div>
     </section>
     <section class="view" id="view-sources">
-      <div class="page-head"><div><div class="eyebrow">Source provenance</div><h1>Sources & Evidence</h1><p>Trace every company and professional record to its supporting source.</p></div></div>
-      <div class="panel"><div class="panel-head"><h2>Source register</h2><span class="tag">Source tracking enabled in schema</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Entity</th><th>Source type</th><th>Source URL</th><th>Reliability</th><th>Verification</th><th>Checked</th></tr></thead><tbody><tr><td class="empty" colspan="6">↗<b>No source records yet</b><span>Source URLs and verification dates will be stored with each imported record.</span></td></tr></tbody></table></div></div>
+      <div class="page-head"><div><div class="eyebrow">Source provenance</div><h1>Sources & Evidence</h1><p>Trace company and professional records to their supporting source documents and URLs.</p></div><div class="head-actions"><button class="btn" id="sourcesRefresh" type="button">↻ Refresh sources</button></div></div>
+      <div class="notice"><span class="nicon">ⓘ</span><div><strong>Read-only source register.</strong>Records are loaded from the company_sources and person_sources BigQuery tables. This page does not create or modify source records.</div></div>
+      <div class="panel"><div class="panel-head"><h2>Source register</h2><span class="tag" id="sourcesCount">Waiting for database connection</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Entity</th><th>Entity ID</th><th>Source type</th><th>Source URL</th><th>Reliability</th><th>Verification / checked</th></tr></thead><tbody id="sourcesRows"><tr><td class="empty" colspan="6">↗<b>Connect to the database</b><span>Use Connect database to load source evidence.</span></td></tr></tbody></table></div><div class="results" id="sourcesResults">No source records loaded.</div></div>
     </section>
     <section class="view" id="view-import">
       <div class="page-head"><div><div class="eyebrow">Controlled data intake</div><h1>Import Centre</h1><p>Prepare, validate and review company or people files before database import.</p></div></div>
@@ -198,6 +199,43 @@ document.getElementById("csvFile").addEventListener("change",event=>{const file=
   $("companySector").onchange=()=>{const sid=$("companySector").value;fillCompanySelect("companyIndustry",(data.industries||[]).filter(x=>!sid||x.sector_id===sid),"industry_id","industry_name","All industries");$("companySubsector").innerHTML='<option value="">All sub-sectors</option>';};
   $("companyIndustry").onchange=()=>{const iid=$("companyIndustry").value;fillCompanySelect("companySubsector",(data.subsectors||[]).filter(x=>!iid||x.industry_id===iid),"subsector_id","subsector_name","All sub-sectors");};
  }
+ async function loadSources(){
+  if(!apiHeaders)return;
+  $("sourcesRefresh").disabled=true;$("sourcesRefresh").textContent="Loading…";
+  try{
+   const response=await fetch(API_BASE+"/api/sources",{headers:apiHeaders});
+   if(!response.ok)throw new Error("HTTP "+response.status);
+   const result=await response.json(),rows=result.data||[],schema=result.schema||[];
+   const keys=schema.map(x=>String(x.column_name||"").toLowerCase());
+   const choose=(row,candidates)=>{for(const key of candidates){const found=Object.keys(row).find(k=>k.toLowerCase()===key);if(found&&row[found]!==null&&row[found]!==undefined&&row[found]!=="")return row[found];}return "—";};
+   const tbody=$("sourcesRows");tbody.innerHTML="";
+   if(!rows.length){
+    const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.className="empty";td.innerHTML="↗<b>No source evidence records yet</b><span>Both source tables were checked. Add source-backed records through the approved data intake process to populate this register.</span>";tr.appendChild(td);tbody.appendChild(tr);
+   }else{
+    rows.forEach(row=>{
+     const tr=document.createElement("tr");
+     const values=[
+      row.entity_type||"—",
+      choose(row,["company_id","person_id","entity_id","source_id"]),
+      choose(row,["source_type","evidence_type","document_type","source_category"]),
+      choose(row,["source_url","url","evidence_url","document_url"]),
+      choose(row,["reliability","reliability_score","source_reliability","reliability_rating"]),
+      choose(row,["verification_status","verified_at","last_verified_at","checked_at","created_at","updated_at"])
+     ];
+     values.forEach((value,index)=>{
+      const td=document.createElement("td");
+      if(index===3&&value!=="—"&&/^https?:\/\//i.test(String(value))){const a=document.createElement("a");a.href=String(value);a.target="_blank";a.rel="noopener noreferrer";a.textContent="Open source ↗";td.appendChild(a);}
+      else td.textContent=String(value);
+      tr.appendChild(td);
+     });
+     tbody.appendChild(tr);
+    });
+   }
+   $("sourcesCount").textContent=rows.length+" records · "+keys.length+" source fields";
+   $("sourcesResults").textContent="Loaded "+rows.length+" source records (maximum 100 per refresh).";
+  }catch(error){$("sourcesCount").textContent="Could not load";$("sourcesResults").textContent="Source register error: "+error.message;}
+  finally{$("sourcesRefresh").disabled=false;$("sourcesRefresh").textContent="↻ Refresh sources";}
+ }
  let peopleOffset=0,peopleTotal=0;
  const peopleLimit=()=>Number($("peopleLimit").value||50);
  async function loadPeople(reset=false){
@@ -255,7 +293,7 @@ document.getElementById("csvFile").addEventListener("change",event=>{const file=
   const s=$("apiStatus");s.innerHTML='<i class="dot"></i> '+msg;
   s.style.background=ok?"#eff8ef":"#fffaf0";s.style.borderColor=ok?"#cce5cf":"#f0dfb6";s.style.color=ok?"#28643b":"#8a6820";
   s.querySelector(".dot").style.background=ok?"#2f9b54":"#d59b28";
-  $("sideConnection").innerHTML=ok?"<b>Database connection</b>Connected to BigQuery.<br>Overview, taxonomy, companies and people use live API data.":"<b>Database connection</b>Not connected.<br>Use Connect database to load live database sections.";
+  $("sideConnection").innerHTML=ok?"<b>Database connection</b>Connected to BigQuery.<br>Overview, taxonomy, companies, people and source evidence use live API data.":"<b>Database connection</b>Not connected.<br>Use Connect database to load live database sections.";
  };
  const fill=(el,items,idKey,nameKey,placeholder)=>{
   el.innerHTML="";const first=document.createElement("option");first.value="";first.textContent=placeholder;el.appendChild(first);
@@ -284,7 +322,7 @@ document.getElementById("csvFile").addEventListener("change",event=>{const file=
    const tax=document.querySelectorAll("#view-overview .tax-item b");
    [counts.sectors,counts.industries,counts.subsectors,counts.divisions].forEach((v,i)=>{if(tax[i])tax[i].textContent=Number(v??0).toLocaleString();});
    renderTaxonomy(tx.data);
-   apiHeaders=headers;setupCompanyFilters(tx.data);await loadCompanies(true);await loadPeople(true);
+   apiHeaders=headers;setupCompanyFilters(tx.data);await loadCompanies(true);await loadPeople(true);await loadSources();
    const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview, industry taxonomy, Company Directory and People & Contacts are connected to the authenticated ZORVENA API. Directory results depend on records available in BigQuery.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
    setStatus(true,"API connected");$("connectBtn").textContent="Refresh data";
   }catch(e){setStatus(false,"Connection failed");$("connectBtn").textContent="Connect database";alert("Could not connect. Check the token and try again. Details: "+e.message);}
@@ -295,7 +333,7 @@ document.getElementById("csvFile").addEventListener("change",event=>{const file=
  $("companyReset").addEventListener("click",()=>{["companySearch","companyCountry","companyType","companySector","companyIndustry","companySubsector","companyVerification"].forEach(id=>$(id).value="");setupCompanyFilters(taxonomyData||{sectors:[],industries:[],subsectors:[]});loadCompanies(true);});
  $("companyPrev").addEventListener("click",()=>{companyOffset=Math.max(0,companyOffset-companyLimit());loadCompanies();});
  $("companyNext").addEventListener("click",()=>{companyOffset+=companyLimit();loadCompanies();});
- $("peopleApply").addEventListener("click",()=>loadPeople(true));
+ $("sourcesRefresh").addEventListener("click",loadSources);\n $("peopleApply").addEventListener("click",()=>loadPeople(true));
  $("peopleReset").addEventListener("click",()=>{["peopleSearch","peopleCountry","peopleDepartment","peopleRole","peopleVerification","peoplePermission"].forEach(id=>$(id).value="");loadPeople(true);});
  $("peoplePrev").addEventListener("click",()=>{peopleOffset=Math.max(0,peopleOffset-peopleLimit());loadPeople();});
  $("peopleNext").addEventListener("click",()=>{peopleOffset+=peopleLimit();loadPeople();});
