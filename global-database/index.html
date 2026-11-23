@@ -146,7 +146,7 @@
           <div class="template"><div><b>Company directory</b><small>global_companies import headers</small></div><button data-template="companies">Download</button></div>
           <div class="template"><div><b>People directory</b><small>global_people import headers</small></div><button data-template="people">Download</button></div>
           <div class="template"><div><b>Company sources</b><small>company_sources import headers</small></div><button data-template="sources">Download</button></div>
-        </div><div style="height:17px"></div><div class="panel-head"><h2>Import validation checklist</h2></div><div class="check-list"><div class="check"><i>✓</i> Required IDs and company names</div><div class="check"><i>✓</i> Sector, industry and sub-sector links</div><div class="check"><i>✓</i> Source URLs and verification status</div><div class="check"><i>✓</i> Duplicate company and person checks</div><div class="check"><i>✓</i> Rejected-row report and audit log</div></div></div>
+        </div><div style="height:17px"></div><div class="panel-head"><h2>Import validation checklist</h2></div><div class="check-list"><div class="check"><i>✓</i> Supported CSV template and required headers</div><div class="check"><i>✓</i> Required values in each data row</div><div class="check"><i>✓</i> Duplicate record IDs within the selected file</div><div class="check"><i>✓</i> Basic URL format for source and profile links</div><div class="check"><i>✓</i> First 10 data rows preview and issue examples</div></div><div class="warning-text">Not checked yet: taxonomy IDs against BigQuery, duplicates against existing database records, verification status rules, and audit logging. These require secure server-side validation before import.</div></div>
       </div>
     </section>
     <section class="view" id="view-export">
@@ -192,6 +192,7 @@ function parseCsvRows(input){
 function validateCsv(input){
  const rows=parseCsvRows(input);if(!rows.length)return {total:0,valid:0,invalid:0,issues:["The CSV file is empty."]};
  const headers=rows[0].map(v=>v.trim().replace(/^\uFEFF/,"").toLowerCase());
+ if(new Set(headers).size!==headers.length)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["The CSV contains duplicate column headers. Keep each template header only once."]};
  const kind=Object.keys(templates).find(type=>templates[type].every((field)=>headers.includes(field.toLowerCase())))||null;
  if(!kind)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["Could not identify a supported template. Download the matching Company, People or Company Sources CSV template and use its exact column headers."]};
  const required={companies:["company_id","company_name","source_url"],people:["person_id","company_id","full_name"],sources:["company_source_id","company_id","source_type","source_url"]}[kind];
@@ -203,8 +204,9 @@ function validateCsv(input){
   required.forEach(key=>{if(!get(key))rowIssues.push(key+" is blank");});
   const id=kind==="companies"?"company_id":kind==="people"?"person_id":"company_source_id";
   const value=get(id);if(value&&seen.has(value))rowIssues.push("duplicate "+id);if(value)seen.add(value);
-  const url=get("source_url")||get("official_website")||get("linkedin_profile");
-  if(url&& !/^https?:\/\//i.test(url))rowIssues.push("URL must start with http:// or https://");
+  ["source_url","official_website","linkedin_url","linkedin_profile"].forEach(key=>{
+   const url=get(key);if(url&&!/^https?:\/\//i.test(url))rowIssues.push(key+" must start with http:// or https://");
+  });
   if(rowIssues.length){invalid++;if(issues.length<8)issues.push("Row "+(n+1)+": "+rowIssues.join("; "));}else valid++;
  }
  return {total,valid,invalid,issues,kind};
