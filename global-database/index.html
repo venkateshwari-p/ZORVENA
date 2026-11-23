@@ -189,9 +189,18 @@ function parseCsvRows(input){
  }
  row.push(cell.replace(/\r$/,""));if(row.some(v=>v.trim()!==""))rows.push(row);return rows;
 }
+function csvHasUnclosedQuote(input){
+ let quoted=false;
+ for(let i=0;i<input.length;i++){
+  if(input[i]==='"'){if(quoted&&input[i+1]==='"'){i++;}else{quoted=!quoted;}}
+ }
+ return quoted;
+}
 function validateCsv(input){
  const rows=parseCsvRows(input);if(!rows.length)return {total:0,valid:0,invalid:0,issues:["The CSV file is empty."]};
  const headers=rows[0].map(v=>v.trim().replace(/^\uFEFF/,"").toLowerCase());
+ if(csvHasUnclosedQuote(input))return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["The CSV contains an unclosed quotation mark. Check quoted cells and try again."]};
+ if(headers.some(header=>!header))return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["The CSV contains an empty column header. Every column must have a name."]};
  if(new Set(headers).size!==headers.length)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["The CSV contains duplicate column headers. Keep each template header only once."]};
  const kind=Object.keys(templates).find(type=>templates[type].every((field)=>headers.includes(field.toLowerCase())))||null;
  if(!kind)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["Could not identify a supported template. Download the matching Company, People or Company Sources CSV template and use its exact column headers."]};
