@@ -255,7 +255,7 @@ document.getElementById("csvFile").addEventListener("change",event=>{const file=
   const s=$("apiStatus");s.innerHTML='<i class="dot"></i> '+msg;
   s.style.background=ok?"#eff8ef":"#fffaf0";s.style.borderColor=ok?"#cce5cf":"#f0dfb6";s.style.color=ok?"#28643b":"#8a6820";
   s.querySelector(".dot").style.background=ok?"#2f9b54":"#d59b28";
-  $("sideConnection").innerHTML=ok?"<b>Database connection</b>Connected to BigQuery.<br>Overview and taxonomy loaded live.":"<b>Database connection</b>Not connected.<br>Use Connect database to load live taxonomy and overview data.";
+  $("sideConnection").innerHTML=ok?"<b>Database connection</b>Connected to BigQuery.<br>Overview, taxonomy, companies and people use live API data.":"<b>Database connection</b>Not connected.<br>Use Connect database to load live database sections.";
  };
  const fill=(el,items,idKey,nameKey,placeholder)=>{
   el.innerHTML="";const first=document.createElement("option");first.value="";first.textContent=placeholder;el.appendChild(first);
@@ -285,7 +285,7 @@ document.getElementById("csvFile").addEventListener("change",event=>{const file=
    [counts.sectors,counts.industries,counts.subsectors,counts.divisions].forEach((v,i)=>{if(tax[i])tax[i].textContent=Number(v??0).toLocaleString();});
    renderTaxonomy(tx.data);
    apiHeaders=headers;setupCompanyFilters(tx.data);await loadCompanies(true);await loadPeople(true);
-   const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview counts and industry taxonomy are loaded directly from the ZORVENA API. Company and people records will appear as they are added to the database.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
+   const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview, industry taxonomy, Company Directory and People & Contacts are connected to the authenticated ZORVENA API. Directory results depend on records available in BigQuery.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
    setStatus(true,"API connected");$("connectBtn").textContent="Refresh data";
   }catch(e){setStatus(false,"Connection failed");$("connectBtn").textContent="Connect database";alert("Could not connect. Check the token and try again. Details: "+e.message);}
   finally{$("connectBtn").disabled=false;}
