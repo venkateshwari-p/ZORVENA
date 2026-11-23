@@ -209,6 +209,28 @@ async function handleApi(request, env, url) {
     return { data, pagination: { total: Number(count[0]?.total || 0), limit, offset } };
   }
 
+  if (url.pathname === "/api/sources") {
+    const sourceTables = ["company_sources", "person_sources"];
+    const schemaSql = `SELECT table_name, column_name
+      FROM ${env.PROJECT_ID}.${env.DATASET_ID}.INFORMATION_SCHEMA.COLUMNS
+      WHERE table_name IN ("company_sources", "person_sources")
+      ORDER BY table_name, ordinal_position`;
+    const [schema, companySources, personSources] = await Promise.all([
+      runQuery(env, schemaSql),
+      runQuery(env, `SELECT * FROM ${table(env, "company_sources")} LIMIT 100`),
+      runQuery(env, `SELECT * FROM ${table(env, "person_sources")} LIMIT 100`)
+    ]);
+    const data = [
+      ...companySources.map(row => ({ ...row, source_table: "company_sources", entity_type: "Company" })),
+      ...personSources.map(row => ({ ...row, source_table: "person_sources", entity_type: "Person" }))
+    ];
+    return {
+      data,
+      schema,
+      pagination: { returned: data.length, limit: 100, capped: data.length === 100 }
+    };
+  }
+
   if (url.pathname === "/api/people") {
     const params = [];
     const where = [];
@@ -267,7 +289,7 @@ export default {
     const url = new URL(request.url);
     try {
       const result = await handleApi(request, env, url);
-      if (!result) return json({ error: "Not found", available_endpoints: ["/health", "/api/overview", "/api/taxonomy", "/api/companies", "/api/people"] }, 404, allowedOrigin);
+      if (!result) return json({ error: "Not found", available_endpoints: ["/health", "/api/overview", "/api/taxonomy", "/api/companies", "/api/people", "/api/sources"] }, 404, allowedOrigin);
       return json(result, 200, allowedOrigin);
     } catch (error) {
       return json({
