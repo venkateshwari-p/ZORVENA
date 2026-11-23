@@ -139,7 +139,7 @@
           <div class="panel-head"><h2>Local CSV preview</h2><small>CSV only · stays in your browser</small></div>
           <div class="dropzone"><div class="upload-icon">⇧</div><h3>Select a company or people CSV</h3><p>Choose a file to inspect its headers and first rows locally.</p><input id="csvFile" type="file" accept=".csv,text/csv" aria-label="Choose CSV file"></div>
           <div class="preview" id="preview"><div class="panel-head"><h2 id="previewTitle">File preview</h2><span class="tag">Local only</span></div><pre id="previewText"></pre></div>
-          <div class="panel" id="csvValidation" style="display:none;margin-top:14px"><div class="panel-head"><h2>CSV validation report</h2><span class="tag" id="csvValidationStatus">Not checked</span></div><div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><article class="stat"><div class="stat-top">Rows checked</div><strong id="csvRowsChecked">0</strong></article><article class="stat"><div class="stat-top">Valid rows</div><strong id="csvRowsValid">0</strong></article><article class="stat"><div class="stat-top">Rows with issues</div><strong id="csvRowsInvalid">0</strong></article></div><div id="csvValidationDetails" class="warning-text"></div></div>
+          <div class="panel" id="csvValidation" style="display:none;margin-top:14px"><div class="panel-head"><h2>CSV validation report</h2><span class="tag" id="csvValidationStatus">Not checked</span></div><div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><article class="stat"><div class="stat-top">Rows checked</div><strong id="csvRowsChecked">0</strong></article><article class="stat"><div class="stat-top">Valid rows</div><strong id="csvRowsValid">0</strong></article><article class="stat"><div class="stat-top">Rows with issues</div><strong id="csvRowsInvalid">0</strong></article></div><div id="csvValidationDetails" class="warning-text"></div><button class="btn" id="downloadCsvIssues" type="button" style="display:none;margin-top:12px">Download row issues CSV</button></div>
           <div class="warning-text">Validation runs locally in your browser. It does not upload files or write to BigQuery. Database import remains disabled until server-side validation, duplicate checks and write permissions are implemented.</div>
         </div>
         <div class="panel"><div class="panel-head"><h2>Download CSV templates</h2><small>Match existing BigQuery schema</small></div><div class="template-list">
@@ -207,7 +207,7 @@ function validateCsv(input){
  const required={companies:["company_id","company_name","source_url"],people:["person_id","company_id","full_name"],sources:["company_source_id","company_id","source_type","source_url"]}[kind];
  const missing=required.filter(field=>!headers.includes(field));
  if(missing.length)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["Missing required columns: "+missing.join(", ")]};
- const index=Object.fromEntries(headers.map((name,i)=>[name,i])),seen=new Set(),issues=[],total=rows.length-1;let valid=0,invalid=0;
+ const index=Object.fromEntries(headers.map((name,i)=>[name,i])),seen=new Set(),issues=[],issueRows=[],total=rows.length-1;let valid=0,invalid=0;
  for(let n=1;n<rows.length;n++){
   const cells=rows[n],get=key=>(cells[index[key]]||"").trim(),rowIssues=[];
   if(cells.length!==headers.length)rowIssues.push("expected "+headers.length+" columns but found "+cells.length);
@@ -217,10 +217,17 @@ function validateCsv(input){
   ["source_url","official_website","linkedin_url","linkedin_profile"].forEach(key=>{
    const url=get(key);if(url&&!/^https?:\/\//i.test(url))rowIssues.push(key+" must start with http:// or https://");
   });
-  if(rowIssues.length){invalid++;if(issues.length<8)issues.push("Row "+(n+1)+": "+rowIssues.join("; "));}else valid++;
+  if(rowIssues.length){invalid++;issueRows.push({row_number:n+1,issues:rowIssues.join("; ")});if(issues.length<8)issues.push("Row "+(n+1)+": "+rowIssues.join("; "));}else valid++;
  }
- return {total,valid,invalid,issues,kind};
+ return {total,valid,invalid,issues,issueRows,kind};
 }
+function downloadCsvIssueReport(issueRows){
+ const quote=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
+ const csv=["row_number,issues",...issueRows.map(item=>[item.row_number,quote(item.issues)].join(","))].join("\r\n");
+ const blob=new Blob(["\\uFEFF",csv],{type:"text/csv;charset=utf-8"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="zorvena_csv_validation_issues.csv";a.click();URL.revokeObjectURL(url);
+}
+document.getElementById("downloadCsvIssues").addEventListener("click",()=>downloadCsvIssueReport(window.lastCsvIssueRows||[]));
 document.getElementById("csvFile").addEventListener("change",event=>{
  const file=event.target.files&&event.target.files[0];if(!file)return;
  const reader=new FileReader();reader.onload=()=>{
@@ -229,6 +236,8 @@ document.getElementById("csvFile").addEventListener("change",event=>{
   document.getElementById("previewText").textContent=rows.slice(0,11).map(row=>row.join(" | ")).join("\n")+(rows.length>11?"\n… preview limited to first 10 data rows":"");
   document.getElementById("preview").classList.add("show");
   const report=validateCsv(content),box=document.getElementById("csvValidation");
+  window.lastCsvIssueRows=report.issueRows||[];
+  const issueButton=document.getElementById("downloadCsvIssues");issueButton.style.display=window.lastCsvIssueRows.length?"inline-flex":"none";
   box.style.display="block";document.getElementById("csvRowsChecked").textContent=report.total.toLocaleString();
   document.getElementById("csvRowsValid").textContent=report.valid.toLocaleString();document.getElementById("csvRowsInvalid").textContent=report.invalid.toLocaleString();
   const status=document.getElementById("csvValidationStatus");status.textContent=report.total===0?"No data rows":report.invalid===0?"No structural issues":"Review required";
