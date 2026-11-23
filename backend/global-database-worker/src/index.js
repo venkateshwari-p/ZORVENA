@@ -212,7 +212,7 @@ async function handleApi(request, env, url) {
   if (url.pathname === "/api/sources") {
     const sourceTables = ["company_sources", "person_sources"];
     const schemaSql = `SELECT table_name, column_name
-      FROM `${env.PROJECT_ID}.${env.DATASET_ID}.INFORMATION_SCHEMA.COLUMNS`
+      FROM \`${env.PROJECT_ID}.${env.DATASET_ID}.INFORMATION_SCHEMA.COLUMNS\`
       WHERE table_name IN ("company_sources", "person_sources")
       ORDER BY table_name, ordinal_position`;
     const [schema, companySources, personSources] = await Promise.all([
