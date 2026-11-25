@@ -266,6 +266,23 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 #companyRows tr[data-company-detail] td:first-child{color:#1c623b;font-weight:700}
 @media(max-width:520px){.company-detail-overlay{padding:10px}.company-detail-card{padding:16px;border-radius:14px}.company-detail-body{grid-template-columns:1fr}.company-detail-field.full{grid-column:auto}.company-detail-header h2{font-size:18px}}
 
+
+/* Contact profile detail panel */
+.person-detail-overlay{position:fixed;inset:0;z-index:81;background:rgba(7,31,18,.56);backdrop-filter:blur(3px);padding:22px;display:flex;align-items:center;justify-content:center}
+.person-detail-card{width:min(720px,100%);max-height:min(86vh,820px);overflow:auto;background:#fff;border:1px solid #e2eae0;border-radius:18px;box-shadow:0 25px 90px rgba(0,0,0,.24);padding:23px}
+.person-detail-header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding-bottom:14px;border-bottom:1px solid #eaf0e8;margin-bottom:15px}
+.person-detail-header h2{font-size:21px;line-height:1.3;color:#173e29;margin:5px 0 0}
+.person-detail-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.person-detail-field{min-width:0;padding:12px;background:#f7faf5;border:1px solid #edf2e9;border-radius:10px}
+.person-detail-field.full{grid-column:1/-1}
+.person-detail-field label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#819083;font-weight:700;margin-bottom:5px}
+.person-detail-field div{font-size:12px;color:#304a36;word-break:break-word;white-space:pre-wrap}
+.person-detail-field a{color:#247044;text-decoration:underline;text-underline-offset:2px}
+#peopleRows tr[data-person-detail]{cursor:pointer}
+#peopleRows tr[data-person-detail]:focus{outline:2px solid #82aa69;outline-offset:-2px}
+#peopleRows tr[data-person-detail] td:first-child{color:#1c623b;font-weight:700}
+@media(max-width:520px){.person-detail-overlay{padding:10px}.person-detail-card{padding:16px;border-radius:14px}.person-detail-body{grid-template-columns:1fr}.person-detail-field.full{grid-column:auto}.person-detail-header h2{font-size:18px}}
+
 </style>
 </head>
 <body>
@@ -576,7 +593,21 @@ document.getElementById("csvFile").addEventListener("change",event=>{
  }
  let peopleOffset=0,peopleTotal=0;
  const peopleLimit=()=>Number($("peopleLimit").value||50);
- async function loadPeople(reset=false){
+ async function openPersonDetail(row){
+ const overlay=$("personDetailOverlay"),body=$("personDetailBody"),title=$("personDetailTitle");title.textContent=row.full_name||"Contact details";body.innerHTML="";
+ const preferred=["person_id","full_name","company_name","company_id","job_title","department","country","contact_location","linkedin_profile","business_email","business_phone","decision_role","purchasing_responsibility","product_interest","contact_source","verification_status","outreach_permission_status","last_verified_at","created_at","updated_at"];
+ const keys=[...preferred.filter(k=>Object.prototype.hasOwnProperty.call(row,k)),...Object.keys(row).filter(k=>!preferred.includes(k))];
+ keys.forEach(key=>{const value=row[key];if(value===null||value===undefined||value===""||(Array.isArray(value)&&!value.length))return;const item=document.createElement("div");item.className="person-detail-field"+(["contact_location","purchasing_responsibility","product_interest"].includes(key)?" full":"");const label=document.createElement("label");label.textContent=key.replace(/_/g," ");const content=document.createElement("div");
+ if(["linkedin_profile","business_email"].includes(key)&&typeof value==="string"){const link=document.createElement("a");if(key==="business_email"){link.href="mailto:"+value;}else if(/^https?:\/\//i.test(value)){link.href=value;link.target="_blank";link.rel="noopener noreferrer";}else{content.textContent=value;item.append(label,content);body.appendChild(item);return;}link.textContent=value;content.appendChild(link);}else content.textContent=typeof value==="object"?JSON.stringify(value):String(value);
+ item.append(label,content);body.appendChild(item);});
+ overlay.style.display="flex";$("personDetailClose").focus();document.body.style.overflow="hidden";
+}
+function closePersonDetail(){$("personDetailOverlay").style.display="none";document.body.style.overflow="";}
+$("personDetailClose").addEventListener("click",closePersonDetail);
+$("personDetailOverlay").addEventListener("click",event=>{if(event.target===$("personDetailOverlay"))closePersonDetail();});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"&&$("personDetailOverlay").style.display==="flex")closePersonDetail();});
+
+function loadPeople(reset=false){
   if(!apiHeaders)return;
   if(reset)peopleOffset=0;
   const params=new URLSearchParams({limit:String(peopleLimit()),offset:String(peopleOffset)});
@@ -590,9 +621,10 @@ document.getElementById("csvFile").addEventListener("change",event=>{
    const tbody=$("peopleRows");tbody.innerHTML="";
    if(!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.className="empty";td.innerHTML="♙<b>No matching professional records</b><span>The database currently contains "+peopleTotal+" matching contacts. Add approved, source-backed records to BigQuery to populate this directory.</span>";tr.appendChild(td);tbody.appendChild(tr);}
    rows.forEach(row=>{
-    const tr=document.createElement("tr");
+    const tr=document.createElement("tr");tr.tabIndex=0;tr.dataset.personDetail="true";tr.setAttribute("aria-label","View professional profile: "+(row.full_name||"Contact"));
     const values=[row.full_name||"—",row.company_name||row.company_id||"—",row.job_title||"—",row.country||"—",row.verification_status||"—",row.outreach_permission_status||"—"];
-    values.forEach((value,index)=>{const td=document.createElement("td");td.textContent=value;if(index===0&&row.linkedin_profile){const a=document.createElement("a");a.href=row.linkedin_profile;a.target="_blank";a.rel="noopener noreferrer";a.textContent=" ↗";a.title="Open public professional profile";td.appendChild(a);}tr.appendChild(td);});
+    values.forEach((value,index)=>{const td=document.createElement("td");td.textContent=value;if(index===0&&row.linkedin_profile){const a=document.createElement("a");a.href=row.linkedin_profile;a.target="_blank";a.rel="noopener noreferrer";a.textContent=" ↗";a.title="Open public professional profile";a.addEventListener("click",event=>event.stopPropagation());td.appendChild(a);}tr.appendChild(td);});
+    tr.addEventListener("click",()=>openPersonDetail(row));tr.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openPersonDetail(row);}});
     tbody.appendChild(tr);
    });
    const start=peopleTotal?peopleOffset+1:0,end=Math.min(peopleOffset+rows.length,peopleTotal);
@@ -707,5 +739,6 @@ function loadCompanies(reset=false){
 </script>
 
 <div class="company-detail-overlay" id="companyDetailOverlay" role="dialog" aria-modal="true" aria-labelledby="companyDetailTitle" style="display:none"><div class="company-detail-card"><div class="company-detail-header"><div><div class="eyebrow">Company profile</div><h2 id="companyDetailTitle">Company details</h2></div><button class="btn" id="companyDetailClose" type="button" aria-label="Close company details">✕</button></div><div id="companyDetailBody" class="company-detail-body"></div></div></div>
+<div class="person-detail-overlay" id="personDetailOverlay" role="dialog" aria-modal="true" aria-labelledby="personDetailTitle" style="display:none"><div class="person-detail-card"><div class="person-detail-header"><div><div class="eyebrow">Professional profile</div><h2 id="personDetailTitle">Contact details</h2></div><button class="btn" id="personDetailClose" type="button" aria-label="Close contact details">✕</button></div><div id="personDetailBody" class="person-detail-body"></div></div></div>
 </body>
 </html>
