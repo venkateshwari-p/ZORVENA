@@ -228,6 +228,27 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 #view-companies .filter-row .field:has(button),#view-people .filter-row .field:has(button){padding-top:2px}
 }
 
+
+/* Overview insights: dynamic taxonomy bars and readiness */
+.overview-insights{display:grid;grid-template-columns:1.05fr .95fr;gap:17px;margin-top:17px}
+.taxonomy-bars{display:grid;gap:17px;padding:4px 2px}
+.bar-label{display:flex;justify-content:space-between;align-items:center;color:#56685a;font-size:11px;margin-bottom:7px}
+.bar-label b{color:#244b32;font-size:12px}
+.bar-track{height:9px;background:#eef3ea;border-radius:20px;overflow:hidden}
+.bar-track span{display:block;height:100%;background:linear-gradient(90deg,#1d7044,#9bbd6a);border-radius:20px;transition:width .35s ease}
+.chart-note{margin:12px 0 0;font-size:10px;color:#8b978b}
+.readiness-list{display:grid;gap:0}
+.readiness-item{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;padding:14px 0;border-bottom:1px solid #edf1ea}
+.readiness-item:last-child{border-bottom:0}
+.readiness-item b{display:block;font-size:11px;color:#314a36}
+.readiness-item small{display:block;font-size:10px;color:#879287;margin-top:3px}
+.ready-dot{width:8px;height:8px;border-radius:50%;background:#c6d0c3}
+.ready-dot-green{background:#69a56e;box-shadow:0 0 0 3px #e9f5e9}
+.empty-dot{background:#d2aa5a;box-shadow:0 0 0 3px #fbf2df}
+.ready-state{font-size:9px;font-weight:700;padding:5px 8px;border-radius:20px;background:#f3f5f1;color:#778477;white-space:nowrap}
+@media(max-width:850px){.overview-insights{grid-template-columns:1fr}}
+@media(max-width:520px){.readiness-item{grid-template-columns:9px minmax(0,1fr)}.readiness-item .ready-state{grid-column:2;justify-self:start}.overview-insights .panel{padding:14px}}
+
 </style>
 </head>
 <body>
@@ -287,6 +308,19 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
           <div class="activity-row"><span class="activity-icon">✓</span><div><b>Data quality</b><small>Duplicates, missing fields and verification</small></div></div>
         </div></div>
       </div>
+<div class="overview-insights">
+<div class="panel"><div class="panel-head"><h2>Taxonomy distribution</h2><small>Master classification counts</small></div>
+<div class="taxonomy-bars">
+<div class="bar-row"><div class="bar-label"><span>Sectors</span><b id="barSectorsCount">14</b></div><div class="bar-track"><span id="barSectors" style="width:16.3%"></span></div></div>
+<div class="bar-row"><div class="bar-label"><span>Industries</span><b id="barIndustriesCount">67</b></div><div class="bar-track"><span id="barIndustries" style="width:77.9%"></span></div></div>
+<div class="bar-row"><div class="bar-label"><span>Sub-sectors</span><b id="barSubsectorsCount">86</b></div><div class="bar-track"><span id="barSubsectors" style="width:100%"></span></div></div>
+<div class="bar-row"><div class="bar-label"><span>Divisions</span><b id="barDivisionsCount">12</b></div><div class="bar-track"><span id="barDivisions" style="width:14%"></span></div></div></div>
+<p class="chart-note">Bars compare classification counts against the largest category.</p></div>
+<div class="panel"><div class="panel-head"><h2>Database readiness</h2><small>Current record status</small></div>
+<div class="readiness-list">
+<div class="readiness-item"><span class="ready-dot empty-dot"></span><div><b>Company records</b><small id="readinessCompanies">Waiting for connection</small></div><span class="ready-state" id="companyReadiness">Pending</span></div>
+<div class="readiness-item"><span class="ready-dot empty-dot"></span><div><b>Professional contacts</b><small id="readinessPeople">Waiting for connection</small></div><span class="ready-state" id="peopleReadiness">Pending</span></div>
+<div class="readiness-item"><span class="ready-dot ready-dot-green"></span><div><b>Classification system</b><small>Sector, industry, sub-sector and division structure</small></div><span class="ready-state" id="taxonomyReadiness">Structured</span></div></div></div></div>
     </section>
     <section class="view" id="view-companies">
       <div class="page-head"><div><div class="eyebrow">Master directory</div><h1>Company Directory</h1><p>Search and filter agriculture businesses across the global value chain.</p></div><div class="head-actions"><button class="btn" data-go="import">⇧ Import companies</button><button class="btn" disabled title="Connect the BigQuery API first">⇩ Export results</button></div></div>
@@ -613,6 +647,10 @@ document.getElementById("csvFile").addEventListener("change",event=>{
    [counts.companies,counts.people,counts.industries,counts.subsectors].forEach((v,i)=>{if(stats[i])stats[i].textContent=Number(v??0).toLocaleString();});
    const tax=document.querySelectorAll("#view-overview .tax-item b");
    [counts.sectors,counts.industries,counts.subsectors,counts.divisions].forEach((v,i)=>{if(tax[i])tax[i].textContent=Number(v??0).toLocaleString();});
+   const tvals=[Number(counts.sectors||0),Number(counts.industries||0),Number(counts.subsectors||0),Number(counts.divisions||0)],tmax=Math.max(...tvals,1),tkeys=["Sectors","Industries","Subsectors","Divisions"];
+   tkeys.forEach((key,i)=>{const n=$( "bar"+key+"Count"),b=$( "bar"+key);if(n)n.textContent=tvals[i].toLocaleString();if(b)b.style.width=(tvals[i]/tmax*100)+"%";});
+   const ccount=Number(counts.companies||0),pcount=Number(counts.people||0);$("readinessCompanies").textContent=ccount.toLocaleString()+" records currently available";$("companyReadiness").textContent=ccount?"Available":"Empty";$("readinessPeople").textContent=pcount.toLocaleString()+" contacts currently available";$("peopleReadiness").textContent=pcount?"Available":"Empty";
+   $("companyReadiness").style.background=ccount?"#e9f5e9":"#fbf2df";$("companyReadiness").style.color=ccount?"#377144":"#946c25";$("peopleReadiness").style.background=pcount?"#e9f5e9":"#fbf2df";$("peopleReadiness").style.color=pcount?"#377144":"#946c25";
    renderTaxonomy(tx.data);apiHeaders=headers;setupCompanyFilters(tx.data);
    await loadCompanies(true);await loadPeople(true);await loadSources();
    const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview, industry taxonomy, Company Directory and People & Contacts are connected to the authenticated ZORVENA API. Directory results depend on records available in BigQuery.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
