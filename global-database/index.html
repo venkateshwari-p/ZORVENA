@@ -287,6 +287,8 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 #taxonomyDetail{margin:12px 0 17px;border:1px solid #e6ede2;border-radius:12px;background:#f8fbf6;padding:14px}.taxonomy-detail-head{display:flex;flex-direction:column;gap:4px;margin-bottom:9px}.taxonomy-detail-head b{font-size:12px;color:#28543a}.taxonomy-detail-head span{font-size:10px;color:#7c897d}.taxonomy-detail-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.taxonomy-detail-fields .detail-field{padding:9px;border:1px solid #e9f0e5;border-radius:8px;background:#fff;min-width:0}.taxonomy-detail-fields label{display:block;text-transform:uppercase;letter-spacing:.06em;font-size:8px;color:#899589;margin-bottom:4px}.taxonomy-detail-fields div{font-size:10px;color:#304b36;overflow-wrap:anywhere}@media(max-width:600px){.taxonomy-detail-fields{grid-template-columns:1fr 1fr}}
 /* Company classification block in profiles */
 .company-classification-panel{grid-column:1/-1;border:1px solid #e2ecdd;border-radius:11px;background:#f5faf2;padding:12px;margin-bottom:2px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.company-classification-panel h3{grid-column:1/-1;margin:0 0 2px;color:#28543a;font-size:12px}.company-classification-item{padding:9px;background:#fff;border:1px solid #eaf0e6;border-radius:8px;min-width:0}.company-classification-item label{display:block;text-transform:uppercase;letter-spacing:.06em;font-size:8px;color:#899589;margin-bottom:4px}.company-classification-item div{font-size:10px;color:#304b36;overflow-wrap:anywhere}@media(max-width:520px){.company-classification-panel{grid-template-columns:1fr}}
+/* Company filter summary chips */
+.company-filter-summary{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}.company-filter-summary:empty{display:none}.company-filter-chip{border:1px solid #dfe9d8;border-radius:999px;background:#f6faf3;padding:5px 9px;font-size:10px;color:#466348}.company-filter-chip b{color:#244c33}
 </style>
 </head>
 <body>
@@ -377,6 +379,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
           <div class="field" style="display:flex;align-items:end"><button class="btn primary" id="companyApply" type="button">Search directory</button></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn" id="companyReset" type="button">Reset filters</button></div>
         </div>
+        <div id="companyFilterSummary" class="company-filter-summary" aria-live="polite"></div>
         <div class="panel-head"><small id="companyResults">Connect the database to load company records.</small><div style="display:flex;gap:8px"><button class="btn" id="companyPrev" type="button" disabled>← Previous</button><button class="btn" id="companyNext" type="button" disabled>Next →</button></div></div>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>Company</th><th>Country</th><th>Industry</th><th>Business type</th><th>Trade activity</th><th>Verification</th></tr></thead><tbody id="companyRows"><tr><td class="empty" colspan="6">▣<b>Connect database to load records</b><span>Company records will appear here when available in BigQuery.</span></td></tr></tbody></table></div>
       </div>
@@ -550,13 +553,18 @@ document.getElementById("csvFile").addEventListener("change",event=>{
  const companyLimit=()=>Number($("companyLimit").value||50);
  const industryName=id=>(taxonomyData?.industries||[]).find(x=>x.industry_id===id)?.industry_name||id||"—";
  const fillCompanySelect=(id,items,key,label,firstText)=>{const el=$(id);el.innerHTML="";const first=document.createElement("option");first.value="";first.textContent=firstText;el.appendChild(first);items.forEach(item=>{const o=document.createElement("option");o.value=item[key];o.textContent=item[key]+" · "+item[label];el.appendChild(o);});};
- function setupCompanyFilters(data){
+ function renderCompanyFilterSummary(){
+ const host=$("companyFilterSummary");if(!host)return;host.innerHTML="";
+ const fields=[["Search",$("companySearch").value.trim()],["Country",$("companyCountry").value.trim()],["Sector",$("companySector").selectedOptions[0]?.textContent],["Industry",$("companyIndustry").selectedOptions[0]?.textContent],["Sub-sector",$("companySubsector").selectedOptions[0]?.textContent],["Business type",$("companyType").value.trim()],["Verification",$("companyVerification").value]];
+ fields.forEach(([label,value])=>{if(!value||value.startsWith("All ")||value.startsWith("Select "))return;const chip=document.createElement("span");chip.className="company-filter-chip";chip.textContent=label+": "+value;host.appendChild(chip);});
+}
+function setupCompanyFilters(data){
   taxonomyData=data;
   fillCompanySelect("companySector",data.sectors||[],"sector_id","sector_name","All sectors");
   fillCompanySelect("companyIndustry",data.industries||[],"industry_id","industry_name","All industries");
   fillCompanySelect("companySubsector",data.subsectors||[],"subsector_id","subsector_name","All sub-sectors");
-  $("companySector").onchange=()=>{const sid=$("companySector").value;fillCompanySelect("companyIndustry",(data.industries||[]).filter(x=>!sid||x.sector_id===sid),"industry_id","industry_name","All industries");$("companySubsector").innerHTML='<option value="">All sub-sectors</option>';};
-  $("companyIndustry").onchange=()=>{const iid=$("companyIndustry").value;fillCompanySelect("companySubsector",(data.subsectors||[]).filter(x=>!iid||x.industry_id===iid),"subsector_id","subsector_name","All sub-sectors");};
+  $("companySector").onchange=()=>{const sid=$("companySector").value;fillCompanySelect("companyIndustry",(data.industries||[]).filter(x=>!sid||x.sector_id===sid),"industry_id","industry_name","All industries");$("companyIndustry").value="";$"companySubsector").innerHTML='<option value="">All sub-sectors</option>';renderCompanyFilterSummary();};
+  $("companyIndustry").onchange=()=>{const iid=$("companyIndustry").value;fillCompanySelect("companySubsector",(data.subsectors||[]).filter(x=>!iid||x.industry_id===iid),"subsector_id","subsector_name","All sub-sectors");renderCompanyFilterSummary();};
  }
  async function loadSources(){
   if(!apiHeaders)return;
@@ -737,8 +745,8 @@ function loadCompanies(reset=false){
  $("submitConnect").addEventListener("click",authenticate);
  $("cancelConnect").addEventListener("click",()=>{$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";});
  $("connectTokenInput").addEventListener("keydown",e=>{if(e.key==="Enter")authenticate();});
- $("companyApply").addEventListener("click",()=>loadCompanies(true));
- $("companyReset").addEventListener("click",()=>{["companySearch","companyCountry","companyType","companySector","companyIndustry","companySubsector","companyVerification"].forEach(id=>$(id).value="");setupCompanyFilters(taxonomyData||{sectors:[],industries:[],subsectors:[]});loadCompanies(true);});
+ $("companyApply").addEventListener("click",()=>{renderCompanyFilterSummary();loadCompanies(true);});
+ $("companyReset").addEventListener("click",()=>{["companySearch","companyCountry","companyType","companySector","companyIndustry","companySubsector","companyVerification"].forEach(id=>$(id).value="");setupCompanyFilters(taxonomyData||{sectors:[],industries:[],subsectors:[]});renderCompanyFilterSummary();loadCompanies(true);});
  $("companyPrev").addEventListener("click",()=>{companyOffset=Math.max(0,companyOffset-companyLimit());loadCompanies();});
  $("companyNext").addEventListener("click",()=>{companyOffset+=companyLimit();loadCompanies();});
  $("sourcesRefresh").addEventListener("click",loadSources);
