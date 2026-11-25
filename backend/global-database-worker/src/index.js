@@ -239,6 +239,8 @@ async function handleApi(request, env, url) {
       params.push({ name: "q", type: "STRING", value: q });
     }
     addExactFilter(params, where, url.searchParams, "company_id", "company_id");
+    addExactFilter(params, where, url.searchParams, "purchasing_responsibility", "purchasing_responsibility");
+    addExactFilter(params, where, url.searchParams, "product_interest", "product_interest");
     addExactFilter(params, where, url.searchParams, "country", "country");
     addExactFilter(params, where, url.searchParams, "department", "department");
     addExactFilter(params, where, url.searchParams, "decision_role", "decision_role");
@@ -252,7 +254,7 @@ async function handleApi(request, env, url) {
       p.linkedin_profile, p.business_email, p.business_phone, p.contact_location, p.decision_role,
       p.purchasing_responsibility, p.product_interest, p.verification_status, p.outreach_permission_status
       FROM ${table(env, "global_people")} p
-      LEFT JOIN ${table(env, "global_companies")} c ON p.company_id = c.company_id${whereSql.replace(/\b(company_id|country|department|decision_role|verification_status|outreach_permission_status)\b/g, "p.$1")}
+      LEFT JOIN ${table(env, "global_companies")} c ON p.company_id = c.company_id${whereSql.replace(/\b(company_id|country|department|decision_role|verification_status|outreach_permission_status|purchasing_responsibility|product_interest)\b/g, "p.$1")}
       ORDER BY p.full_name LIMIT ${limit} OFFSET ${offset}`;
     const countSql = `SELECT COUNT(*) AS total FROM ${table(env, "global_people")}${whereSql}`;
     const [data, count] = await Promise.all([runQuery(env, sql, params), runQuery(env, countSql, params)]);
