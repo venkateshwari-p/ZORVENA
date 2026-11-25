@@ -203,6 +203,31 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
 
+
+/* Directory UX polish: filter grouping and responsive control sizing */
+#view-companies .filter-row,#view-people .filter-row{align-items:stretch}
+#view-companies .filter-row .field,#view-people .filter-row .field{min-width:0}
+#view-companies .filter-row label,#view-people .filter-row label{font-size:10px;font-weight:700;letter-spacing:.025em;color:#667568}
+#view-companies .filter-row input,#view-companies .filter-row select,#view-people .filter-row input,#view-people .filter-row select{min-width:0;width:100%;height:40px}
+#view-companies .filter-row .btn,#view-people .filter-row .btn{height:40px;width:100%;white-space:nowrap}
+#view-companies .filter-row .field:has(button),#view-people .filter-row .field:has(button){align-self:end}
+#view-companies .panel-head small,#view-people .panel-head small{display:block;line-height:1.5;min-width:0}
+#view-companies .panel-head,#view-people .panel-head{gap:10px}
+#view-companies .panel-head>div,#view-people .panel-head>div{margin-left:auto}
+#view-companies .panel-head .btn:disabled,#view-people .panel-head .btn:disabled{opacity:.48}
+@media(max-width:1050px){
+#view-companies .filter-row,#view-people .filter-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+#view-companies .filter-row .field:first-child,#view-people .filter-row .field:first-child{grid-column:1/-1}
+}
+@media(max-width:520px){
+#view-companies .filter-row,#view-people .filter-row{grid-template-columns:1fr}
+#view-companies .filter-row .field:first-child,#view-people .filter-row .field:first-child{grid-column:auto}
+#view-companies .panel-head,#view-people .panel-head{display:flex;flex-direction:column;align-items:stretch}
+#view-companies .panel-head>div,#view-people .panel-head>div{margin-left:0;width:100%}
+#view-companies .panel-head .btn,#view-people .panel-head .btn{min-width:0}
+#view-companies .filter-row .field:has(button),#view-people .filter-row .field:has(button){padding-top:2px}
+}
+
 </style>
 </head>
 <body>
