@@ -389,6 +389,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
       <div class="panel">
         <div class="filter-row">
           <div class="field"><label>Search contact</label><input id="peopleSearch" placeholder="Name or job title"></div>
+          <div class="field"><label>Company ID</label><input id="peopleCompany" placeholder="Exact company ID"></div><div class="field"><label>Purchasing responsibility</label><input id="peoplePurchasing" placeholder="Exact responsibility"></div><div class="field"><label>Product interest</label><input id="peopleProduct" placeholder="Exact product interest"></div>
           <div class="field"><label>Country</label><input id="peopleCountry" placeholder="Exact country name"></div>
           <div class="field"><label>Department</label><input id="peopleDepartment" placeholder="Exact department"></div>
           <div class="field"><label>Decision role</label><input id="peopleRole" placeholder="Exact decision role"></div>
@@ -623,7 +624,7 @@ function loadPeople(reset=false){
   if(!apiHeaders)return;
   if(reset)peopleOffset=0;
   const params=new URLSearchParams({limit:String(peopleLimit()),offset:String(peopleOffset)});
-  const fields={q:$("peopleSearch").value.trim(),country:$("peopleCountry").value.trim(),department:$("peopleDepartment").value.trim(),decision_role:$("peopleRole").value.trim(),verification_status:$("peopleVerification").value.trim(),outreach_permission_status:$("peoplePermission").value.trim()};
+  const fields={q:$("peopleSearch").value.trim(),company_id:$("peopleCompany").value.trim(),country:$("peopleCountry").value.trim(),department:$("peopleDepartment").value.trim(),decision_role:$("peopleRole").value.trim(),purchasing_responsibility:$("peoplePurchasing").value.trim(),product_interest:$("peopleProduct").value.trim(),verification_status:$("peopleVerification").value.trim(),outreach_permission_status:$("peoplePermission").value.trim()};
   Object.entries(fields).forEach(([k,v])=>{if(v)params.set(k,v);});
   $("peopleApply").disabled=true;$("peopleApply").textContent="Loading…";
   try{
@@ -751,7 +752,7 @@ function loadCompanies(reset=false){
  $("companyNext").addEventListener("click",()=>{companyOffset+=companyLimit();loadCompanies();});
  $("sourcesRefresh").addEventListener("click",loadSources);
  $("peopleApply").addEventListener("click",()=>loadPeople(true));
- $("peopleReset").addEventListener("click",()=>{["peopleSearch","peopleCountry","peopleDepartment","peopleRole","peopleVerification","peoplePermission"].forEach(id=>$(id).value="");loadPeople(true);});
+ $("peopleReset").addEventListener("click",()=>{["peopleSearch","peopleCompany","peopleCountry","peopleDepartment","peopleRole","peoplePurchasing","peopleProduct","peopleVerification","peoplePermission"].forEach(id=>$(id).value="");loadPeople(true);});
  $("peoplePrev").addEventListener("click",()=>{peopleOffset=Math.max(0,peopleOffset-peopleLimit());loadPeople();});
  $("peopleNext").addEventListener("click",()=>{peopleOffset+=peopleLimit();loadPeople();});
 })();
