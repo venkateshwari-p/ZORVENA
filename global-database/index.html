@@ -249,6 +249,23 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 @media(max-width:850px){.overview-insights{grid-template-columns:1fr}}
 @media(max-width:520px){.readiness-item{grid-template-columns:9px minmax(0,1fr)}.readiness-item .ready-state{grid-column:2;justify-self:start}.overview-insights .panel{padding:14px}}
 
+
+/* Company profile detail overlay */
+.company-detail-overlay{position:fixed;inset:0;z-index:80;background:rgba(7,31,18,.56);backdrop-filter:blur(3px);padding:22px;display:flex;align-items:center;justify-content:center}
+.company-detail-card{width:min(780px,100%);max-height:min(86vh,850px);overflow:auto;background:#fff;border:1px solid #e2eae0;border-radius:18px;box-shadow:0 25px 90px rgba(0,0,0,.24);padding:23px}
+.company-detail-header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding-bottom:14px;border-bottom:1px solid #eaf0e8;margin-bottom:15px}
+.company-detail-header h2{font-size:21px;line-height:1.3;color:#173e29;margin:5px 0 0}
+.company-detail-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.company-detail-field{min-width:0;padding:12px;background:#f7faf5;border:1px solid #edf2e9;border-radius:10px}
+.company-detail-field.full{grid-column:1/-1}
+.company-detail-field label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#819083;font-weight:700;margin-bottom:5px}
+.company-detail-field div{font-size:12px;color:#304a36;word-break:break-word;white-space:pre-wrap}
+.company-detail-field a{color:#247044;text-decoration:underline;text-underline-offset:2px}
+#companyRows tr[data-company-detail]{cursor:pointer}
+#companyRows tr[data-company-detail]:focus{outline:2px solid #82aa69;outline-offset:-2px}
+#companyRows tr[data-company-detail] td:first-child{color:#1c623b;font-weight:700}
+@media(max-width:520px){.company-detail-overlay{padding:10px}.company-detail-card{padding:16px;border-radius:14px}.company-detail-body{grid-template-columns:1fr}.company-detail-field.full{grid-column:auto}.company-detail-header h2{font-size:18px}}
+
 </style>
 </head>
 <body>
@@ -584,7 +601,21 @@ document.getElementById("csvFile").addEventListener("change",event=>{
   }catch(error){$("peopleResults").textContent="Could not load professional records: "+error.message;}
   finally{$("peopleApply").disabled=false;$("peopleApply").textContent="Search contacts";}
  }
- async function loadCompanies(reset=false){
+ async function openCompanyDetail(row){
+ const overlay=$("companyDetailOverlay"),body=$("companyDetailBody"),title=$("companyDetailTitle");title.textContent=row.company_name||"Company details";body.innerHTML="";
+ const preferred=["company_id","company_name","country","state_region","city","official_website","linkedin_url","sector_id","industry_id","subsector_id","division_summary","business_type","products_services","trade_activity","public_contact_details","verification_status","source_url","last_verified_at","created_at","updated_at"];
+ const keys=[...preferred.filter(k=>Object.prototype.hasOwnProperty.call(row,k)),...Object.keys(row).filter(k=>!preferred.includes(k))];
+ keys.forEach(key=>{const value=row[key];if(value===null||value===undefined||value===""||(Array.isArray(value)&&!value.length))return;const item=document.createElement("div");item.className="company-detail-field"+(["products_services","division_summary","public_contact_details","trade_activity"].includes(key)?" full":"");const label=document.createElement("label");label.textContent=key.replace(/_/g," ");const content=document.createElement("div");
+ if((key==="official_website"||key==="linkedin_url"||key==="source_url")&&typeof value==="string"&&/^https?:\/\//i.test(value)){const link=document.createElement("a");link.href=value;link.target="_blank";link.rel="noopener noreferrer";link.textContent=value;content.appendChild(link);}else content.textContent=typeof value==="object"?JSON.stringify(value):String(value);
+ item.append(label,content);body.appendChild(item);});
+ overlay.style.display="flex";$("companyDetailClose").focus();document.body.style.overflow="hidden";
+}
+function closeCompanyDetail(){ $("companyDetailOverlay").style.display="none";document.body.style.overflow=""; }
+$("companyDetailClose").addEventListener("click",closeCompanyDetail);
+$("companyDetailOverlay").addEventListener("click",event=>{if(event.target===$("companyDetailOverlay"))closeCompanyDetail();});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"&&$("companyDetailOverlay").style.display==="flex")closeCompanyDetail();});
+
+function loadCompanies(reset=false){
   if(!apiHeaders)return;
   if(reset)companyOffset=0;
   const params=new URLSearchParams({limit:String(companyLimit()),offset:String(companyOffset)});
@@ -598,9 +629,10 @@ document.getElementById("csvFile").addEventListener("change",event=>{
    const tbody=$("companyRows");tbody.innerHTML="";
    if(!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.className="empty";td.innerHTML="▣<b>No matching company records</b><span>The database currently contains "+companyTotal+" matching records. Add approved company records to BigQuery to populate this directory.</span>";tr.appendChild(td);tbody.appendChild(tr);}
    rows.forEach(row=>{
-    const tr=document.createElement("tr");
+    const tr=document.createElement("tr");tr.tabIndex=0;tr.dataset.companyDetail="true";tr.setAttribute("aria-label","View company profile: "+(row.company_name||"Company"));
     const values=[row.company_name||"—",row.country||"—",industryName(row.industry_id),row.business_type||"—",row.trade_activity||"—",row.verification_status||"—"];
-    values.forEach((value,index)=>{const td=document.createElement("td");td.textContent=value;if(index===0&&row.official_website){const a=document.createElement("a");a.href=row.official_website;a.target="_blank";a.rel="noopener noreferrer";a.textContent=" ↗";a.title="Open company website";td.appendChild(a);}tr.appendChild(td);});
+    values.forEach((value,index)=>{const td=document.createElement("td");td.textContent=value;if(index===0&&row.official_website){const a=document.createElement("a");a.href=row.official_website;a.target="_blank";a.rel="noopener noreferrer";a.textContent=" ↗";a.title="Open company website";a.addEventListener("click",event=>event.stopPropagation());td.appendChild(a);}tr.appendChild(td);});
+    tr.addEventListener("click",()=>openCompanyDetail(row));tr.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openCompanyDetail(row);}});
     tbody.appendChild(tr);
    });
    const start=companyTotal?companyOffset+1:0,end=Math.min(companyOffset+rows.length,companyTotal);
@@ -674,5 +706,6 @@ document.getElementById("csvFile").addEventListener("change",event=>{
 })();
 </script>
 
+<div class="company-detail-overlay" id="companyDetailOverlay" role="dialog" aria-modal="true" aria-labelledby="companyDetailTitle" style="display:none"><div class="company-detail-card"><div class="company-detail-header"><div><div class="eyebrow">Company profile</div><h2 id="companyDetailTitle">Company details</h2></div><button class="btn" id="companyDetailClose" type="button" aria-label="Close company details">✕</button></div><div id="companyDetailBody" class="company-detail-body"></div></div></div>
 </body>
 </html>
