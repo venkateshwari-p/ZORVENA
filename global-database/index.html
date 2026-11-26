@@ -711,7 +711,11 @@ function setPeopleSelectOptions(id,values,placeholder,labels={}){
   option.textContent=(typeof item==="string"?item:(item.label||value));
   select.appendChild(option);
  });
- if([...select.options].some(option=>option.value===previous))select.value=previous;
+ const hasPrevious=[...select.options].some(option=>option.value===previous);
+ if(previous&&hasPrevious)select.value=previous;
+ else if(previous&&["peopleSearch","peoplePurchasing","peopleProduct","peopleDepartment"].includes(id)){
+  const custom=document.createElement("option");custom.value=previous;custom.textContent=previous;custom.dataset.custom="true";select.appendChild(custom);select.value=previous;
+ }
 }
 function populatePeopleFilterSuggestions(records=[]){
  const keyMap={peoplePurchasing:"purchasing_responsibility",peopleProduct:"product_interest",peopleCountry:"country",peopleDepartment:"department",peopleRole:"decision_role",peopleVerification:"verification_status",peoplePermission:"outreach_permission_status"};
@@ -855,7 +859,11 @@ function setCompanySelectOptions(id,values,placeholder,makeLabel){
   option.textContent=makeLabel?makeLabel(item):item.label||item.value;
   select.appendChild(option);
  });
- if([...select.options].some(option=>option.value===previous))select.value=previous;
+ const hasPrevious=[...select.options].some(option=>option.value===previous);
+ if(previous&&hasPrevious)select.value=previous;
+ else if(previous&&["companySearch","companyType"].includes(id)){
+  const custom=document.createElement("option");custom.value=previous;custom.textContent=previous;custom.dataset.custom="true";select.appendChild(custom);select.value=previous;
+ }
 }
 
 /* Searchable autocomplete for every Company Directory and People & Contacts filter.
@@ -890,16 +898,18 @@ function attachSearchableFilter(id){
  input.placeholder=filterBehavior.placeholder;
  input.setAttribute("autocomplete","off");input.setAttribute("aria-label",input.placeholder);
  input.setAttribute("aria-autocomplete","list");
+ input.setAttribute("role","combobox");input.setAttribute("aria-haspopup","listbox");
+ input.setAttribute("aria-controls",id+"SuggestionPanel");input.setAttribute("aria-expanded","false");
  select.parentNode.style.position="relative";
  const panel=document.createElement("div");panel.className="filter-suggestion-panel";panel.id=id+"SuggestionPanel";
- panel.setAttribute("role","listbox");panel.hidden=true;
+ panel.setAttribute("role","listbox");panel.setAttribute("aria-label","Suggestions for "+filterBehavior.placeholder);panel.hidden=true;
  select.parentNode.insertBefore(input,select);select.parentNode.insertBefore(panel,select);
  select.style.display="none";
  const isTaxonomy=["companySector","companyIndustry","companySubsector"].includes(id);
  let activeIndex=-1;
  const getOptions=()=>[...select.options].slice(1).filter(option=>!option.disabled&&option.value&&!option.dataset.custom);
  const displayFor=option=>isTaxonomy?option.textContent.split(" · ").slice(1).join(" · "):option.textContent;
- const close=()=>{panel.hidden=true;panel.innerHTML="";activeIndex=-1;};
+ const close=()=>{panel.hidden=true;panel.innerHTML="";activeIndex=-1;input.setAttribute("aria-expanded","false");input.removeAttribute("aria-activedescendant");};
  const choose=option=>{
   select.value=option.value;select.dispatchEvent(new Event("change",{bubbles:true}));
   input.value=displayFor(option);close();
@@ -922,6 +932,7 @@ function attachSearchableFilter(id){
   matches.forEach((item,index)=>{
    const button=document.createElement("button");button.type="button";
    button.className="filter-suggestion";button.setAttribute("role","option");
+   button.id=id+"Suggestion"+index;button.setAttribute("aria-selected","false");
    button.textContent=item.label;
    button.addEventListener("mousedown",event=>event.preventDefault());
    button.addEventListener("click",()=>choose(item.option));
@@ -932,7 +943,7 @@ function attachSearchableFilter(id){
    empty.textContent=isTaxonomy?"No matching classification. Choose a valid suggestion.":id==="peopleCompany"?"No matching company found. Choose a company from the list.":filterBehavior.custom?"No saved match. You can use this text as a custom filter.":"No matching option. Choose a suggestion from the list.";
    panel.appendChild(empty);
   }
-  panel.hidden=false;
+  panel.hidden=false;input.setAttribute("aria-expanded","true");
  };
  const syncFromSelect=()=>{
   const option=select.selectedOptions[0];
@@ -953,8 +964,8 @@ function attachSearchableFilter(id){
  });
  input.addEventListener("keydown",event=>{
   const items=[...panel.querySelectorAll(".filter-suggestion")];
-  if(event.key==="ArrowDown"&&items.length){event.preventDefault();activeIndex=Math.min(activeIndex+1,items.length-1);items.forEach((item,index)=>item.classList.toggle("active",index===activeIndex));}
-  else if(event.key==="ArrowUp"&&items.length){event.preventDefault();activeIndex=Math.max(activeIndex-1,0);items.forEach((item,index)=>item.classList.toggle("active",index===activeIndex));}
+  if(event.key==="ArrowDown"&&items.length){event.preventDefault();activeIndex=Math.min(activeIndex+1,items.length-1);items.forEach((item,index)=>{item.classList.toggle("active",index===activeIndex);item.setAttribute("aria-selected",String(index===activeIndex));});input.setAttribute("aria-activedescendant",items[activeIndex].id);}
+  else if(event.key==="ArrowUp"&&items.length){event.preventDefault();activeIndex=Math.max(activeIndex-1,0);items.forEach((item,index)=>{item.classList.toggle("active",index===activeIndex);item.setAttribute("aria-selected",String(index===activeIndex));});input.setAttribute("aria-activedescendant",items[activeIndex].id);}
   else if(event.key==="Enter"){
    event.preventDefault();
    if(activeIndex>=0&&items[activeIndex])items[activeIndex].click();
