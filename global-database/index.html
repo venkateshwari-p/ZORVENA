@@ -620,7 +620,7 @@ function setupCompanyFilters(data){
   fillCompanySelect("companySector",data.sectors||[],"sector_id","sector_name","All sectors");
   fillCompanySelect("companyIndustry",data.industries||[],"industry_id","industry_name","All industries");
   fillCompanySelect("companySubsector",data.subsectors||[],"subsector_id","subsector_name","All sub-sectors");
-  $("companySector").onchange=()=>{const sid=$("companySector").value;fillCompanySelect("companyIndustry",(data.industries||[]).filter(x=>!sid||x.sector_id===sid),"industry_id","industry_name","All industries");$("companyIndustry").value="";$"companySubsector").innerHTML='<option value="">All sub-sectors</option>';renderCompanyFilterSummary();};
+  $("companySector").onchange=()=>{const sid=$("companySector").value;fillCompanySelect("companyIndustry",(data.industries||[]).filter(x=>!sid||x.sector_id===sid),"industry_id","industry_name","All industries");$("companyIndustry").value="";$("companySubsector").innerHTML='<option value="">All sub-sectors</option>';renderCompanyFilterSummary();};
   $("companyIndustry").onchange=()=>{const iid=$("companyIndustry").value;fillCompanySelect("companySubsector",(data.subsectors||[]).filter(x=>!iid||x.industry_id===iid),"subsector_id","subsector_name","All sub-sectors");renderCompanyFilterSummary();};
  }
  async function loadSources(){
