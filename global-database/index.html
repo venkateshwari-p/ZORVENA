@@ -968,7 +968,8 @@ function attachSearchableFilter(id){
   else if(event.key==="ArrowUp"&&items.length){event.preventDefault();activeIndex=Math.max(activeIndex-1,0);items.forEach((item,index)=>{item.classList.toggle("active",index===activeIndex);item.setAttribute("aria-selected",String(index===activeIndex));});input.setAttribute("aria-activedescendant",items[activeIndex].id);}
   else if(event.key==="Enter"){
    event.preventDefault();
-   if(activeIndex>=0&&items[activeIndex])items[activeIndex].click();
+   const selected=activeIndex>=0?items[activeIndex]:items[0];
+   if(selected)selected.click();
    const action=id.startsWith("company")?$("companyApply"):$("peopleApply");if(action)action.click();
   }else if(event.key==="Escape")close();
  });
