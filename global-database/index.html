@@ -105,6 +105,11 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 @media(max-width:420px){.content{padding-left:10px;padding-right:10px}.page-head{padding:15px 13px}.stats{grid-template-columns:1fr 1fr}.stat{padding:11px}.stat strong{font-size:21px}.filter-row{gap:8px}.panel{padding:13px}.template{align-items:flex-start}.template button{font-size:9px;padding:7px 8px}}
 
 
+/* Searchable autocomplete filter inputs */
+.filter-autocomplete{width:100%;min-width:0;border:1px solid #dfe7dc;border-radius:10px;padding:10px 11px;font-size:11px;min-height:39px;background:#fff;color:var(--ink)}
+.filter-autocomplete:focus{outline:none;border-color:#76a77e;box-shadow:0 0 0 3px rgba(83,143,91,.12)}
+.filter-autocomplete::placeholder{color:#8a978d}
+
 /* Section-level presentation details */
 #view-taxonomy>.panel-grid{align-items:stretch;margin-bottom:16px}
 #view-taxonomy>.panel-grid>.panel{position:relative;overflow:hidden}
@@ -844,6 +849,57 @@ function setCompanySelectOptions(id,values,placeholder,makeLabel){
  });
  if([...select.options].some(option=>option.value===previous))select.value=previous;
 }
+
+/* Searchable autocomplete for every Company Directory and People & Contacts filter.
+   The original selects remain as the filter values so existing API logic is preserved. */
+const searchableFilterIds=[
+ "companySearch","companyCountry","companySector","companyIndustry","companySubsector","companyType","companyVerification",
+ "peopleSearch","peopleCompany","peoplePurchasing","peopleProduct","peopleCountry","peopleDepartment","peopleRole","peopleVerification","peoplePermission"
+];
+function attachSearchableFilter(id){
+ const select=$(id);if(!select||select.dataset.searchableAttached==="true")return;
+ select.dataset.searchableAttached="true";
+ const input=document.createElement("input");
+ input.type="text";input.id=id+"Autocomplete";input.className="filter-autocomplete";
+ input.placeholder=select.options[0]?.textContent||"Type to search…";
+ input.setAttribute("list",id+"Suggestions");input.setAttribute("autocomplete","off");
+ input.setAttribute("aria-label",input.placeholder);
+ const list=document.createElement("datalist");list.id=id+"Suggestions";
+ select.parentNode.insertBefore(input,select);select.parentNode.insertBefore(list,select);
+ select.style.display="none";
+ const isTaxonomy=["companySector","companyIndustry","companySubsector"].includes(id);
+ const rebuild=()=>{
+  const current=select.selectedOptions[0];
+  list.innerHTML="";
+  [...select.options].slice(1).forEach(option=>{
+   const item=document.createElement("option");
+   item.value=option.textContent;
+   list.appendChild(item);
+  });
+  if(current&&current.value)input.value=current.textContent;
+ };
+ const syncFromSelect=()=>{const option=select.selectedOptions[0];input.value=option&&option.value?option.textContent:"";};
+ input.addEventListener("input",()=>{
+  const typed=input.value.trim();
+  const match=[...select.options].slice(1).find(option=>
+   option.textContent.trim().toLocaleLowerCase()===typed.toLocaleLowerCase()||
+   option.value.trim().toLocaleLowerCase()===typed.toLocaleLowerCase()
+  );
+  if(match){select.value=match.value;select.dispatchEvent(new Event("change",{bubbles:true}));return;}
+  if(!typed){select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));return;}
+  if(isTaxonomy){select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));return;}
+  let custom=[...select.options].find(option=>option.dataset.custom==="true"&&option.value===typed);
+  if(!custom){custom=document.createElement("option");custom.value=typed;custom.textContent=typed;custom.dataset.custom="true";select.appendChild(custom);}
+  select.value=typed;select.dispatchEvent(new Event("change",{bubbles:true}));
+ });
+ select.addEventListener("change",syncFromSelect);
+ new MutationObserver(rebuild).observe(select,{childList:true,subtree:true,characterData:true});
+ rebuild();
+}
+function attachAllSearchableFilters(){
+ searchableFilterIds.forEach(id=>attachSearchableFilter(id));
+}
+
 function populateCompanyFilterSuggestions(records=[]){
  const companies=[];
  records.forEach(row=>{
@@ -946,7 +1002,7 @@ async function loadCompanies(reset=false){
    tkeys.forEach((key,i)=>{const n=$( "bar"+key+"Count"),b=$( "bar"+key);if(n)n.textContent=tvals[i].toLocaleString();if(b)b.style.width=(tvals[i]/tmax*100)+"%";});
    const ccount=Number(counts.companies||0),pcount=Number(counts.people||0);$("readinessCompanies").textContent=ccount.toLocaleString()+" records currently available";$("companyReadiness").textContent=ccount?"Available":"Empty";$("readinessPeople").textContent=pcount.toLocaleString()+" contacts currently available";$("peopleReadiness").textContent=pcount?"Available":"Empty";
    $("companyReadiness").style.background=ccount?"#e9f5e9":"#fbf2df";$("companyReadiness").style.color=ccount?"#377144":"#946c25";$("peopleReadiness").style.background=pcount?"#e9f5e9":"#fbf2df";$("peopleReadiness").style.color=pcount?"#377144":"#946c25";
-   renderTaxonomy(tx.data);apiHeaders=headers;setupCompanyFilters(tx.data);
+   renderTaxonomy(tx.data);apiHeaders=headers;setupCompanyFilters(tx.data);attachAllSearchableFilters();
    await loadPeopleCompanyOptions();await loadAllPeopleFilterSuggestions();await loadAllCompanyFilterSuggestions();await loadCompanies(true);await loadPeople(true);await loadSources();
    const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview, industry taxonomy, Company Directory and People & Contacts are connected to the authenticated ZORVENA API. Directory results depend on records available in BigQuery.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
    setStatus(true,"API connected");$("connectBtn").textContent="Refresh data";$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";
