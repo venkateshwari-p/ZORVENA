@@ -377,7 +377,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
         <div class="filter-row">
           <div class="field"><label>Business type</label><input id="companyType" list="companyTypeOptions" placeholder="Choose a suggestion or type your own"><datalist id="companyTypeOptions"></datalist></div>
           <div class="field"><label>Verification</label><select id="companyVerification"><option value="">All statuses</option><option>VERIFIED</option><option>UNVERIFIED</option><option>NEEDS_REVIEW</option></select></div>
-          <div class="field"><label>Results per page</label><select id="companyLimit"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option></select></div>
+          <div class="field"><label>Results per page</label><select id="companyLimit"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option><option value="all">All</option></select></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn primary" id="companyApply" type="button">Search directory</button></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn" id="companyReset" type="button">Reset filters</button></div>
         </div>
@@ -400,7 +400,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
         </div>
         <div class="filter-row">
           <div class="field"><label>Outreach permission</label><input id="peoplePermission" list="peoplePermissionOptions" placeholder="Choose or type your own"><datalist id="peoplePermissionOptions"></datalist></div>
-          <div class="field"><label>Results per page</label><select id="peopleLimit"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option></select></div>
+          <div class="field"><label>Results per page</label><select id="peopleLimit"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option><option value="all">All</option></select></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn primary" id="peopleApply" type="button">Search contacts</button></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn" id="peopleReset" type="button">Reset filters</button></div>
         </div>
@@ -705,9 +705,8 @@ async function loadAllPeopleFilterSuggestions(){
   let offset=0,total=Infinity;
   while(offset<total){
    const params=new URLSearchParams({limit:"100",offset:String(offset)});
-   const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});
-   if(!response.ok)throw new Error("HTTP "+response.status);
-   const result=await response.json(),rows=result.data||[];
+   const result=allMode?await fetchAllDirectoryRows("/api/people",params,apiHeaders):await (async()=>{const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});if(!response.ok)throw new Error("HTTP "+response.status);return response.json();})();
+   const rows=result.data||[];
    total=Number(result.pagination?.total||0);
    peopleSuggestionRecords.push(...rows);
    if(!rows.length)break;
@@ -719,7 +718,19 @@ async function loadAllPeopleFilterSuggestions(){
   populatePeopleFilterSuggestions(peopleSuggestionRecords);
  }
 }
-async function loadPeopleCompanyOptions(){
+async  async function fetchAllDirectoryRows(path,baseParams,headers){
+  const rows=[];let offset=0,total=0;
+  do{
+   const pageParams=new URLSearchParams(baseParams);pageParams.set("limit","100");pageParams.set("offset",String(offset));
+   const response=await fetch(API_BASE+path+"?"+pageParams.toString(),{headers});
+   if(!response.ok)throw new Error("HTTP "+response.status);
+   const result=await response.json(),batch=result.data||[];total=Number(result.pagination?.total||0);rows.push(...batch);offset+=batch.length;
+   if(!batch.length||offset>=total)break;
+  }while(offset<=1000000);
+  if(rows.length<total)throw new Error("The API offset limit prevented loading every record ("+rows.length+" of "+total+").");
+  return {data:rows,pagination:{total,limit:rows.length,offset:0}};
+ }
+function loadPeopleCompanyOptions(){
   const select=$("peopleCompany");
   select.innerHTML='<option value="">All companies</option>';
   if(!apiHeaders)return;
@@ -754,7 +765,8 @@ async function loadPeopleCompanyOptions(){
 async function loadPeople(reset=false){
   if(!apiHeaders)return;
   if(reset)peopleOffset=0;
-  const params=new URLSearchParams({limit:String(peopleLimit()),offset:String(peopleOffset)});
+  const allMode=$("peopleLimit").value==="all";
+  const params=new URLSearchParams({limit:String(allMode?100:peopleLimit()),offset:String(peopleOffset)});
   const fields={q:$("peopleSearch").value.trim(),company_id:$("peopleCompany").value.trim(),country:$("peopleCountry").value.trim(),department:$("peopleDepartment").value.trim(),decision_role:$("peopleRole").value.trim(),purchasing_responsibility:$("peoplePurchasing").value.trim(),product_interest:$("peopleProduct").value.trim(),verification_status:$("peopleVerification").value.trim(),outreach_permission_status:$("peoplePermission").value.trim()};
   Object.entries(fields).forEach(([k,v])=>{if(v)params.set(k,v);});
   $("peopleApply").disabled=true;$("peopleApply").textContent="Loading…";
@@ -771,9 +783,8 @@ async function loadPeople(reset=false){
     tr.addEventListener("click",()=>openPersonDetail(row));tr.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openPersonDetail(row);}});
     tbody.appendChild(tr);
    });
-   const start=peopleTotal?peopleOffset+1:0,end=Math.min(peopleOffset+rows.length,peopleTotal);
-   $("peopleResults").textContent="Showing "+start+"–"+end+" of "+peopleTotal+" contacts";
-   $("peoplePrev").disabled=peopleOffset===0;$("peopleNext").disabled=peopleOffset+rows.length>=peopleTotal||rows.length===0;
+   $("peopleResults").textContent=allMode?"Showing all "+peopleTotal+" contacts":"Showing "+(peopleTotal?peopleOffset+1:0)+"–"+Math.min(peopleOffset+rows.length,peopleTotal)+" of "+peopleTotal+" contacts";
+   $("peoplePrev").disabled=allMode||peopleOffset===0;$("peopleNext").disabled=allMode||peopleOffset+rows.length>=peopleTotal||rows.length===0;
   }catch(error){$("peopleResults").textContent="Could not load professional records: "+error.message;}
   finally{$("peopleApply").disabled=false;$("peopleApply").textContent="Search contacts";}
  }
@@ -830,14 +841,13 @@ async function loadAllCompanyFilterSuggestions(){
 async function loadCompanies(reset=false){
   if(!apiHeaders)return;
   if(reset)companyOffset=0;
-  const params=new URLSearchParams({limit:String(companyLimit()),offset:String(companyOffset)});
+  const allMode=$("companyLimit").value==="all";
+  const params=new URLSearchParams({limit:String(allMode?100:companyLimit()),offset:String(companyOffset)});
   const fields={q:$("companySearch").value.trim(),country:$("companyCountry").value.trim(),sector_id:$("companySector").value,industry_id:$("companyIndustry").value,subsector_id:$("companySubsector").value,business_type:$("companyType").value.trim(),verification_status:$("companyVerification").value};
   Object.entries(fields).forEach(([k,v])=>{if(v)params.set(k,v);});
   $("companyApply").disabled=true;$("companyApply").textContent="Loading…";
   try{
-   const response=await fetch(API_BASE+"/api/companies?"+params.toString(),{headers:apiHeaders});
-   if(!response.ok)throw new Error("HTTP "+response.status);
-   const result=await response.json();const rows=result.data||[];companyTotal=Number(result.pagination?.total||0);populateCompanyFilterSuggestions([...companySuggestionRecords,...rows]);
+   const result=allMode?await fetchAllDirectoryRows("/api/companies",params,apiHeaders):await (async()=>{const response=await fetch(API_BASE+"/api/companies?"+params.toString(),{headers:apiHeaders});if(!response.ok)throw new Error("HTTP "+response.status);return response.json();})();const rows=result.data||[];companyTotal=Number(result.pagination?.total||0);populateCompanyFilterSuggestions([...companySuggestionRecords,...rows]);
    const tbody=$("companyRows");tbody.innerHTML="";
    if(!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.className="empty";td.innerHTML="▣<b>No matching company records</b><span>The database currently contains "+companyTotal+" matching records. Add approved company records to BigQuery to populate this directory.</span>";tr.appendChild(td);tbody.appendChild(tr);}
    rows.forEach(row=>{
@@ -847,10 +857,9 @@ async function loadCompanies(reset=false){
     tr.addEventListener("click",()=>openCompanyDetail(row));tr.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openCompanyDetail(row);}});
     tbody.appendChild(tr);
    });
-   const start=companyTotal?companyOffset+1:0,end=Math.min(companyOffset+rows.length,companyTotal);
-   $("companyResults").textContent="Showing "+start+"–"+end+" of "+companyTotal+" companies";
-   $("companyPrev").disabled=companyOffset===0;
-   $("companyNext").disabled=companyOffset+rows.length>=companyTotal||rows.length===0;
+   $("companyResults").textContent=allMode?"Showing all "+companyTotal+" companies":"Showing "+(companyTotal?companyOffset+1:0)+"–"+Math.min(companyOffset+rows.length,companyTotal)+" of "+companyTotal+" companies";
+   $("companyPrev").disabled=allMode||companyOffset===0;
+   $("companyNext").disabled=allMode||companyOffset+rows.length>=companyTotal||rows.length===0;
   }catch(error){$("companyResults").textContent="Could not load company records: "+error.message;}
   finally{$("companyApply").disabled=false;$("companyApply").textContent="Search directory";}
  }
