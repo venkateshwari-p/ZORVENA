@@ -390,14 +390,14 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
       <div class="panel">
         <div class="filter-row">
           <div class="field"><label>Search contact</label><input id="peopleSearch" placeholder="Name or job title"></div>
-          <div class="field"><label>Select company</label><select id="peopleCompany"><option value="">All companies</option></select></div><div class="field"><label>Purchasing responsibility</label><input id="peoplePurchasing" placeholder="Exact responsibility"></div><div class="field"><label>Product interest</label><input id="peopleProduct" placeholder="Exact product interest"></div>
-          <div class="field"><label>Country</label><input id="peopleCountry" placeholder="Exact country name"></div>
-          <div class="field"><label>Department</label><input id="peopleDepartment" placeholder="Exact department"></div>
-          <div class="field"><label>Decision role</label><input id="peopleRole" placeholder="Exact decision role"></div>
-          <div class="field"><label>Verification</label><input id="peopleVerification" placeholder="Exact status"></div>
+          <div class="field"><label>Select company</label><select id="peopleCompany"><option value="">All companies</option></select></div><div class="field"><label>Purchasing responsibility</label><input id="peoplePurchasing" list="peoplePurchasingOptions" placeholder="Choose or type your own"><datalist id="peoplePurchasingOptions"></datalist></div><div class="field"><label>Product interest</label><input id="peopleProduct" list="peopleProductOptions" placeholder="Choose or type your own"><datalist id="peopleProductOptions"></datalist></div>
+          <div class="field"><label>Country</label><input id="peopleCountry" list="peopleCountryOptions" placeholder="Choose or type your own"><datalist id="peopleCountryOptions"></datalist></div>
+          <div class="field"><label>Department</label><input id="peopleDepartment" list="peopleDepartmentOptions" placeholder="Choose or type your own"><datalist id="peopleDepartmentOptions"></datalist></div>
+          <div class="field"><label>Decision role</label><input id="peopleRole" list="peopleRoleOptions" placeholder="Choose or type your own"><datalist id="peopleRoleOptions"></datalist></div>
+          <div class="field"><label>Verification</label><input id="peopleVerification" list="peopleVerificationOptions" placeholder="Choose or type your own"><datalist id="peopleVerificationOptions"></datalist></div>
         </div>
         <div class="filter-row">
-          <div class="field"><label>Outreach permission</label><input id="peoplePermission" placeholder="Exact permission status"></div>
+          <div class="field"><label>Outreach permission</label><input id="peoplePermission" list="peoplePermissionOptions" placeholder="Choose or type your own"><datalist id="peoplePermissionOptions"></datalist></div>
           <div class="field"><label>Results per page</label><select id="peopleLimit"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option></select></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn primary" id="peopleApply" type="button">Search contacts</button></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn" id="peopleReset" type="button">Reset filters</button></div>
@@ -673,6 +673,27 @@ $("personDetailClose").addEventListener("click",closePersonDetail);
 $("personDetailOverlay").addEventListener("click",event=>{if(event.target===$("personDetailOverlay"))closePersonDetail();});
 document.addEventListener("keydown",event=>{if(event.key==="Escape"&&$("personDetailOverlay").style.display==="flex")closePersonDetail();});
 
+const peopleFilterSuggestions={
+ peopleSearch:["Procurement Manager","Head of Procurement","Purchasing Manager","Sourcing Manager","Supply Chain Manager","Import Manager","Managing Director","General Manager","Farm Manager","Grower","Greenhouse Manager","Horticulture Manager","Production Manager","Operations Manager","R&D Manager","Technical Manager"],
+ peoplePurchasing:["Cocopeat / coir substrate purchasing","Growing media procurement","Hydroponic substrate purchasing","Greenhouse growing media","Coco coir grow bags","Agricultural inputs purchasing","Supplier sourcing","Import purchasing","Not responsible for purchasing"],
+ peopleProduct:["Cocopeat","Coco coir","Coir grow bags","Coco chips","Coco fiber","Growing media","Hydroponic substrates","Peat alternatives","Greenhouse supplies"],
+ peopleCountry:["Australia","India","Indonesia","United States","United Kingdom","Netherlands","Germany","Spain","Italy","France","Canada","New Zealand","United Arab Emirates","Saudi Arabia","Japan","South Korea"],
+ peopleDepartment:["Procurement","Purchasing","Sourcing","Import / Export","Supply Chain","Production","Farm Operations","Greenhouse Operations","Horticulture","Agronomy","Research & Development","Technical","Quality Control","Business Development","Sales","Executive Management"],
+ peopleRole:["Decision Maker","Final Approver","Influencer","Evaluator","Buyer","Procurement Contact","Technical Evaluator","End User","Not Established"],
+ peopleVerification:["VERIFIED","PARTIALLY_VERIFIED","NEEDS_REVIEW","UNVERIFIED"],
+ peoplePermission:["NOT_REVIEWED","PUBLIC_BUSINESS_CONTACT","PERMISSION_REQUIRED","APPROVED_FOR_OUTREACH","DO_NOT_CONTACT"]
+};
+function populatePeopleFilterSuggestions(records=[]){
+ Object.entries(peopleFilterSuggestions).forEach(([inputId,defaults])=>{
+  const list=$(inputId+"Options");if(!list)return;
+  const keyMap={peopleSearch:["job_title","full_name"],peoplePurchasing:["purchasing_responsibility"],peopleProduct:["product_interest"],peopleCountry:["country"],peopleDepartment:["department"],peopleRole:["decision_role"],peopleVerification:["verification_status"],peoplePermission:["outreach_permission_status"]};
+  const keySet=keyMap[inputId]||[];
+  const actual=records.flatMap(row=>keySet.map(key=>row[key])).filter(Boolean).map(String);
+  const values=[...new Set([...actual,...defaults])].sort((a,b)=>a.localeCompare(b));
+  list.innerHTML="";
+  values.forEach(value=>{const option=document.createElement("option");option.value=value;list.appendChild(option);});
+ });
+}
 async function loadPeopleCompanyOptions(){
   const select=$("peopleCompany");
   select.innerHTML='<option value="">All companies</option>';
@@ -715,7 +736,7 @@ function loadPeople(reset=false){
   try{
    const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});
    if(!response.ok)throw new Error("HTTP "+response.status);
-   const result=await response.json(),rows=result.data||[];peopleTotal=Number(result.pagination?.total||0);
+   const result=await response.json(),rows=result.data||[];peopleTotal=Number(result.pagination?.total||0);populatePeopleFilterSuggestions(rows);
    const tbody=$("peopleRows");tbody.innerHTML="";
    if(!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.className="empty";td.innerHTML="♙<b>No matching professional records</b><span>The database currently contains "+peopleTotal+" matching contacts. Add approved, source-backed records to BigQuery to populate this directory.</span>";tr.appendChild(td);tbody.appendChild(tr);}
    rows.forEach(row=>{
