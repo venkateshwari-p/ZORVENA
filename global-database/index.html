@@ -472,8 +472,9 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
           <div class="field"><label for="researchBatch">Research batch</label><select id="researchBatch"><option value="">All batches</option><option value="1">Batch 1</option><option value="2">Batch 2</option><option value="3">Batch 3</option><option value="4">Batch 4</option><option value="5">Batch 5</option><option value="6">Batch 6</option><option value="7">Batch 7</option></select></div>
           <div class="field"><label for="researchKind">Prospect type</label><select id="researchKind"><option value="">All types</option><option value="Grower">Grower</option><option value="Nursery">Nursery / propagation</option><option value="Supplier">Supplier / partner</option></select></div>
         </div>
-        <div class="table-wrap"><table class="data-table" style="min-width:740px"><thead><tr><th>Company / prospect</th><th>Location</th><th>Type</th><th>Batch</th><th>Stage</th><th>Research file</th></tr></thead><tbody id="researchRows"></tbody></table></div>
+        <div class="table-wrap"><table class="data-table" style="min-width:740px"><thead><tr><th>Company / prospect</th><th>Location</th><th>Type</th><th>Batch</th><th>Stage</th><th>Profile</th></tr></thead><tbody id="researchRows"></tbody></table></div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;font-size:10px;color:var(--muted)"><span id="researchShowing">Showing candidate entries</span><button class="btn" id="researchReset">Reset filters</button></div>
+      <div id="researchProfile" class="panel" style="display:none;margin-top:14px"><div class="panel-head"><h2 id="researchProfileTitle">Candidate profile</h2><button class="btn" id="researchProfileClose">Close profile</button></div><div id="researchProfileBody"></div></div>
       </div>
     </section>
     <footer style="padding:22px 2px;color:#849186;font-size:10px">© <span id="year"></span> ZORVENA · Global Agriculture Intelligence · Setup preview</footer>
@@ -498,11 +499,22 @@ const researchCandidates=[
 {n:"Grown Smart Produce",l:"Carabooda, Western Australia",k:"Grower",b:6},{n:"Sundrop Farms",l:"Port Augusta, South Australia",k:"Grower",b:6},{n:"Butler Market Gardens",l:"Victoria / Queensland",k:"Grower",b:6},{n:"Greenlife Growing",l:"Australia",k:"Grower",b:6},{n:"Wallace Vegetable Farms",l:"Australia",k:"Grower",b:6},{n:"Yendon Gourmet Tomatoes",l:"Yendon, Victoria",k:"Grower",b:6},
 {n:"NVD Fresh Produce",l:"Walkaway / Geraldton, WA",k:"Grower",b:7},{n:"Vo Co Farms / Vo Co Fresh",l:"South Australia",k:"Grower",b:7},{n:"Green Camel AgTech",l:"Cobbitty, New South Wales",k:"Grower",b:7},{n:"Provenance Propagation",l:"Wells Crossing, NSW",k:"Nursery",b:7}
 ];
+function showResearchProfile(candidate){
+ const p=$("researchProfile"),body=$("researchProfileBody");
+ $("researchProfileTitle").textContent=candidate.n;
+ const batchUrl="https://github.com/venkateshwari-p/ZORVENA/blob/main/global-database/pilot/AUSTRALIA-COMPANY-CANDIDATES-BATCH-0"+candidate.b+".md";
+ body.innerHTML="";
+ const make=(title,val)=>{const d=document.createElement("div");d.style.cssText="padding:10px 0;border-bottom:1px solid var(--border);";const strong=document.createElement("strong");strong.textContent=title;strong.style.display="block";const span=document.createElement("span");span.textContent=val;d.append(strong,span);body.appendChild(d);};
+ make("Location",candidate.l);make("Prospect type",candidate.k);make("Research batch","Batch "+candidate.b);make("Record stage","Candidate — not verified, not imported");make("Evidence status","Open the batch file to inspect source links, notes and any public contacts.");
+ const a=document.createElement("a");a.href=batchUrl;a.target="_blank";a.rel="noopener";a.className="btn primary";a.style.cssText="display:inline-flex;margin:12px 0";a.textContent="Open source research ↗";body.appendChild(a);
+ p.style.display="block";p.scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("researchProfileClose").addEventListener("click",()=>{$("researchProfile").style.display="none";});
 function renderResearch(){
  const q=($("researchSearch").value||"").toLowerCase(),batch=$("researchBatch").value,kind=$("researchKind").value;
  const rows=researchCandidates.filter(x=>(!q||(x.n+" "+x.l+" "+x.k).toLowerCase().includes(q))&&(!batch||String(x.b)===batch)&&(!kind||x.k===kind));
  $("researchRows").innerHTML="";
- rows.forEach(x=>{const tr=document.createElement("tr");const vals=[x.n,x.l,x.k,"Batch "+x.b,"Candidate · not verified"];vals.forEach((v,i)=>{const td=document.createElement("td");td.textContent=v;if(i===4){const badge=document.createElement("span");badge.className="tag";badge.textContent=v;td.textContent="";td.appendChild(badge);}tr.appendChild(td);});const td=document.createElement("td"),a=document.createElement("a");a.href="https://github.com/venkateshwari-p/ZORVENA/blob/main/global-database/pilot/AUSTRALIA-COMPANY-CANDIDATES-BATCH-0"+x.b+".md";a.target="_blank";a.rel="noopener";a.textContent="Open batch ↗";td.appendChild(a);tr.appendChild(td);$("researchRows").appendChild(tr);});
+ rows.forEach(x=>{const tr=document.createElement("tr");const vals=[x.n,x.l,x.k,"Batch "+x.b,"Candidate · not verified"];vals.forEach((v,i)=>{const td=document.createElement("td");td.textContent=v;if(i===4){const badge=document.createElement("span");badge.className="tag";badge.textContent=v;td.textContent="";td.appendChild(badge);}tr.appendChild(td);});const td=document.createElement("td"),btn=document.createElement("button");btn.className="btn";btn.textContent="View profile";btn.addEventListener("click",()=>showResearchProfile(x));td.appendChild(btn);tr.appendChild(td);$("researchRows").appendChild(tr);});
  $("researchShowing").textContent="Showing "+rows.length+" of "+researchCandidates.length+" candidate entries";
 }
 ["researchSearch","researchBatch","researchKind"].forEach(id=>$(id).addEventListener(id==="researchSearch"?"input":"change",renderResearch));
