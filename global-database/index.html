@@ -906,13 +906,13 @@ function loadCompanies(reset=false){
  $("cancelConnect").addEventListener("click",()=>{$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";});
  $("connectTokenInput").addEventListener("keydown",e=>{if(e.key==="Enter")authenticate();});
  $("companyApply").addEventListener("click",()=>{renderCompanyFilterSummary();loadCompanies(true);});
- ["companySearch","companyCountry","companyType"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();renderCompanyFilterSummary();loadCompanies(true);}}));
+ ["companySearch","companyCountry","companySector","companyIndustry","companySubsector","companyType","companyVerification"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();renderCompanyFilterSummary();loadCompanies(true);}}));
  $("companyReset").addEventListener("click",()=>{["companySearch","companyCountry","companyType","companySector","companyIndustry","companySubsector","companyVerification"].forEach(id=>$(id).value="");setupCompanyFilters(taxonomyData||{sectors:[],industries:[],subsectors:[]});renderCompanyFilterSummary();loadCompanies(true);});
  $("companyPrev").addEventListener("click",()=>{companyOffset=Math.max(0,companyOffset-companyLimit());loadCompanies();});
  $("companyNext").addEventListener("click",()=>{companyOffset+=companyLimit();loadCompanies();});
  $("sourcesRefresh").addEventListener("click",loadSources);
  $("peopleApply").addEventListener("click",()=>loadPeople(true));
- ["peopleSearch","peopleCountry","peopleDepartment","peopleRole","peoplePurchasing","peopleProduct","peopleVerification","peoplePermission"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();loadPeople(true);}}));
+ ["peopleSearch","peopleCompany","peopleCountry","peopleDepartment","peopleRole","peoplePurchasing","peopleProduct","peopleVerification","peoplePermission"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();loadPeople(true);}}));
  $("peopleReset").addEventListener("click",()=>{["peopleSearch","peopleCompany","peopleCountry","peopleDepartment","peopleRole","peoplePurchasing","peopleProduct","peopleVerification","peoplePermission"].forEach(id=>$(id).value="");loadPeople(true);});
  $("peoplePrev").addEventListener("click",()=>{peopleOffset=Math.max(0,peopleOffset-peopleLimit());loadPeople();});
  $("peopleNext").addEventListener("click",()=>{peopleOffset+=peopleLimit();loadPeople();});
