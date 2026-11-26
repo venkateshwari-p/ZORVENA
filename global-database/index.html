@@ -305,6 +305,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
       <button data-view="taxonomy"><span class="ico">⌘</span>Industry Taxonomy</button>
       <button data-view="trade"><span class="ico">⇄</span>Trade Intelligence</button>
       <button data-view="sources"><span class="ico">↗</span>Sources & Evidence</button>
+      <button data-view="research"><span class="ico">◎</span>Research Pipeline</button>
     </nav>
   </div>
   <div>
@@ -456,18 +457,58 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
       <div class="notice"><span class="nicon">🔐</span><div><strong>Client records are not available yet.</strong>Client isolation must be enforced in the API; hiding rows in the browser is not a security boundary.</div></div>
       <div class="panel"><div class="panel-head"><h2>Prospect lists</h2><button class="btn" disabled>＋ Create list</button></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Client</th><th>List name</th><th>Target country</th><th>Sector</th><th>Companies</th><th>Status</th></tr></thead><tbody><tr><td class="empty" colspan="6">▤<b>No client prospect lists yet</b><span>Client-specific lists will be created after access controls are ready.</span></td></tr></tbody></table></div></div>
     </section>
+    <section class="view" id="view-research">
+      <div class="page-head"><div><div class="eyebrow">Research workspace · candidate records</div><h1>Research Pipeline</h1><p>View prospects collected in research batches before they are verified and imported into BigQuery.</p></div><div class="head-actions"><a class="btn" href="https://github.com/venkateshwari-p/ZORVENA/tree/main/global-database/pilot" target="_blank" rel="noopener">Open research files ↗</a></div></div>
+      <div class="notice"><span class="nicon">ⓘ</span><div><strong>Research candidates — not live database records.</strong> These entries are not verified imports. Use the batch research links to review source evidence. Company duplicates, legal entities, operating brands and coir-buying status still need qualification.</div></div>
+      <div class="stats" id="researchStats">
+        <article class="stat"><div class="stat-top">Candidate entries <span class="stat-icon">▣</span></div><strong id="researchCount">43</strong><small>Across Australia research batches</small></article>
+        <article class="stat"><div class="stat-top">Research batches <span class="stat-icon">▤</span></div><strong>7</strong><small>Batch 1–7 files</small></article>
+        <article class="stat"><div class="stat-top">Imported to BigQuery <span class="stat-icon">⇧</span></div><strong>0</strong><small>Not imported yet</small></article>
+        <article class="stat"><div class="stat-top">Verified records <span class="stat-icon">✓</span></div><strong>0</strong><small>Pending qualification</small></article>
+      </div>
+      <div class="panel">
+        <div class="filter-row" style="grid-template-columns:2fr 1fr 1fr">
+          <div class="field"><label for="researchSearch">Search company or location</label><input id="researchSearch" placeholder="Search candidates…"></div>
+          <div class="field"><label for="researchBatch">Research batch</label><select id="researchBatch"><option value="">All batches</option><option value="1">Batch 1</option><option value="2">Batch 2</option><option value="3">Batch 3</option><option value="4">Batch 4</option><option value="5">Batch 5</option><option value="6">Batch 6</option><option value="7">Batch 7</option></select></div>
+          <div class="field"><label for="researchKind">Prospect type</label><select id="researchKind"><option value="">All types</option><option value="Grower">Grower</option><option value="Nursery">Nursery / propagation</option><option value="Supplier">Supplier / partner</option></select></div>
+        </div>
+        <div class="table-wrap"><table class="data-table" style="min-width:740px"><thead><tr><th>Company / prospect</th><th>Location</th><th>Type</th><th>Batch</th><th>Stage</th><th>Research file</th></tr></thead><tbody id="researchRows"></tbody></table></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;font-size:10px;color:var(--muted)"><span id="researchShowing">Showing candidate entries</span><button class="btn" id="researchReset">Reset filters</button></div>
+      </div>
+    </section>
     <footer style="padding:22px 2px;color:#849186;font-size:10px">© <span id="year"></span> ZORVENA · Global Agriculture Intelligence · Setup preview</footer>
   </div>
 </main>
 </div>
 <script>
-const labels={overview:"Overview",companies:"Company Directory",people:"People & Contacts",taxonomy:"Industry Taxonomy",trade:"Trade Intelligence",sources:"Sources & Evidence",import:"Import Centre",export:"Export Centre",quality:"Data Quality",clients:"Client Prospect Lists"};
+const labels={overview:"Overview",companies:"Company Directory",people:"People & Contacts",taxonomy:"Industry Taxonomy",trade:"Trade Intelligence",sources:"Sources & Evidence",research:"Research Pipeline",import:"Import Centre",export:"Export Centre",quality:"Data Quality",clients:"Client Prospect Lists"};
 function showView(name){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));document.querySelectorAll("[data-view]").forEach(b=>{const active=b.dataset.view===name;b.classList.toggle("active",active);if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});document.getElementById("crumb").textContent=labels[name]||"Overview";document.getElementById("sidebar").classList.remove("open");document.getElementById("menuBtn").setAttribute("aria-expanded","false");window.scrollTo({top:0,behavior:"smooth"});}
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.go)));
 document.getElementById("menuBtn").addEventListener("click",()=>{const sidebar=document.getElementById("sidebar");const open=sidebar.classList.toggle("open");document.getElementById("menuBtn").setAttribute("aria-expanded",String(open));});
 document.addEventListener("keydown",event=>{if(event.key==="Escape"){document.getElementById("sidebar").classList.remove("open");document.getElementById("menuBtn").setAttribute("aria-expanded","false");}});
 document.getElementById("year").textContent=new Date().getFullYear();
+
+// Research Pipeline display (static candidate notes; separate from BigQuery)
+const researchCandidates=[
+{n:"Green Camel",l:"Australia",k:"Grower",b:1},{n:"Trandos Hydroponic Growers",l:"Australia",k:"Grower",b:1},{n:"P’Petual",l:"Australia",k:"Grower",b:1},{n:"Eden Farms",l:"Australia",k:"Grower",b:1},{n:"H & L Hydroponics",l:"Australia",k:"Grower",b:1},{n:"Vo Co Farms",l:"South Australia",k:"Grower",b:1},{n:"Flavorite",l:"Australia",k:"Grower",b:1},{n:"Virginia Seedlings",l:"Australia",k:"Nursery",b:1},{n:"Hortitech",l:"Australia",k:"Supplier",b:1},{n:"Hydro Masta",l:"Australia",k:"Supplier",b:1},
+{n:"Family Fresh Farms",l:"Australia",k:"Grower",b:2},{n:"Fancyleaf",l:"Australia",k:"Grower",b:2},{n:"Costa Group",l:"Australia",k:"Grower",b:2},{n:"Perfection Fresh Australia",l:"Australia",k:"Grower",b:2},{n:"Urban Green Farms",l:"Australia",k:"Grower",b:2},{n:"Growtex",l:"Australia",k:"Supplier",b:2},{n:"Apex Greenhouses",l:"Australia",k:"Supplier",b:2},{n:"Australian Growing Solutions",l:"Australia",k:"Supplier",b:2},
+{n:"Mountford Berries",l:"Longford, Tasmania",k:"Grower",b:3},{n:"Hillwood Berries",l:"Hillwood, Tasmania",k:"Grower",b:3},{n:"Tasmanian Berries / Sunshine Berries",l:"Tasmania / Queensland",k:"Grower",b:3},{n:"Burlington Berries",l:"Cressy, Tasmania",k:"Grower",b:3},{n:"Murrakei Farms",l:"Tasmania",k:"Grower",b:3},{n:"Rainberry Farm",l:"Forcett, Tasmania",k:"Grower",b:3},{n:"Berried in Tas",l:"Tasmania",k:"Grower",b:3},
+{n:"JCLM Farming",l:"Ouse, Tasmania",k:"Nursery",b:4},{n:"Smart Berries",l:"Forth, Tasmania",k:"Grower",b:5},{n:"Sunny Ridge",l:"Victoria / Queensland",k:"Grower",b:5},{n:"Piñata Farms",l:"Queensland",k:"Grower",b:5},{n:"Hydroberry Plants",l:"Yarra Valley, Victoria",k:"Nursery",b:5},{n:"Fernland",l:"Australia",k:"Supplier",b:5},{n:"Galuku",l:"Australia",k:"Supplier",b:5},{n:"Haygrove Distribution Australia",l:"Victoria",k:"Supplier",b:5},
+{n:"Grown Smart Produce",l:"Carabooda, Western Australia",k:"Grower",b:6},{n:"Sundrop Farms",l:"Port Augusta, South Australia",k:"Grower",b:6},{n:"Butler Market Gardens",l:"Victoria / Queensland",k:"Grower",b:6},{n:"Greenlife Growing",l:"Australia",k:"Grower",b:6},{n:"Wallace Vegetable Farms",l:"Australia",k:"Grower",b:6},{n:"Yendon Gourmet Tomatoes",l:"Yendon, Victoria",k:"Grower",b:6},
+{n:"NVD Fresh Produce",l:"Walkaway / Geraldton, WA",k:"Grower",b:7},{n:"Vo Co Farms / Vo Co Fresh",l:"South Australia",k:"Grower",b:7},{n:"Green Camel AgTech",l:"Cobbitty, New South Wales",k:"Grower",b:7},{n:"Provenance Propagation",l:"Wells Crossing, NSW",k:"Nursery",b:7}
+];
+function renderResearch(){
+ const q=($("researchSearch").value||"").toLowerCase(),batch=$("researchBatch").value,kind=$("researchKind").value;
+ const rows=researchCandidates.filter(x=>(!q||(x.n+" "+x.l+" "+x.k).toLowerCase().includes(q))&&(!batch||String(x.b)===batch)&&(!kind||x.k===kind));
+ $("researchRows").innerHTML="";
+ rows.forEach(x=>{const tr=document.createElement("tr");const vals=[x.n,x.l,x.k,"Batch "+x.b,"Candidate · not verified"];vals.forEach((v,i)=>{const td=document.createElement("td");td.textContent=v;if(i===4){const badge=document.createElement("span");badge.className="tag";badge.textContent=v;td.textContent="";td.appendChild(badge);}tr.appendChild(td);});const td=document.createElement("td"),a=document.createElement("a");a.href="https://github.com/venkateshwari-p/ZORVENA/blob/main/global-database/pilot/AUSTRALIA-COMPANY-CANDIDATES-BATCH-0"+x.b+".md";a.target="_blank";a.rel="noopener";a.textContent="Open batch ↗";td.appendChild(a);tr.appendChild(td);$("researchRows").appendChild(tr);});
+ $("researchShowing").textContent="Showing "+rows.length+" of "+researchCandidates.length+" candidate entries";
+}
+["researchSearch","researchBatch","researchKind"].forEach(id=>$(id).addEventListener(id==="researchSearch"?"input":"change",renderResearch));
+$("researchReset").addEventListener("click",()=>{$("researchSearch").value="";$("researchBatch").value="";$("researchKind").value="";renderResearch();});
+renderResearch();
+
 const templates={
  companies:["company_id","company_name","country","state_region","city","official_website","linkedin_url","sector_id","industry_id","subsector_id","division_summary","business_type","products_services","trade_activity","public_contact_details","verification_status","created_at","updated_at","source_url","last_verified_at"],
  people:["person_id","company_id","full_name","job_title","department","country","linkedin_profile","business_email","business_phone","contact_location","decision_role","purchasing_responsibility","product_interest","contact_source","verification_status","outreach_permission_status","created_at","updated_at","last_verified_at"],
