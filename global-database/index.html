@@ -879,6 +879,13 @@ function attachSearchableFilter(id){
   if(current&&current.value)input.value=current.textContent;
  };
  const syncFromSelect=()=>{const option=select.selectedOptions[0];input.value=option&&option.value?option.textContent:"";};
+ input.addEventListener("keydown",event=>{
+  if(event.key==="Enter"){
+   event.preventDefault();
+   const action=id.startsWith("company")?$("companyApply"):$("peopleApply");
+   if(action)action.click();
+  }
+ });
  input.addEventListener("input",()=>{
   const typed=input.value.trim();
   const match=[...select.options].slice(1).find(option=>
@@ -898,6 +905,13 @@ function attachSearchableFilter(id){
 }
 function attachAllSearchableFilters(){
  searchableFilterIds.forEach(id=>attachSearchableFilter(id));
+ ["companySearch","companyCountry","companySector","companyIndustry","companySubsector","companyType","companyVerification",
+  "peopleSearch","peopleCompany","peoplePurchasing","peopleProduct","peopleCountry","peopleDepartment","peopleRole","peopleVerification","peoplePermission"
+ ].forEach(id=>{const input=$(id+"Autocomplete");if(input)input.value=$(id).selectedOptions[0]?.textContent||"";});
+ $("companyReset").addEventListener("click",()=>searchableFilterIds.filter(id=>id.startsWith("company")).forEach(id=>{if($(id+"Autocomplete"))$(id+"Autocomplete").value="";}));
+ $("peopleReset").addEventListener("click",()=>searchableFilterIds.filter(id=>id.startsWith("people")).forEach(id=>{if($(id+"Autocomplete"))$(id+"Autocomplete").value="";}));
+ $("companySector").addEventListener("change",()=>{if(!$("companyIndustry").value)$("companyIndustryAutocomplete").value="";if(!$("companySubsector").value)$("companySubsectorAutocomplete").value="";});
+ $("companyIndustry").addEventListener("change",()=>{if(!$("companySubsector").value)$("companySubsectorAutocomplete").value="";});
 }
 
 function populateCompanyFilterSuggestions(records=[]){
