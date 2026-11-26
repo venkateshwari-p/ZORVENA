@@ -391,20 +391,20 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
       <div class="page-head"><div><div class="eyebrow">Professional directory</div><h1>People & Contacts</h1><p>Public professional contact records linked to verified companies.</p></div><div class="head-actions"><button class="btn" data-go="import">⇧ Import people</button><button class="btn" disabled>⇩ Export contacts</button></div></div>
       <div class="panel">
         <div class="filter-row">
-          <div class="field"><label>Search contact</label><input id="peopleSearch" list="peopleSearchOptions" placeholder="Choose a suggestion or type your own"><datalist id="peopleSearchOptions"></datalist></div>
-          <div class="field"><label>Select company</label><select id="peopleCompany"><option value="">All companies</option></select></div><div class="field"><label>Purchasing responsibility</label><input id="peoplePurchasing" list="peoplePurchasingOptions" placeholder="Choose or type your own"><datalist id="peoplePurchasingOptions"></datalist></div><div class="field"><label>Product interest</label><input id="peopleProduct" list="peopleProductOptions" placeholder="Choose or type your own"><datalist id="peopleProductOptions"></datalist></div>
-          <div class="field"><label>Country</label><input id="peopleCountry" list="peopleCountryOptions" placeholder="Choose or type your own"><datalist id="peopleCountryOptions"></datalist></div>
-          <div class="field"><label>Department</label><input id="peopleDepartment" list="peopleDepartmentOptions" placeholder="Choose or type your own"><datalist id="peopleDepartmentOptions"></datalist></div>
-          <div class="field"><label>Decision role</label><input id="peopleRole" list="peopleRoleOptions" placeholder="Choose or type your own"><datalist id="peopleRoleOptions"></datalist></div>
-          <div class="field"><label>Verification</label><input id="peopleVerification" list="peopleVerificationOptions" placeholder="Choose or type your own"><datalist id="peopleVerificationOptions"></datalist></div>
+          <div class="field"><label>Search contact / job title</label><select id="peopleSearch"><option value="">All contacts</option></select></div>
+          <div class="field"><label>Select company</label><select id="peopleCompany"><option value="">All companies</option></select></div><div class="field"><label>Purchasing responsibility</label><select id="peoplePurchasing"><option value="">All responsibilities</option></select></div><div class="field"><label>Product interest</label><select id="peopleProduct"><option value="">All products</option></select></div>
+          <div class="field"><label>Country</label><select id="peopleCountry"><option value="">All countries</option></select></div>
+          <div class="field"><label>Department</label><select id="peopleDepartment"><option value="">All departments</option></select></div>
+          <div class="field"><label>Decision role</label><select id="peopleRole"><option value="">All roles</option></select></div>
+          <div class="field"><label>Verification</label><select id="peopleVerification"><option value="">All statuses</option></select></div>
         </div>
         <div class="filter-row">
-          <div class="field"><label>Outreach permission</label><input id="peoplePermission" list="peoplePermissionOptions" placeholder="Choose or type your own"><datalist id="peoplePermissionOptions"></datalist></div>
+          <div class="field"><label>Outreach permission</label><select id="peoplePermission"><option value="">All permissions</option></select></div>
           <div class="field"><label>Results per page</label><select id="peopleLimit"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option><option value="all">All</option></select></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn primary" id="peopleApply" type="button">Search contacts</button></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn" id="peopleReset" type="button">Reset filters</button></div>
         </div>
-        <p class="directory-filter-help">Suggestions are optional. Choose one as you type, or enter your own value. Press Enter or select Search contacts to apply filters.</p>
+        <p class="directory-filter-help">Choose the relevant option from each dropdown, then press Enter or select Search contacts to apply filters.</p>
         <div class="panel-head"><small id="peopleResults">Connect the database to load professional records.</small><div style="display:flex;gap:8px"><button class="btn" id="peoplePrev" type="button" disabled>← Previous</button><button class="btn" id="peopleNext" type="button" disabled>Next →</button></div></div>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>Professional</th><th>Company</th><th>Job title</th><th>Country</th><th>Verification</th><th>Outreach permission</th></tr></thead><tbody id="peopleRows"><tr><td class="empty" colspan="6">♙<b>Connect database to load contacts</b><span>Professional records will appear when available in BigQuery.</span></td></tr></tbody></table></div>
       </div>
@@ -687,16 +687,35 @@ const peopleFilterSuggestions={
  peoplePermission:["NOT_REVIEWED","PUBLIC_BUSINESS_CONTACT","PERMISSION_REQUIRED","APPROVED_FOR_OUTREACH","DO_NOT_CONTACT"]
 };
 let peopleSuggestionRecords=[];
-function populatePeopleFilterSuggestions(records=[]){
- Object.entries(peopleFilterSuggestions).forEach(([inputId,defaults])=>{
-  const list=$(inputId+"Options");if(!list)return;
-  const keyMap={peopleSearch:["job_title","full_name"],peoplePurchasing:["purchasing_responsibility"],peopleProduct:["product_interest"],peopleCountry:["country"],peopleDepartment:["department"],peopleRole:["decision_role"],peopleVerification:["verification_status"],peoplePermission:["outreach_permission_status"]};
-  const keySet=keyMap[inputId]||[];
-  const actual=records.flatMap(row=>keySet.map(key=>row[key])).filter(Boolean).map(String);
-  const values=[...new Set([...actual,...defaults])].sort((a,b)=>a.localeCompare(b));
-  list.innerHTML="";
-  values.forEach(value=>{const option=document.createElement("option");option.value=value;list.appendChild(option);});
+function setPeopleSelectOptions(id,values,placeholder,labels={}){
+ const select=$(id);if(!select)return;
+ const previous=select.value;
+ select.innerHTML="";
+ const first=document.createElement("option");first.value="";first.textContent=placeholder;select.appendChild(first);
+ values.forEach(item=>{
+  const value=typeof item==="string"?item:item.value;
+  const option=document.createElement("option");option.value=value;
+  option.textContent=(typeof item==="string"?item:(item.label||value));
+  select.appendChild(option);
  });
+ if([...select.options].some(option=>option.value===previous))select.value=previous;
+}
+function populatePeopleFilterSuggestions(records=[]){
+ const keyMap={peoplePurchasing:"purchasing_responsibility",peopleProduct:"product_interest",peopleCountry:"country",peopleDepartment:"department",peopleRole:"decision_role",peopleVerification:"verification_status",peoplePermission:"outreach_permission_status"};
+ const placeholders={peoplePurchasing:"All responsibilities",peopleProduct:"All products",peopleCountry:"All countries",peopleDepartment:"All departments",peopleRole:"All roles",peopleVerification:"All statuses",peoplePermission:"All permissions"};
+ Object.entries(keyMap).forEach(([id,key])=>{
+  const values=[...new Set([...peopleFilterSuggestions[id],...records.map(row=>row[key]).filter(Boolean).map(String)])].sort((a,b)=>a.localeCompare(b));
+  setPeopleSelectOptions(id,values,placeholders[id]);
+ });
+ const contacts=[];
+ records.forEach(row=>{
+  if(row.full_name)contacts.push({value:String(row.full_name),label:String(row.full_name)+(row.job_title?" — "+row.job_title:"")});
+  if(row.job_title)contacts.push({value:String(row.job_title),label:String(row.job_title)+" (job title)"});
+ });
+ const uniqueContacts=[...new Map(contacts.map(item=>[item.value,item])).values()].sort((a,b)=>a.label.localeCompare(b.label));
+ const jobTitleDefaults=peopleFilterSuggestions.peopleSearch.map(value=>({value,label:value+" (job title)"}));
+ const combined=[...new Map([...uniqueContacts,...jobTitleDefaults].map(item=>[item.value,item])).values()].sort((a,b)=>a.label.localeCompare(b.label));
+ setPeopleSelectOptions("peopleSearch",combined,"All contacts");
 }
 async function loadAllPeopleFilterSuggestions(){
  peopleSuggestionRecords=[];
