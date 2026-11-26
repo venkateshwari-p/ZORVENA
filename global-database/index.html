@@ -386,7 +386,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
           <div class="field" style="display:flex;align-items:end"><button class="btn primary" id="companyApply" type="button">Search directory</button></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn" id="companyReset" type="button">Reset filters</button></div>
         </div>
-        <p class="directory-filter-help">Choose the relevant option from each dropdown, then press Enter or select Search directory to apply filters.</p>
+        <p class="directory-filter-help">Type to search each filter and choose a suggestion, or enter a custom value where supported. Press Enter or select Search directory to apply filters.</p>
         <div id="companyFilterSummary" class="company-filter-summary" aria-live="polite"></div>
         <div class="panel-head"><small id="companyResults">Connect the database to load company records.</small><div style="display:flex;gap:8px"><button class="btn" id="companyPrev" type="button" disabled>← Previous</button><button class="btn" id="companyNext" type="button" disabled>Next →</button></div></div>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>Company</th><th>Country</th><th>Industry</th><th>Business type</th><th>Trade activity</th><th>Verification</th></tr></thead><tbody id="companyRows"><tr><td class="empty" colspan="6">▣<b>Connect database to load records</b><span>Company records will appear here when available in BigQuery.</span></td></tr></tbody></table></div>
@@ -888,13 +888,18 @@ function attachSearchableFilter(id){
  });
  input.addEventListener("input",()=>{
   const typed=input.value.trim();
-  const match=[...select.options].slice(1).find(option=>
+  const available=[...select.options].slice(1).filter(option=>!option.disabled);
+  let match=available.find(option=>
    option.textContent.trim().toLocaleLowerCase()===typed.toLocaleLowerCase()||
    option.value.trim().toLocaleLowerCase()===typed.toLocaleLowerCase()
   );
+  if(!match&&id==="peopleCompany"){
+   const matches=available.filter(option=>option.textContent.split(" · ")[0].trim().toLocaleLowerCase()===typed.toLocaleLowerCase());
+   if(matches.length===1)match=matches[0];
+  }
   if(match){select.value=match.value;select.dispatchEvent(new Event("change",{bubbles:true}));return;}
   if(!typed){select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));return;}
-  if(isTaxonomy){select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));return;}
+  if(isTaxonomy||id==="peopleCompany"){select.value="";return;}
   let custom=[...select.options].find(option=>option.dataset.custom==="true"&&option.value===typed);
   if(!custom){custom=document.createElement("option");custom.value=typed;custom.textContent=typed;custom.dataset.custom="true";select.appendChild(custom);}
   select.value=typed;select.dispatchEvent(new Event("change",{bubbles:true}));
@@ -905,13 +910,14 @@ function attachSearchableFilter(id){
 }
 function attachAllSearchableFilters(){
  searchableFilterIds.forEach(id=>attachSearchableFilter(id));
- ["companySearch","companyCountry","companySector","companyIndustry","companySubsector","companyType","companyVerification",
-  "peopleSearch","peopleCompany","peoplePurchasing","peopleProduct","peopleCountry","peopleDepartment","peopleRole","peopleVerification","peoplePermission"
- ].forEach(id=>{const input=$(id+"Autocomplete");if(input)input.value=$(id).selectedOptions[0]?.textContent||"";});
- $("companyReset").addEventListener("click",()=>searchableFilterIds.filter(id=>id.startsWith("company")).forEach(id=>{if($(id+"Autocomplete"))$(id+"Autocomplete").value="";}));
- $("peopleReset").addEventListener("click",()=>searchableFilterIds.filter(id=>id.startsWith("people")).forEach(id=>{if($(id+"Autocomplete"))$(id+"Autocomplete").value="";}));
- $("companySector").addEventListener("change",()=>{if(!$("companyIndustry").value)$("companyIndustryAutocomplete").value="";if(!$("companySubsector").value)$("companySubsectorAutocomplete").value="";});
- $("companyIndustry").addEventListener("change",()=>{if(!$("companySubsector").value)$("companySubsectorAutocomplete").value="";});
+ searchableFilterIds.forEach(id=>{const input=$(id+"Autocomplete");if(input)input.value=$(id).selectedOptions[0]?.textContent||"";});
+ if(!$("companyReset").dataset.autocompleteReset){
+  $("companyReset").dataset.autocompleteReset="true";
+  $("companyReset").addEventListener("click",()=>searchableFilterIds.filter(id=>id.startsWith("company")).forEach(id=>{if($(id+"Autocomplete"))$(id+"Autocomplete").value="";}));
+  $("peopleReset").addEventListener("click",()=>searchableFilterIds.filter(id=>id.startsWith("people")).forEach(id=>{if($(id+"Autocomplete"))$(id+"Autocomplete").value="";}));
+  $("companySector").addEventListener("change",()=>{if(!$("companyIndustry").value)$("companyIndustryAutocomplete").value="";if(!$("companySubsector").value)$("companySubsectorAutocomplete").value="";});
+  $("companyIndustry").addEventListener("change",()=>{if(!$("companySubsector").value)$("companySubsectorAutocomplete").value="";});
+ }
 }
 
 function populateCompanyFilterSuggestions(records=[]){
