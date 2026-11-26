@@ -912,7 +912,7 @@ function attachSearchableFilter(id){
   const matches=getOptions().map(option=>({option,label:displayFor(option)}))
    .map(item=>{
     const label=item.label.toLocaleLowerCase();
-    const words=label.split(/[^\\p{L}\\p{N}]+/u).filter(Boolean);
+    const words=label.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
     const rank=label===q?0:label.startsWith(q)?1:words.some(word=>word.startsWith(q))?2:label.includes(q)?3:99;
     return {...item,rank};
    })
