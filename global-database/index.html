@@ -368,20 +368,20 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
       <div class="page-head"><div><div class="eyebrow">Master directory</div><h1>Company Directory</h1><p>Search and filter agriculture businesses across the global value chain.</p></div><div class="head-actions"><button class="btn" data-go="import">⇧ Import companies</button><button class="btn" disabled title="Connect the BigQuery API first">⇩ Export results</button></div></div>
       <div class="panel">
         <div class="filter-row">
-          <div class="field"><label>Search company / website</label><input id="companySearch" list="companySearchOptions" placeholder="Choose a suggestion or type your own"><datalist id="companySearchOptions"></datalist></div>
-          <div class="field"><label>Country</label><input id="companyCountry" list="companyCountryOptions" placeholder="Choose a suggestion or type your own"><datalist id="companyCountryOptions"></datalist></div>
+          <div class="field"><label>Search company / website</label><select id="companySearch"><option value="">All companies</option></select></div>
+          <div class="field"><label>Country</label><select id="companyCountry"><option value="">All countries</option></select></div>
           <div class="field"><label>Sector</label><select id="companySector"><option value="">All sectors</option></select></div>
           <div class="field"><label>Industry</label><select id="companyIndustry"><option value="">All industries</option></select></div>
           <div class="field"><label>Sub-sector</label><select id="companySubsector"><option value="">All sub-sectors</option></select></div>
         </div>
         <div class="filter-row">
-          <div class="field"><label>Business type</label><input id="companyType" list="companyTypeOptions" placeholder="Choose a suggestion or type your own"><datalist id="companyTypeOptions"></datalist></div>
-          <div class="field"><label>Verification</label><select id="companyVerification"><option value="">All statuses</option><option>VERIFIED</option><option>UNVERIFIED</option><option>NEEDS_REVIEW</option></select></div>
+          <div class="field"><label>Business type</label><select id="companyType"><option value="">All business types</option></select></div>
+          <div class="field"><label>Verification</label><select id="companyVerification"><option value="">All statuses</option><option>VERIFIED</option><option>PARTIALLY_VERIFIED</option><option>NEEDS_REVIEW</option><option>UNVERIFIED</option></select></div>
           <div class="field"><label>Results per page</label><select id="companyLimit"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option><option value="all">All</option></select></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn primary" id="companyApply" type="button">Search directory</button></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn" id="companyReset" type="button">Reset filters</button></div>
         </div>
-        <p class="directory-filter-help">Suggestions are optional. Choose one as you type, or enter your own value. Press Enter or select Search directory to apply filters.</p>
+        <p class="directory-filter-help">Choose the relevant option from each dropdown, then press Enter or select Search directory to apply filters.</p>
         <div id="companyFilterSummary" class="company-filter-summary" aria-live="polite"></div>
         <div class="panel-head"><small id="companyResults">Connect the database to load company records.</small><div style="display:flex;gap:8px"><button class="btn" id="companyPrev" type="button" disabled>← Previous</button><button class="btn" id="companyNext" type="button" disabled>Next →</button></div></div>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>Company</th><th>Country</th><th>Industry</th><th>Business type</th><th>Trade activity</th><th>Verification</th></tr></thead><tbody id="companyRows"><tr><td class="empty" colspan="6">▣<b>Connect database to load records</b><span>Company records will appear here when available in BigQuery.</span></td></tr></tbody></table></div>
@@ -808,14 +808,35 @@ $("companyDetailOverlay").addEventListener("click",event=>{if(event.target===$("
 document.addEventListener("keydown",event=>{if(event.key==="Escape"&&$("companyDetailOverlay").style.display==="flex")closeCompanyDetail();});
 
 let companySuggestionRecords=[];
-function populateCompanyFilterSuggestions(records=[]){
- const mapping={companySearch:["company_name","official_website"],companyCountry:["country"],companyType:["business_type"]};
- Object.entries(mapping).forEach(([inputId,keys])=>{
-  const list=$(inputId+"Options");if(!list)return;
-  const values=[...new Set(records.flatMap(row=>keys.map(key=>row[key])).filter(Boolean).map(String))].sort((a,b)=>a.localeCompare(b));
-  list.innerHTML="";
-  values.forEach(value=>{const option=document.createElement("option");option.value=value;list.appendChild(option);});
+const companyFilterDefaults={
+ companyCountry:["Australia","Canada","France","Germany","India","Indonesia","Italy","Japan","Malaysia","Netherlands","New Zealand","Saudi Arabia","Singapore","South Korea","Spain","Thailand","UAE","United Kingdom","United States"],
+ companyType:["Agricultural producer","Commercial grower","Farm operator","Greenhouse grower","Hydroponic grower","Manufacturer","Nursery / propagator","Exporter","Importer","Distributor","Wholesaler","Retailer","Supplier","Service provider","Research institution"]
+};
+function setCompanySelectOptions(id,values,placeholder,makeLabel){
+ const select=$(id);if(!select)return;
+ const previous=select.value;
+ select.innerHTML="";
+ const first=document.createElement("option");first.value="";first.textContent=placeholder;select.appendChild(first);
+ values.forEach(item=>{
+  const option=document.createElement("option");
+  option.value=item.value;
+  option.textContent=makeLabel?makeLabel(item):item.label||item.value;
+  select.appendChild(option);
  });
+ if([...select.options].some(option=>option.value===previous))select.value=previous;
+}
+function populateCompanyFilterSuggestions(records=[]){
+ const companies=[];
+ records.forEach(row=>{
+  if(row.company_name)companies.push({value:String(row.company_name),label:String(row.company_name)+(row.official_website?" — "+row.official_website:"")});
+  if(row.official_website)companies.push({value:String(row.official_website),label:String(row.official_website)+" — "+String(row.company_name||"Company website")});
+ });
+ const uniqueCompanies=[...new Map(companies.map(item=>[item.value,item])).values()].sort((a,b)=>a.label.localeCompare(b.label));
+ const countries=[...new Set([...companyFilterDefaults.companyCountry,...records.map(row=>row.country).filter(Boolean).map(String)])].sort((a,b)=>a.localeCompare(b));
+ const businessTypes=[...new Set([...companyFilterDefaults.companyType,...records.map(row=>row.business_type).filter(Boolean).map(String)])].sort((a,b)=>a.localeCompare(b));
+ setCompanySelectOptions("companySearch",uniqueCompanies,"All companies");
+ setCompanySelectOptions("companyCountry",countries.map(value=>({value,label:value})),"All countries");
+ setCompanySelectOptions("companyType",businessTypes.map(value=>({value,label:value})),"All business types");
 }
 async function loadAllCompanyFilterSuggestions(){
  companySuggestionRecords=[];
