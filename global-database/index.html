@@ -868,8 +868,26 @@ function attachSearchableFilter(id){
  const select=$(id);if(!select||select.dataset.searchableAttached==="true")return;
  select.dataset.searchableAttached="true";
  const input=document.createElement("input");
+ const filterBehavior={
+  companySearch:{placeholder:"Search company name…",custom:true},
+  companyCountry:{placeholder:"Choose a country…",custom:false},
+  companySector:{placeholder:"Choose a sector…",custom:false},
+  companyIndustry:{placeholder:"Choose an industry…",custom:false},
+  companySubsector:{placeholder:"Choose a sub-sector…",custom:false},
+  companyType:{placeholder:"Choose or type business type…",custom:true},
+  companyVerification:{placeholder:"Choose verification status…",custom:false},
+  peopleSearch:{placeholder:"Search name or job title…",custom:true},
+  peopleCompany:{placeholder:"Choose a company…",custom:false},
+  peoplePurchasing:{placeholder:"Search purchasing responsibility…",custom:true},
+  peopleProduct:{placeholder:"Search product interest…",custom:true},
+  peopleCountry:{placeholder:"Choose a country…",custom:false},
+  peopleDepartment:{placeholder:"Choose or type department…",custom:true},
+  peopleRole:{placeholder:"Choose decision-making role…",custom:false},
+  peopleVerification:{placeholder:"Choose verification status…",custom:false},
+  peoplePermission:{placeholder:"Choose outreach permission…",custom:false}
+ }[id]||{placeholder:"Type to search…",custom:false};
  input.type="text";input.id=id+"Autocomplete";input.className="filter-autocomplete";
- input.placeholder=select.options[0]?.textContent||"Type to search…";
+ input.placeholder=filterBehavior.placeholder;
  input.setAttribute("autocomplete","off");input.setAttribute("aria-label",input.placeholder);
  input.setAttribute("aria-autocomplete","list");
  select.parentNode.style.position="relative";
@@ -911,7 +929,7 @@ function attachSearchableFilter(id){
   });
   if(!matches.length){
    const empty=document.createElement("div");empty.className="filter-suggestion-empty";
-   empty.textContent=isTaxonomy?"No matching classification. Choose a valid suggestion.":id==="peopleCompany"?"No matching company found. Try another name.":"No exact recommendation found. Your custom text will be used when supported.";
+   empty.textContent=isTaxonomy?"No matching classification. Choose a valid suggestion.":id==="peopleCompany"?"No matching company found. Choose a company from the list.":filterBehavior.custom?"No saved match. You can use this text as a custom filter.":"No matching option. Choose a suggestion from the list.";
    panel.appendChild(empty);
   }
   panel.hidden=false;
@@ -925,7 +943,7 @@ function attachSearchableFilter(id){
   const exact=getOptions().find(option=>displayFor(option).toLocaleLowerCase()===typed.toLocaleLowerCase()||option.value.toLocaleLowerCase()===typed.toLocaleLowerCase());
   if(exact){select.value=exact.value;select.dispatchEvent(new Event("change",{bubbles:true}));}
   else if(!typed){select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));}
-  else if(isTaxonomy||id==="peopleCompany"){select.value="";}
+  else if(!filterBehavior.custom||isTaxonomy||id==="peopleCompany"){select.value="";}
   else{
    let custom=[...select.options].find(option=>option.dataset.custom==="true"&&option.value===typed);
    if(!custom){custom=document.createElement("option");custom.value=typed;custom.textContent=typed;custom.dataset.custom="true";select.appendChild(custom);}
@@ -972,8 +990,7 @@ function attachAllSearchableFilters(){
 function populateCompanyFilterSuggestions(records=[]){
  const companies=[];
  records.forEach(row=>{
-  if(row.company_name)companies.push({value:String(row.company_name),label:String(row.company_name)+(row.official_website?" — "+row.official_website:"")});
-  if(row.official_website)companies.push({value:String(row.official_website),label:String(row.official_website)+" — "+String(row.company_name||"Company website")});
+  if(row.company_name)companies.push({value:String(row.company_name),label:String(row.company_name)});
  });
  const uniqueCompanies=[...new Map(companies.map(item=>[item.value,item])).values()].sort((a,b)=>a.label.localeCompare(b.label));
  const countries=[...new Set([...companyFilterDefaults.companyCountry,...records.map(row=>row.country).filter(Boolean).map(String)])].sort((a,b)=>a.localeCompare(b));
