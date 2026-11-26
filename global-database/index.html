@@ -390,7 +390,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
       <div class="panel">
         <div class="filter-row">
           <div class="field"><label>Search contact</label><input id="peopleSearch" placeholder="Name or job title"></div>
-          <div class="field"><label>Company ID</label><input id="peopleCompany" placeholder="Exact company ID"></div><div class="field"><label>Purchasing responsibility</label><input id="peoplePurchasing" placeholder="Exact responsibility"></div><div class="field"><label>Product interest</label><input id="peopleProduct" placeholder="Exact product interest"></div>
+          <div class="field"><label>Select company</label><select id="peopleCompany"><option value="">All companies</option></select></div><div class="field"><label>Purchasing responsibility</label><input id="peoplePurchasing" placeholder="Exact responsibility"></div><div class="field"><label>Product interest</label><input id="peopleProduct" placeholder="Exact product interest"></div>
           <div class="field"><label>Country</label><input id="peopleCountry" placeholder="Exact country name"></div>
           <div class="field"><label>Department</label><input id="peopleDepartment" placeholder="Exact department"></div>
           <div class="field"><label>Decision role</label><input id="peopleRole" placeholder="Exact decision role"></div>
@@ -673,6 +673,38 @@ $("personDetailClose").addEventListener("click",closePersonDetail);
 $("personDetailOverlay").addEventListener("click",event=>{if(event.target===$("personDetailOverlay"))closePersonDetail();});
 document.addEventListener("keydown",event=>{if(event.key==="Escape"&&$("personDetailOverlay").style.display==="flex")closePersonDetail();});
 
+async function loadPeopleCompanyOptions(){
+  const select=$("peopleCompany");
+  select.innerHTML='<option value="">All companies</option>';
+  if(!apiHeaders)return;
+  try{
+   let offset=0,all=[],total=Infinity;
+   while(offset<total){
+    const params=new URLSearchParams({limit:"100",offset:String(offset)});
+    const response=await fetch(API_BASE+"/api/companies?"+params.toString(),{headers:apiHeaders});
+    if(!response.ok)throw new Error("HTTP "+response.status);
+    const result=await response.json(),rows=result.data||[];
+    total=Number(result.pagination?.total||0);
+    all=all.concat(rows);
+    if(!rows.length)break;
+    offset+=rows.length;
+   }
+   all.sort((a,b)=>String(a.company_name||"").localeCompare(String(b.company_name||"")));
+   all.forEach(company=>{
+    if(!company.company_id)return;
+    const option=document.createElement("option");
+    option.value=company.company_id;
+    option.textContent=(company.company_name||company.company_id)+" · "+(company.country||"Country not set");
+    select.appendChild(option);
+   });
+   select.disabled=false;
+   if(!all.length){const option=document.createElement("option");option.disabled=true;option.textContent="No company records available yet";select.appendChild(option);}
+  }catch(error){
+   select.innerHTML='<option value="">Company list unavailable</option>';
+   select.disabled=false;
+   console.error("Could not load company dropdown",error);
+  }
+}
 function loadPeople(reset=false){
   if(!apiHeaders)return;
   if(reset)peopleOffset=0;
@@ -789,7 +821,7 @@ function loadCompanies(reset=false){
    const ccount=Number(counts.companies||0),pcount=Number(counts.people||0);$("readinessCompanies").textContent=ccount.toLocaleString()+" records currently available";$("companyReadiness").textContent=ccount?"Available":"Empty";$("readinessPeople").textContent=pcount.toLocaleString()+" contacts currently available";$("peopleReadiness").textContent=pcount?"Available":"Empty";
    $("companyReadiness").style.background=ccount?"#e9f5e9":"#fbf2df";$("companyReadiness").style.color=ccount?"#377144":"#946c25";$("peopleReadiness").style.background=pcount?"#e9f5e9":"#fbf2df";$("peopleReadiness").style.color=pcount?"#377144":"#946c25";
    renderTaxonomy(tx.data);apiHeaders=headers;setupCompanyFilters(tx.data);
-   await loadCompanies(true);await loadPeople(true);await loadSources();
+   await loadPeopleCompanyOptions();await loadCompanies(true);await loadPeople(true);await loadSources();
    const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview, industry taxonomy, Company Directory and People & Contacts are connected to the authenticated ZORVENA API. Directory results depend on records available in BigQuery.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
    setStatus(true,"API connected");$("connectBtn").textContent="Refresh data";$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";
   }catch(e){setStatus(false,"Connection failed");message.textContent="Could not connect: "+e.message+" — check the token and try again."; }
