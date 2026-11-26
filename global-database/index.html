@@ -769,6 +769,7 @@ async function fetchAllDirectoryRows(path,baseParams,headers){
  }
 async function loadPeopleCompanyOptions(){
   const select=$("peopleCompany");
+  const previousCompanyId=select.value;
   select.innerHTML='<option value="">All companies</option>';
   if(!apiHeaders)return;
   try{
@@ -791,6 +792,7 @@ async function loadPeopleCompanyOptions(){
     option.textContent=(company.company_name||company.company_id)+" · "+(company.country||"Country not set");
     select.appendChild(option);
    });
+   if(previousCompanyId&&[...select.options].some(option=>option.value===previousCompanyId))select.value=previousCompanyId;
    select.disabled=false;
    if(!all.length){const option=document.createElement("option");option.disabled=true;option.textContent="No company records available yet";select.appendChild(option);}
   }catch(error){
