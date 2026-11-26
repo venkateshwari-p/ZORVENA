@@ -409,7 +409,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
           <div class="field" style="display:flex;align-items:end"><button class="btn primary" id="peopleApply" type="button">Search contacts</button></div>
           <div class="field" style="display:flex;align-items:end"><button class="btn" id="peopleReset" type="button">Reset filters</button></div>
         </div>
-        <p class="directory-filter-help">Choose the relevant option from each dropdown, then press Enter or select Search contacts to apply filters.</p>
+        <p class="directory-filter-help">Type to search each filter and choose a suggestion, or enter a custom value where supported. Press Enter or select Search contacts to apply filters.</p>
         <div class="panel-head"><small id="peopleResults">Connect the database to load professional records.</small><div style="display:flex;gap:8px"><button class="btn" id="peoplePrev" type="button" disabled>← Previous</button><button class="btn" id="peopleNext" type="button" disabled>Next →</button></div></div>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>Professional</th><th>Company</th><th>Job title</th><th>Country</th><th>Verification</th><th>Outreach permission</th></tr></thead><tbody id="peopleRows"><tr><td class="empty" colspan="6">♙<b>Connect database to load contacts</b><span>Professional records will appear when available in BigQuery.</span></td></tr></tbody></table></div>
       </div>
@@ -873,7 +873,7 @@ function attachSearchableFilter(id){
   list.innerHTML="";
   [...select.options].slice(1).forEach(option=>{
    const item=document.createElement("option");
-   item.value=option.textContent;
+   item.value=isTaxonomy?option.textContent.split(" · ").slice(1).join(" · "):option.textContent;
    list.appendChild(item);
   });
   if(current&&current.value)input.value=current.textContent;
@@ -889,10 +889,11 @@ function attachSearchableFilter(id){
  input.addEventListener("input",()=>{
   const typed=input.value.trim();
   const available=[...select.options].slice(1).filter(option=>!option.disabled);
-  let match=available.find(option=>
-   option.textContent.trim().toLocaleLowerCase()===typed.toLocaleLowerCase()||
-   option.value.trim().toLocaleLowerCase()===typed.toLocaleLowerCase()
-  );
+  let match=available.find(option=>{
+   const display=isTaxonomy?option.textContent.split(" · ").slice(1).join(" · "):option.textContent;
+   return display.trim().toLocaleLowerCase()===typed.toLocaleLowerCase()||
+    option.value.trim().toLocaleLowerCase()===typed.toLocaleLowerCase();
+  });
   if(!match&&id==="peopleCompany"){
    const matches=available.filter(option=>option.textContent.split(" · ")[0].trim().toLocaleLowerCase()===typed.toLocaleLowerCase());
    if(matches.length===1)match=matches[0];
