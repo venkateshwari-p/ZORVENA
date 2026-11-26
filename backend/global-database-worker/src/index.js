@@ -197,7 +197,7 @@ async function handleApi(request, env, url) {
     addExactFilter(params, where, url.searchParams, "verification_status", "verification_status");
 
     const limit = intParam(url.searchParams.get("limit"), 50, 100);
-    const offset = intParam(url.searchParams.get("offset"), 0, 10000);
+    const offset = intParam(url.searchParams.get("offset"), 0, 1000000);
     const whereSql = where.length ? " WHERE " + where.join(" AND ") : "";
     const sql = `SELECT company_id, company_name, country, state_region, city, official_website,
       linkedin_url, sector_id, industry_id, subsector_id, division_summary, business_type,
@@ -248,7 +248,7 @@ async function handleApi(request, env, url) {
     addExactFilter(params, where, url.searchParams, "outreach_permission_status", "outreach_permission_status");
 
     const limit = intParam(url.searchParams.get("limit"), 50, 100);
-    const offset = intParam(url.searchParams.get("offset"), 0, 10000);
+    const offset = intParam(url.searchParams.get("offset"), 0, 1000000);
     const whereSql = where.length ? " WHERE " + where.join(" AND ") : "";
     const sql = `SELECT p.person_id, p.company_id, c.company_name, p.full_name, p.job_title, p.department, p.country,
       p.linkedin_profile, p.business_email, p.business_phone, p.contact_location, p.decision_role,
