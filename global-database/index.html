@@ -705,8 +705,9 @@ async function loadAllPeopleFilterSuggestions(){
   let offset=0,total=Infinity;
   while(offset<total){
    const params=new URLSearchParams({limit:"100",offset:String(offset)});
-   const result=allMode?await fetchAllDirectoryRows("/api/people",params,apiHeaders):await (async()=>{const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});if(!response.ok)throw new Error("HTTP "+response.status);return response.json();})();
-   const rows=result.data||[];
+   const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});
+   if(!response.ok)throw new Error("HTTP "+response.status);
+   const result=await response.json(),rows=result.data||[];
    total=Number(result.pagination?.total||0);
    peopleSuggestionRecords.push(...rows);
    if(!rows.length)break;
@@ -718,7 +719,7 @@ async function loadAllPeopleFilterSuggestions(){
   populatePeopleFilterSuggestions(peopleSuggestionRecords);
  }
 }
-async  async function fetchAllDirectoryRows(path,baseParams,headers){
+async function fetchAllDirectoryRows(path,baseParams,headers){
   const rows=[];let offset=0,total=0;
   do{
    const pageParams=new URLSearchParams(baseParams);pageParams.set("limit","100");pageParams.set("offset",String(offset));
@@ -730,7 +731,7 @@ async  async function fetchAllDirectoryRows(path,baseParams,headers){
   if(rows.length<total)throw new Error("The API offset limit prevented loading every record ("+rows.length+" of "+total+").");
   return {data:rows,pagination:{total,limit:rows.length,offset:0}};
  }
-function loadPeopleCompanyOptions(){
+async function loadPeopleCompanyOptions(){
   const select=$("peopleCompany");
   select.innerHTML='<option value="">All companies</option>';
   if(!apiHeaders)return;
@@ -771,9 +772,8 @@ async function loadPeople(reset=false){
   Object.entries(fields).forEach(([k,v])=>{if(v)params.set(k,v);});
   $("peopleApply").disabled=true;$("peopleApply").textContent="Loading…";
   try{
-   const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});
-   if(!response.ok)throw new Error("HTTP "+response.status);
-   const result=await response.json(),rows=result.data||[];peopleTotal=Number(result.pagination?.total||0);populatePeopleFilterSuggestions([...peopleSuggestionRecords,...rows]);
+   const result=allMode?await fetchAllDirectoryRows("/api/people",params,apiHeaders):await (async()=>{const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});if(!response.ok)throw new Error("HTTP "+response.status);return response.json();})();
+   const rows=result.data||[];peopleTotal=Number(result.pagination?.total||0);populatePeopleFilterSuggestions([...peopleSuggestionRecords,...rows]);
    const tbody=$("peopleRows");tbody.innerHTML="";
    if(!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.className="empty";td.innerHTML="♙<b>No matching professional records</b><span>The database currently contains "+peopleTotal+" matching contacts. Add approved, source-backed records to BigQuery to populate this directory.</span>";tr.appendChild(td);tbody.appendChild(tr);}
    rows.forEach(row=>{
