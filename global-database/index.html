@@ -872,6 +872,7 @@ function attachSearchableFilter(id){
  input.placeholder=select.options[0]?.textContent||"Type to search…";
  input.setAttribute("autocomplete","off");input.setAttribute("aria-label",input.placeholder);
  input.setAttribute("aria-autocomplete","list");
+ select.parentNode.style.position="relative";
  const panel=document.createElement("div");panel.className="filter-suggestion-panel";panel.id=id+"SuggestionPanel";
  panel.setAttribute("role","listbox");panel.hidden=true;
  select.parentNode.insertBefore(input,select);select.parentNode.insertBefore(panel,select);
