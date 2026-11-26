@@ -295,6 +295,14 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 /* Company filter summary chips */
 .directory-filter-help{margin:0 0 12px;color:#778579;font-size:10px;line-height:1.5}
  .company-filter-summary{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}.company-filter-summary:empty{display:none}.company-filter-chip{border:1px solid #dfe9d8;border-radius:999px;background:#f6faf3;padding:5px 9px;font-size:10px;color:#466348}.company-filter-chip b{color:#244c33}
+
+/* Independent live recommendation panels for directory filters */
+.filter-suggestion-panel{position:absolute;z-index:1000;top:calc(100% + 4px);left:0;right:0;max-height:220px;overflow-y:auto;background:#fff;border:1px solid #d8e4d6;border-radius:9px;box-shadow:0 8px 24px rgba(26,55,35,.14);padding:4px}
+.filter-suggestion-panel[hidden]{display:none}
+.filter-suggestion{display:block;width:100%;border:0;border-radius:6px;background:#fff;text-align:left;padding:9px 10px;color:#304b36;font:inherit;font-size:12px;cursor:pointer}
+.filter-suggestion:hover,.filter-suggestion.active{background:#edf5e9;color:#245a32}
+.filter-suggestion-empty{padding:10px;color:#778579;font-size:11px;line-height:1.45}
+.filter-autocomplete{width:100%;box-sizing:border-box}
 </style>
 </head>
 <body>
@@ -862,52 +870,80 @@ function attachSearchableFilter(id){
  const input=document.createElement("input");
  input.type="text";input.id=id+"Autocomplete";input.className="filter-autocomplete";
  input.placeholder=select.options[0]?.textContent||"Type to search…";
- input.setAttribute("list",id+"Suggestions");input.setAttribute("autocomplete","off");
- input.setAttribute("aria-label",input.placeholder);
- const list=document.createElement("datalist");list.id=id+"Suggestions";
- select.parentNode.insertBefore(input,select);select.parentNode.insertBefore(list,select);
+ input.setAttribute("autocomplete","off");input.setAttribute("aria-label",input.placeholder);
+ input.setAttribute("aria-autocomplete","list");
+ const panel=document.createElement("div");panel.className="filter-suggestion-panel";panel.id=id+"SuggestionPanel";
+ panel.setAttribute("role","listbox");panel.hidden=true;
+ select.parentNode.insertBefore(input,select);select.parentNode.insertBefore(panel,select);
  select.style.display="none";
  const isTaxonomy=["companySector","companyIndustry","companySubsector"].includes(id);
- const rebuild=()=>{
-  const current=select.selectedOptions[0];
-  list.innerHTML="";
-  [...select.options].slice(1).forEach(option=>{
-   const item=document.createElement("option");
-   item.value=isTaxonomy?option.textContent.split(" · ").slice(1).join(" · "):option.textContent;
-   list.appendChild(item);
-  });
-  if(current&&current.value)input.value=current.textContent;
+ let activeIndex=-1;
+ const getOptions=()=>[...select.options].slice(1).filter(option=>!option.disabled&&option.value&&!option.dataset.custom);
+ const displayFor=option=>isTaxonomy?option.textContent.split(" · ").slice(1).join(" · "):option.textContent;
+ const close=()=>{panel.hidden=true;panel.innerHTML="";activeIndex=-1;};
+ const choose=option=>{
+  select.value=option.value;select.dispatchEvent(new Event("change",{bubbles:true}));
+  input.value=displayFor(option);close();
  };
- const syncFromSelect=()=>{const option=select.selectedOptions[0];input.value=option&&option.value?option.textContent:"";};
- input.addEventListener("keydown",event=>{
-  if(event.key==="Enter"){
-   event.preventDefault();
-   const action=id.startsWith("company")?$("companyApply"):$("peopleApply");
-   if(action)action.click();
+ const render=()=>{
+  const typed=input.value.trim();
+  panel.innerHTML="";activeIndex=-1;
+  if(!typed){close();return;}
+  const q=typed.toLocaleLowerCase();
+  const matches=getOptions().map(option=>({option,label:displayFor(option)}))
+   .filter(item=>item.label.toLocaleLowerCase().includes(q))
+   .sort((a,b)=>{
+    const ap=a.label.toLocaleLowerCase().startsWith(q)?0:1;
+    const bp=b.label.toLocaleLowerCase().startsWith(q)?0:1;
+    return ap-bp||a.label.localeCompare(b.label);
+   }).slice(0,8);
+  matches.forEach((item,index)=>{
+   const button=document.createElement("button");button.type="button";
+   button.className="filter-suggestion";button.setAttribute("role","option");
+   button.textContent=item.label;
+   button.addEventListener("mousedown",event=>event.preventDefault());
+   button.addEventListener("click",()=>choose(item.option));
+   panel.appendChild(button);
+  });
+  if(!matches.length){
+   const empty=document.createElement("div");empty.className="filter-suggestion-empty";
+   empty.textContent=isTaxonomy?"No matching classification. Choose a valid suggestion.":id==="peopleCompany"?"No matching company found. Try another name.":"No exact recommendation found. Your custom text will be used when supported.";
+   panel.appendChild(empty);
   }
- });
+  panel.hidden=false;
+ };
+ const syncFromSelect=()=>{
+  const option=select.selectedOptions[0];
+  input.value=option&&option.value?displayFor(option):"";
+ };
  input.addEventListener("input",()=>{
   const typed=input.value.trim();
-  const available=[...select.options].slice(1).filter(option=>!option.disabled);
-  let match=available.find(option=>{
-   const display=isTaxonomy?option.textContent.split(" · ").slice(1).join(" · "):option.textContent;
-   return display.trim().toLocaleLowerCase()===typed.toLocaleLowerCase()||
-    option.value.trim().toLocaleLowerCase()===typed.toLocaleLowerCase();
-  });
-  if(!match&&id==="peopleCompany"){
-   const matches=available.filter(option=>option.textContent.split(" · ")[0].trim().toLocaleLowerCase()===typed.toLocaleLowerCase());
-   if(matches.length===1)match=matches[0];
+  const exact=getOptions().find(option=>displayFor(option).toLocaleLowerCase()===typed.toLocaleLowerCase()||option.value.toLocaleLowerCase()===typed.toLocaleLowerCase());
+  if(exact){select.value=exact.value;select.dispatchEvent(new Event("change",{bubbles:true}));}
+  else if(!typed){select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));}
+  else if(isTaxonomy||id==="peopleCompany"){select.value="";}
+  else{
+   let custom=[...select.options].find(option=>option.dataset.custom==="true"&&option.value===typed);
+   if(!custom){custom=document.createElement("option");custom.value=typed;custom.textContent=typed;custom.dataset.custom="true";select.appendChild(custom);}
+   select.value=typed;
   }
-  if(match){select.value=match.value;select.dispatchEvent(new Event("change",{bubbles:true}));return;}
-  if(!typed){select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));return;}
-  if(isTaxonomy||id==="peopleCompany"){select.value="";return;}
-  let custom=[...select.options].find(option=>option.dataset.custom==="true"&&option.value===typed);
-  if(!custom){custom=document.createElement("option");custom.value=typed;custom.textContent=typed;custom.dataset.custom="true";select.appendChild(custom);}
-  select.value=typed;select.dispatchEvent(new Event("change",{bubbles:true}));
+  render();
  });
- select.addEventListener("change",syncFromSelect);
- new MutationObserver(rebuild).observe(select,{childList:true,subtree:true,characterData:true});
- rebuild();
+ input.addEventListener("keydown",event=>{
+  const items=[...panel.querySelectorAll(".filter-suggestion")];
+  if(event.key==="ArrowDown"&&items.length){event.preventDefault();activeIndex=Math.min(activeIndex+1,items.length-1);items.forEach((item,index)=>item.classList.toggle("active",index===activeIndex));}
+  else if(event.key==="ArrowUp"&&items.length){event.preventDefault();activeIndex=Math.max(activeIndex-1,0);items.forEach((item,index)=>item.classList.toggle("active",index===activeIndex));}
+  else if(event.key==="Enter"){
+   event.preventDefault();
+   if(activeIndex>=0&&items[activeIndex])items[activeIndex].click();
+   const action=id.startsWith("company")?$("companyApply"):$("peopleApply");if(action)action.click();
+  }else if(event.key==="Escape")close();
+ });
+ input.addEventListener("focus",render);
+ select.addEventListener("change",()=>{syncFromSelect();if(id.startsWith("company")&&["companySector","companyIndustry"].includes(id))render();});
+ document.addEventListener("click",event=>{if(event.target!==input&&!panel.contains(event.target))close();});
+ new MutationObserver(()=>{if(!input.value)syncFromSelect();}).observe(select,{childList:true,subtree:true,characterData:true});
+ syncFromSelect();
 }
 function attachAllSearchableFilters(){
  searchableFilterIds.forEach(id=>attachSearchableFilter(id));
