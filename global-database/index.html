@@ -751,7 +751,7 @@ async function loadPeopleCompanyOptions(){
    console.error("Could not load company dropdown",error);
   }
 }
-function loadPeople(reset=false){
+async function loadPeople(reset=false){
   if(!apiHeaders)return;
   if(reset)peopleOffset=0;
   const params=new URLSearchParams({limit:String(peopleLimit()),offset:String(peopleOffset)});
@@ -827,7 +827,7 @@ async function loadAllCompanyFilterSuggestions(){
   populateCompanyFilterSuggestions(companySuggestionRecords);
  }
 }
-function loadCompanies(reset=false){
+async function loadCompanies(reset=false){
   if(!apiHeaders)return;
   if(reset)companyOffset=0;
   const params=new URLSearchParams({limit:String(companyLimit()),offset:String(companyOffset)});
