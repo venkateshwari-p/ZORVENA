@@ -951,7 +951,15 @@ function attachSearchableFilter(id){
 }
 function attachAllSearchableFilters(){
  searchableFilterIds.forEach(id=>attachSearchableFilter(id));
- searchableFilterIds.forEach(id=>{const input=$(id+"Autocomplete");if(input)input.value=$(id).selectedOptions[0]?.textContent||"";});
+ searchableFilterIds.forEach(id=>{
+  const input=$(id+"Autocomplete"),select=$(id);
+  if(!input||!select)return;
+  const option=select.selectedOptions[0];
+  if(!select.value){input.value="";return;}
+  input.value=["companySector","companyIndustry","companySubsector"].includes(id)
+   ?(option?.textContent||"").split(" · ").slice(1).join(" · ")
+   :(option?.textContent||"");
+ });
  if(!$("companyReset").dataset.autocompleteReset){
   $("companyReset").dataset.autocompleteReset="true";
   $("companyReset").addEventListener("click",()=>searchableFilterIds.filter(id=>id.startsWith("company")).forEach(id=>{if($(id+"Autocomplete"))$(id+"Autocomplete").value="";}));
