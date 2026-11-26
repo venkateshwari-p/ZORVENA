@@ -892,12 +892,15 @@ function attachSearchableFilter(id){
   if(!typed){close();return;}
   const q=typed.toLocaleLowerCase();
   const matches=getOptions().map(option=>({option,label:displayFor(option)}))
-   .filter(item=>item.label.toLocaleLowerCase().includes(q))
-   .sort((a,b)=>{
-    const ap=a.label.toLocaleLowerCase().startsWith(q)?0:1;
-    const bp=b.label.toLocaleLowerCase().startsWith(q)?0:1;
-    return ap-bp||a.label.localeCompare(b.label);
-   }).slice(0,8);
+   .map(item=>{
+    const label=item.label.toLocaleLowerCase();
+    const words=label.split(/[^\\p{L}\\p{N}]+/u).filter(Boolean);
+    const rank=label===q?0:label.startsWith(q)?1:words.some(word=>word.startsWith(q))?2:label.includes(q)?3:99;
+    return {...item,rank};
+   })
+   .filter(item=>item.rank<99)
+   .sort((a,b)=>a.rank-b.rank||a.label.localeCompare(b.label))
+   .slice(0,8);
   matches.forEach((item,index)=>{
    const button=document.createElement("button");button.type="button";
    button.className="filter-suggestion";button.setAttribute("role","option");
