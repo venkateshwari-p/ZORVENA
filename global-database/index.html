@@ -683,6 +683,7 @@ const peopleFilterSuggestions={
  peopleVerification:["VERIFIED","PARTIALLY_VERIFIED","NEEDS_REVIEW","UNVERIFIED"],
  peoplePermission:["NOT_REVIEWED","PUBLIC_BUSINESS_CONTACT","PERMISSION_REQUIRED","APPROVED_FOR_OUTREACH","DO_NOT_CONTACT"]
 };
+let peopleSuggestionRecords=[];
 function populatePeopleFilterSuggestions(records=[]){
  Object.entries(peopleFilterSuggestions).forEach(([inputId,defaults])=>{
   const list=$(inputId+"Options");if(!list)return;
@@ -693,6 +694,27 @@ function populatePeopleFilterSuggestions(records=[]){
   list.innerHTML="";
   values.forEach(value=>{const option=document.createElement("option");option.value=value;list.appendChild(option);});
  });
+}
+async function loadAllPeopleFilterSuggestions(){
+ peopleSuggestionRecords=[];
+ if(!apiHeaders)return;
+ try{
+  let offset=0,total=Infinity;
+  while(offset<total){
+   const params=new URLSearchParams({limit:"100",offset:String(offset)});
+   const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});
+   if(!response.ok)throw new Error("HTTP "+response.status);
+   const result=await response.json(),rows=result.data||[];
+   total=Number(result.pagination?.total||0);
+   peopleSuggestionRecords.push(...rows);
+   if(!rows.length)break;
+   offset+=rows.length;
+  }
+  populatePeopleFilterSuggestions(peopleSuggestionRecords);
+ }catch(error){
+  console.error("Could not load all contact filter suggestions",error);
+  populatePeopleFilterSuggestions(peopleSuggestionRecords);
+ }
 }
 async function loadPeopleCompanyOptions(){
   const select=$("peopleCompany");
@@ -736,7 +758,7 @@ function loadPeople(reset=false){
   try{
    const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});
    if(!response.ok)throw new Error("HTTP "+response.status);
-   const result=await response.json(),rows=result.data||[];peopleTotal=Number(result.pagination?.total||0);populatePeopleFilterSuggestions(rows);
+   const result=await response.json(),rows=result.data||[];peopleTotal=Number(result.pagination?.total||0);populatePeopleFilterSuggestions([...peopleSuggestionRecords,...rows]);
    const tbody=$("peopleRows");tbody.innerHTML="";
    if(!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.className="empty";td.innerHTML="♙<b>No matching professional records</b><span>The database currently contains "+peopleTotal+" matching contacts. Add approved, source-backed records to BigQuery to populate this directory.</span>";tr.appendChild(td);tbody.appendChild(tr);}
    rows.forEach(row=>{
@@ -842,7 +864,7 @@ function loadCompanies(reset=false){
    const ccount=Number(counts.companies||0),pcount=Number(counts.people||0);$("readinessCompanies").textContent=ccount.toLocaleString()+" records currently available";$("companyReadiness").textContent=ccount?"Available":"Empty";$("readinessPeople").textContent=pcount.toLocaleString()+" contacts currently available";$("peopleReadiness").textContent=pcount?"Available":"Empty";
    $("companyReadiness").style.background=ccount?"#e9f5e9":"#fbf2df";$("companyReadiness").style.color=ccount?"#377144":"#946c25";$("peopleReadiness").style.background=pcount?"#e9f5e9":"#fbf2df";$("peopleReadiness").style.color=pcount?"#377144":"#946c25";
    renderTaxonomy(tx.data);apiHeaders=headers;setupCompanyFilters(tx.data);
-   await loadPeopleCompanyOptions();await loadCompanies(true);await loadPeople(true);await loadSources();
+   await loadPeopleCompanyOptions();await loadAllPeopleFilterSuggestions();await loadCompanies(true);await loadPeople(true);await loadSources();
    const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview, industry taxonomy, Company Directory and People & Contacts are connected to the authenticated ZORVENA API. Directory results depend on records available in BigQuery.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
    setStatus(true,"API connected");$("connectBtn").textContent="Refresh data";$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";
   }catch(e){setStatus(false,"Connection failed");message.textContent="Could not connect: "+e.message+" — check the token and try again."; }
