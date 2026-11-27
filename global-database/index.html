@@ -1022,8 +1022,14 @@ function attachAllSearchableFilters(){
  });
  if(!$("companyReset").dataset.autocompleteReset){
   $("companyReset").dataset.autocompleteReset="true";
-  $("companyReset").addEventListener("click",()=>searchableFilterIds.filter(id=>id.startsWith("company")).forEach(id=>{if($(id+"Autocomplete"))$(id+"Autocomplete").value="";}));
-  $("peopleReset").addEventListener("click",()=>searchableFilterIds.filter(id=>id.startsWith("people")).forEach(id=>{if($(id+"Autocomplete"))$(id+"Autocomplete").value="";}));
+  const clearAutocompleteUi=prefix=>searchableFilterIds.filter(id=>id.startsWith(prefix)).forEach(id=>{
+   const input=$(id+"Autocomplete"),select=$(id),panel=$(id+"SuggestionPanel");
+   if(input){input.value="";input.setAttribute("aria-expanded","false");input.removeAttribute("aria-activedescendant");}
+   if(select)[...select.options].filter(option=>option.dataset.custom==="true").forEach(option=>option.remove());
+   if(panel){panel.hidden=true;panel.innerHTML="";}
+  });
+  $("companyReset").addEventListener("click",()=>clearAutocompleteUi("company"));
+  $("peopleReset").addEventListener("click",()=>clearAutocompleteUi("people"));
   $("companySector").addEventListener("change",()=>{if(!$("companyIndustry").value)$("companyIndustryAutocomplete").value="";if(!$("companySubsector").value)$("companySubsectorAutocomplete").value="";});
   $("companyIndustry").addEventListener("change",()=>{if(!$("companySubsector").value)$("companySubsectorAutocomplete").value="";});
   searchableFilterIds.filter(id=>id.startsWith("company")).forEach(id=>{
