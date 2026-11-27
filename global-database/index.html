@@ -304,6 +304,12 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 .filter-suggestion:hover,.filter-suggestion.active{background:#edf5e9;color:#245a32}
 .filter-suggestion-empty{padding:10px;color:#778579;font-size:11px;line-height:1.45}
 .filter-autocomplete{width:100%;box-sizing:border-box}
+
+/* Ensure sidebar navigation links and buttons share the same full clickable area */
+.nav a,.nav button{display:flex;width:100%;align-items:center;gap:11px;box-sizing:border-box;text-align:left;text-decoration:none;cursor:pointer;pointer-events:auto;}
+.nav a{padding:11px 13px;border:1px solid transparent;border-radius:11px;color:#d6e4d8;font-size:12px;transition:background .18s,border-color .18s,transform .18s;}
+.nav a:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.08);transform:translateX(2px);}
+.nav a.active{background:rgba(255,255,255,.12);color:#fff;box-shadow:inset 3px 0 var(--lime);}
 </style>
 </head>
 <body>
@@ -506,6 +512,8 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 </main>
 </div>
 <script>
+const $=id=>document.getElementById(id);
+
 const labels={overview:"Overview",companies:"Company Directory",people:"People & Contacts",taxonomy:"Industry Taxonomy",trade:"Trade Intelligence",sources:"Sources & Evidence",research:"Research Pipeline",import:"Import Centre",export:"Export Centre",quality:"Data Quality",clients:"Client Prospect Lists"};
 function showView(name){if(!labels[name]||!document.getElementById("view-"+name))name="overview";document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));document.querySelectorAll("[data-view]").forEach(b=>{const active=b.dataset.view===name;b.classList.toggle("active",active);if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});document.getElementById("crumb").textContent=labels[name];document.getElementById("sidebar").classList.remove("open");document.getElementById("menuBtn").setAttribute("aria-expanded","false");if(location.hash!=="#"+name)history.replaceState(null,"","#"+name);window.scrollTo({top:0,behavior:"smooth"});}
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",event=>{event.preventDefault();showView(b.dataset.view);}));document.addEventListener("click",event=>{const navItem=event.target.closest(".nav [data-view]");if(navItem){event.preventDefault();showView(navItem.dataset.view);}});if(location.hash&&labels[location.hash.slice(1)])showView(location.hash.slice(1));
