@@ -1000,6 +1000,9 @@ function attachAllSearchableFilters(){
  }
 }
 
+/* Initialize the searchable controls immediately; database-backed choices are added after connection. */
+attachAllSearchableFilters();
+
 function populateCompanyFilterSuggestions(records=[]){
  const companies=[];
  records.forEach(row=>{
