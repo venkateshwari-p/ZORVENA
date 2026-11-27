@@ -820,7 +820,7 @@ async function loadPeople(reset=false){
   $("peopleApply").disabled=true;$("peopleApply").textContent="Loading…";
   try{
    const result=allMode?await fetchAllDirectoryRows("/api/people",params,apiHeaders):await (async()=>{const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});if(!response.ok)throw new Error("HTTP "+response.status);return response.json();})();
-   const rows=result.data||[];peopleTotal=Number(result.pagination?.total||0);populatePeopleFilterSuggestions([...peopleSuggestionRecords,...rows]);
+   const rows=result.data||[];peopleTotal=getDirectoryPageTotal(result,rows,peopleOffset);populatePeopleFilterSuggestions([...peopleSuggestionRecords,...rows]);
    const tbody=$("peopleRows");tbody.innerHTML="";
    if(!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.className="empty";td.innerHTML="♙<b>No matching professional records</b><span>The database currently contains "+peopleTotal+" matching contacts. Add approved, source-backed records to BigQuery to populate this directory.</span>";tr.appendChild(td);tbody.appendChild(tr);}
    rows.forEach(row=>{
@@ -1102,7 +1102,7 @@ async function loadCompanies(reset=false){
   Object.entries(fields).forEach(([k,v])=>{if(v)params.set(k,v);});
   $("companyApply").disabled=true;$("companyApply").textContent="Loading…";
   try{
-   const result=allMode?await fetchAllDirectoryRows("/api/companies",params,apiHeaders):await (async()=>{const response=await fetch(API_BASE+"/api/companies?"+params.toString(),{headers:apiHeaders});if(!response.ok)throw new Error("HTTP "+response.status);return response.json();})();const rows=result.data||[];companyTotal=Number(result.pagination?.total||0);populateCompanyFilterSuggestions([...companySuggestionRecords,...rows]);
+   const result=allMode?await fetchAllDirectoryRows("/api/companies",params,apiHeaders):await (async()=>{const response=await fetch(API_BASE+"/api/companies?"+params.toString(),{headers:apiHeaders});if(!response.ok)throw new Error("HTTP "+response.status);return response.json();})();const rows=result.data||[];companyTotal=getDirectoryPageTotal(result,rows,companyOffset);populateCompanyFilterSuggestions([...companySuggestionRecords,...rows]);
    const tbody=$("companyRows");tbody.innerHTML="";
    if(!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.className="empty";td.innerHTML="▣<b>No matching company records</b><span>The database currently contains "+companyTotal+" matching records. Add approved company records to BigQuery to populate this directory.</span>";tr.appendChild(td);tbody.appendChild(tr);}
    rows.forEach(row=>{
