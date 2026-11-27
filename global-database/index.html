@@ -760,7 +760,7 @@ function getDirectoryPageTotal(result,rows,offset){
   const reported=result?.pagination?.total;
   if(reported!==undefined&&reported!==null&&reported!==""){
    const parsed=Number(reported);
-   if(Number.isFinite(parsed)&&parsed>=0)return parsed;
+   if(Number.isFinite(parsed)&&parsed>=0&&(parsed>0||rows.length===0))return parsed;
   }
   return offset+rows.length+(rows.length===100?1:0);
 }
