@@ -325,23 +325,23 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
   <a class="back" href="../">← Back to main website</a>
   <div>
     <div class="nav-label">Workspace</div>
-    <nav class="nav" aria-label="Database navigation" role="navigation">
-      <a class="active" data-view="overview" onclick="showView('overview')" href="#view-overview" role="button"><span class="ico">▦</span>Overview</a>
-      <a data-view="companies" onclick="showView('companies')" href="#view-companies" role="button"><span class="ico">▣</span>Company Directory</a>
-      <a data-view="people" onclick="showView('people')" href="#view-people" role="button"><span class="ico">♙</span>People & Contacts</a>
-      <a data-view="taxonomy" onclick="showView('taxonomy')" href="#view-taxonomy" role="button"><span class="ico">⌘</span>Industry Taxonomy</a>
-      <a data-view="trade" onclick="showView('trade')" href="#view-trade" role="button"><span class="ico">⇄</span>Trade Intelligence</a>
-      <a data-view="sources" onclick="showView('sources')" href="#view-sources" role="button"><span class="ico">↗</span>Sources & Evidence</a>
-      <a data-view="research" onclick="showView('research')" href="#view-research" role="button"><span class="ico">◎</span>Research Pipeline</a>
+    <nav class="nav" aria-label="Database navigation">
+      <button class="active" data-view="overview"><span class="ico">▦</span>Overview</button>
+      <button data-view="companies"><span class="ico">▣</span>Company Directory</button>
+      <button data-view="people"><span class="ico">♙</span>People & Contacts</button>
+      <button data-view="taxonomy"><span class="ico">⌘</span>Industry Taxonomy</button>
+      <button data-view="trade"><span class="ico">⇄</span>Trade Intelligence</button>
+      <button data-view="sources"><span class="ico">↗</span>Sources & Evidence</button>
+      <button data-view="research"><span class="ico">◎</span>Research Pipeline</button>
     </nav>
   </div>
   <div>
     <div class="nav-label">Data management</div>
     <nav class="nav">
-      <a data-view="import" onclick="showView('import')" href="#view-import" role="button"><span class="ico">⇧</span>Import Centre</a>
-      <a data-view="export" onclick="showView('export')" href="#view-export" role="button"><span class="ico">⇩</span>Export Centre</a>
-      <a data-view="quality" onclick="showView('quality')" href="#view-quality" role="button"><span class="ico">✓</span>Data Quality</a>
-      <a data-view="clients" onclick="showView('clients')" href="#view-clients" role="button"><span class="ico">▤</span>Client Prospect Lists</a>
+      <button data-view="import"><span class="ico">⇧</span>Import Centre</button>
+      <button data-view="export"><span class="ico">⇩</span>Export Centre</button>
+      <button data-view="quality"><span class="ico">✓</span>Data Quality</button>
+      <button data-view="clients"><span class="ico">▤</span>Client Prospect Lists</button>
     </nav>
   </div>
   <div class="side-foot" id="sideConnection"><b>Database connection</b>Not connected.<br>Use Connect database to load live taxonomy and overview data.</div>
@@ -1241,10 +1241,11 @@ async function loadCompanies(reset=false){
   ds.forEach(d=>{const box=document.createElement("div");box.className="tax-item";box.tabIndex=0;box.setAttribute("role","button");box.style.cursor="pointer";const id=document.createElement("span");id.textContent=d.division_id;const name=document.createElement("b");name.style.fontSize="13px";name.textContent=d.division_name;const status=document.createElement("small");status.textContent=d.status||"ACTIVE";box.append(id,name,status);const choose=()=>detail(d,"Division");box.addEventListener("click",choose);box.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();choose();}});$("divisionList").appendChild(box);});
   $("taxonomyState").textContent=(data.sectors||[]).length+" sectors · "+(data.industries||[]).length+" industries · "+(data.subsectors||[]).length+" sub-sectors";
  };
- async function connect(){
-  const panel=$("connectTokenPanel"),tokenInput=$("connectTokenInput"),message=$("connectTokenMessage");
-  if(panel.style.display==="none"){panel.style.display="block";tokenInput.focus();return;}
-  await authenticate();
+ function connect(){
+  const panel=$("connectTokenPanel"),tokenInput=$("connectTokenInput");
+  const opening=panel.style.display==="none";
+  panel.style.display=opening?"block":"none";
+  if(opening)tokenInput.focus();
  }
  async function authenticate(){
   const token=$("connectTokenInput").value.trim(),message=$("connectTokenMessage");
