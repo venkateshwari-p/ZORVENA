@@ -1241,13 +1241,17 @@ async function loadCompanies(reset=false){
   $("taxonomyState").textContent=(data.sectors||[]).length+" sectors · "+(data.industries||[]).length+" industries · "+(data.subsectors||[]).length+" sub-sectors";
  };
  function connect(){
+  if(apiHeaders?.Authorization){
+   authenticate(apiHeaders.Authorization.replace(/^Bearer\\s+/i,""));
+   return;
+  }
   const panel=$("connectTokenPanel"),tokenInput=$("connectTokenInput");
   const opening=panel.style.display==="none";
   panel.style.display=opening?"block":"none";
   if(opening)tokenInput.focus();
  }
- async function authenticate(){
-  const token=$("connectTokenInput").value.trim(),message=$("connectTokenMessage");
+ async function authenticate(existingToken){
+  const token=(existingToken||$("connectTokenInput").value).trim(),message=$("connectTokenMessage");
   if(!token){message.textContent="Enter your admin API token to continue.";return;}
   const headers={Authorization:"Bearer "+token};$("submitConnect").disabled=true;$("submitConnect").textContent="Connecting…";message.textContent="Checking credentials and loading database data…";
   try{
@@ -1268,7 +1272,7 @@ async function loadCompanies(reset=false){
    await loadPeopleCompanyOptions();await loadAllPeopleFilterSuggestions();await loadAllCompanyFilterSuggestions();await loadCompanies(true);await loadPeople(true);await loadSources();
    const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview, industry taxonomy, Company Directory and People & Contacts are connected to the authenticated ZORVENA API. Directory results depend on records available in BigQuery.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
    setStatus(true,"API connected");$("connectBtn").textContent="Refresh data";$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";
-  }catch(e){setStatus(false,"Connection failed");message.textContent="Could not connect: "+e.message+" — check the token and try again."; }
+  }catch(e){apiHeaders=null;setStatus(false,"Connection failed");$("connectBtn").textContent="Connect database";message.textContent="Could not connect: "+e.message+" — check the token and try again."; }
   finally{$("submitConnect").disabled=false;$("submitConnect").textContent="Authenticate and load data";}
  }
  $("connectBtn").addEventListener("click",connect);
