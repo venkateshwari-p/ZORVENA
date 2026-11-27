@@ -444,6 +444,12 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
     <section class="view" id="view-import">
       <div class="page-head"><div><div class="eyebrow">Controlled data intake</div><h1>Import Centre</h1><p>Prepare, validate and review company or people files before database import.</p></div></div>
       <div class="notice"><span class="nicon">🔒</span><div><strong>Database write access is disabled — schema confirmation is still required.</strong>CSV preview and basic checks run locally in this browser only. Downloaded templates are provisional header guides, not approved production import schemas. The live BigQuery column definitions and source-table mappings must be checked before any file can be imported. No file is uploaded and no BigQuery records are changed here.</div></div>
+      <div class="panel" style="margin-bottom:16px">
+        <div class="panel-head"><h2>Live BigQuery schema inspection</h2><small id="liveSchemaStatus">Connect database to inspect</small></div>
+        <p class="muted">Read-only metadata from INFORMATION_SCHEMA. Use this report to align CSV fields before enabling imports.</p>
+        <div id="liveSchemaCounts" class="stats" style="grid-template-columns:repeat(4,minmax(0,1fr));margin:12px 0"></div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Table</th><th>Column</th><th>BigQuery type</th><th>Nullable</th><th>Position</th></tr></thead><tbody id="liveSchemaRows"><tr><td colspan="5" class="empty">Authenticate to load live schema metadata.</td></tr></tbody></table></div>
+      </div>
       <div class="import-layout">
         <div class="panel">
           <div class="panel-head"><h2>Local CSV preview</h2><small>CSV only · stays in your browser</small></div>
@@ -624,6 +630,16 @@ document.getElementById("csvFile").addEventListener("change",event=>{
  const companyLimit=()=>Number($("companyLimit").value||50);
  const industryName=id=>(taxonomyData?.industries||[]).find(x=>x.industry_id===id)?.industry_name||id||"—";
  const fillCompanySelect=(id,items,key,label,firstText)=>{const el=$(id);el.innerHTML="";const first=document.createElement("option");first.value="";first.textContent=firstText;el.appendChild(first);items.forEach(item=>{const o=document.createElement("option");o.value=item[key];o.textContent=item[key]+" · "+item[label];el.appendChild(o);});};
+ function renderLiveSchema(report){
+  const status=$("liveSchemaStatus"),countsHost=$("liveSchemaCounts"),body=$("liveSchemaRows");
+  const counts=report?.counts||[],columns=report?.columns||[];
+  countsHost.innerHTML="";
+  counts.forEach(item=>{const card=document.createElement("article");card.className="stat";const label=document.createElement("div");label.className="stat-top";label.textContent=item.table_name;const value=document.createElement("strong");value.textContent=Number(item.row_count||0).toLocaleString();card.append(label,value);countsHost.appendChild(card);});
+  body.innerHTML="";
+  if(!columns.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=5;td.className="empty";td.textContent="No schema columns returned.";tr.appendChild(td);body.appendChild(tr);}
+  columns.forEach(item=>{const tr=document.createElement("tr");[item.table_name,item.column_name,item.data_type,item.is_nullable,item.ordinal_position].forEach(value=>{const td=document.createElement("td");td.textContent=String(value??"—");tr.appendChild(td);});body.appendChild(tr);});
+  status.textContent=columns.length+" columns · read-only";
+ }
  function renderCompanyFilterSummary(){
  const host=$("companyFilterSummary");if(!host)return;host.innerHTML="";
  const taxonomyLabel=id=>{const option=$(id).selectedOptions[0];return option?.value?option.textContent.split(" · ").slice(1).join(" · "):"";};
@@ -1183,9 +1199,9 @@ async function loadCompanies(reset=false){
   if(!token){message.textContent="Enter your admin API token to continue.";return;}
   const headers={Authorization:"Bearer "+token};$("submitConnect").disabled=true;$("submitConnect").textContent="Connecting…";message.textContent="Checking credentials and loading database data…";
   try{
-   const responses=await Promise.all([fetch(API_BASE+"/api/overview",{headers}),fetch(API_BASE+"/api/taxonomy",{headers})]);
+   const responses=await Promise.all([fetch(API_BASE+"/api/overview",{headers}),fetch(API_BASE+"/api/taxonomy",{headers}),fetch(API_BASE+"/api/schema",{headers})]);
    for(const res of responses)if(!res.ok){let detail="HTTP "+res.status;try{const j=await res.json();detail=j.detail||j.error||detail;}catch(_){}throw new Error(detail);}
-   const [ov,tx]=await Promise.all(responses.map(x=>x.json()));if(!ov.data||!tx.data)throw new Error("Unexpected API response format");
+   const [ov,tx,sc]=await Promise.all(responses.map(x=>x.json()));if(!ov.data||!tx.data||!sc.data)throw new Error("Unexpected API response format");renderLiveSchema(sc.data);
    const counts=ov.data,stats=document.querySelectorAll("#view-overview .stats .stat strong");
    [counts.companies,counts.people,counts.industries,counts.subsectors].forEach((v,i)=>{if(stats[i])stats[i].textContent=Number(v??0).toLocaleString();});
    const tax=document.querySelectorAll("#view-overview .tax-item b");
