@@ -160,6 +160,22 @@ async function handleApi(request, env, url) {
     return { service: "ZORVENA Global Database API", status: Number(rows[0]?.connected) === 1 ? "ready" : "error", database: env.DATASET_ID, mode: "read-only" };
   }
 
+  if (url.pathname === "/api/schema") {
+    const sql = `SELECT table_name, ordinal_position, column_name, data_type, is_nullable
+      FROM ${table(env, "INFORMATION_SCHEMA.COLUMNS").replace(/INFORMATION_SCHEMA\\.COLUMNS$/, "INFORMATION_SCHEMA.COLUMNS")}
+      WHERE table_name IN ('global_companies','global_people','company_sources','person_sources')
+      ORDER BY table_name, ordinal_position`;
+    const [columns, counts] = await Promise.all([
+      runQuery(env, sql),
+      runQuery(env, `SELECT 'global_companies' AS table_name, COUNT(*) AS row_count FROM ${table(env, "global_companies")}
+        UNION ALL SELECT 'global_people', COUNT(*) FROM ${table(env, "global_people")}
+        UNION ALL SELECT 'company_sources', COUNT(*) FROM ${table(env, "company_sources")}
+        UNION ALL SELECT 'person_sources', COUNT(*) FROM ${table(env, "person_sources")}
+        ORDER BY table_name`)
+    ]);
+    return { data: { columns, counts, read_only: true } };
+  }
+
   if (url.pathname === "/api/overview") {
     const sql = `SELECT
       (SELECT COUNT(*) FROM ${table(env, "global_companies")}) AS companies,
@@ -322,7 +338,7 @@ export default {
     const url = new URL(request.url);
     try {
       const result = await handleApi(request, env, url);
-      if (!result) return json({ error: "Not found", available_endpoints: ["/health", "/api/overview", "/api/taxonomy", "/api/suggestions", "/api/companies", "/api/people", "/api/sources"] }, 404, allowedOrigin);
+      if (!result) return json({ error: "Not found", available_endpoints: ["/health", "/api/overview", "/api/schema", "/api/taxonomy", "/api/suggestions", "/api/companies", "/api/people", "/api/sources"] }, 404, allowedOrigin);
       return json(result, 200, allowedOrigin);
     } catch (error) {
       return json({
