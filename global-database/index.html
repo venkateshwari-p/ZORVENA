@@ -995,8 +995,13 @@ function attachSearchableFilter(id){
  });
  input.addEventListener("keydown",event=>{
   const items=[...panel.querySelectorAll(".filter-suggestion")];
-  if(event.key==="ArrowDown"&&items.length){event.preventDefault();activeIndex=Math.min(activeIndex+1,items.length-1);items.forEach((item,index)=>{item.classList.toggle("active",index===activeIndex);item.setAttribute("aria-selected",String(index===activeIndex));});input.setAttribute("aria-activedescendant",items[activeIndex].id);}
-  else if(event.key==="ArrowUp"&&items.length){event.preventDefault();activeIndex=Math.max(activeIndex-1,0);items.forEach((item,index)=>{item.classList.toggle("active",index===activeIndex);item.setAttribute("aria-selected",String(index===activeIndex));});input.setAttribute("aria-activedescendant",items[activeIndex].id);}
+  if((event.key==="ArrowDown"||event.key==="ArrowUp")&&items.length){
+   event.preventDefault();
+   const direction=event.key==="ArrowDown"?1:-1;
+   activeIndex=activeIndex<0?(direction===1?0:items.length-1):(activeIndex+direction+items.length)%items.length;
+   items.forEach((item,index)=>{item.classList.toggle("active",index===activeIndex);item.setAttribute("aria-selected",String(index===activeIndex));});
+   input.setAttribute("aria-activedescendant",items[activeIndex].id);
+  }
   else if(event.key==="Enter"){
    event.preventDefault();
    const selected=activeIndex>=0?items[activeIndex]:items[0];
