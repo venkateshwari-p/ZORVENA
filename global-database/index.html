@@ -575,28 +575,34 @@ function csvHasUnclosedQuote(input){
 }
 function validateCsv(input){
  const rows=parseCsvRows(input);if(!rows.length)return {total:0,valid:0,invalid:0,issues:["The CSV file is empty."]};
- const headers=rows[0].map(v=>v.trim().replace(/^\uFEFF/,"").toLowerCase());
- if(csvHasUnclosedQuote(input))return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["The CSV contains an unclosed quotation mark. Check quoted cells and try again."]};
- if(headers.some(header=>!header))return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["The CSV contains an empty column header. Every column must have a name."]};
- if(new Set(headers).size!==headers.length)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["The CSV contains duplicate column headers. Keep each template header only once."]};
- const kind=Object.keys(templates).find(type=>templates[type].every((field)=>headers.includes(field.toLowerCase())))||null;
- if(!kind)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["Could not identify a supported template. Download the matching Company, People or Company Sources CSV template and use its exact column headers."]};
- const required={companies:["company_id","company_name","source_url"],people:["person_id","company_id","full_name"],sources:["company_source_id","company_id","source_type","source_url"]}[kind];
- const missing=required.filter(field=>!headers.includes(field));
- if(missing.length)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["Missing required columns: "+missing.join(", ")]};
- const index=Object.fromEntries(headers.map((name,i)=>[name,i])),seen=new Set(),issues=[],issueRows=[],total=rows.length-1;let valid=0,invalid=0;
- for(let n=1;n<rows.length;n++){
-  const cells=rows[n],get=key=>(cells[index[key]]||"").trim(),rowIssues=[];
-  if(cells.length!==headers.length)rowIssues.push("expected "+headers.length+" columns but found "+cells.length);
-  required.forEach(key=>{if(!get(key))rowIssues.push(key+" is blank");});
-  const id=kind==="companies"?"company_id":kind==="people"?"person_id":"company_source_id";
-  const value=get(id),normalizedId=value.toLowerCase();if(value&&seen.has(normalizedId))rowIssues.push("duplicate "+id);if(value)seen.add(normalizedId);
-  ["source_url","official_website","linkedin_url","linkedin_profile"].forEach(key=>{
-   const url=get(key);if(url&&!/^https?:\/\//i.test(url))rowIssues.push(key+" must start with http:// or https://");
-  });
-  if(rowIssues.length){invalid++;issueRows.push({row_number:n+1,issues:rowIssues.join("; ")});if(issues.length<8)issues.push("Row "+(n+1)+": "+rowIssues.join("; "));}else valid++;
+ const headers=rows[0].map(v=>v.trim().replace(/^\\uFEFF/,"").toLowerCase());
+ if(csvHasUnclosedQuote(input))return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["The CSV contains an unclosed quotation mark."]};
+ if(headers.some(h=>!h))return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["Empty column header found."]};
+ if(new Set(headers).size!==headers.length)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["Duplicate column headers found."]};
+ const identify=[["companies",["company_id","company_name"]],["people",["person_id","full_name"]],["sources",["company_source_id","source_url"]],["person_sources",["person_source_id","source_url"]]];
+ let kind=identify.find(([k,keys])=>keys.every(key=>headers.includes(key)))?.[0]||null;
+ if(!kind){kind=Object.keys(templates).find(k=>templates[k].some(field=>headers.includes(field.toLowerCase())))||null;}
+ if(!kind)return {total:Math.max(0,rows.length-1),valid:0,invalid:Math.max(0,rows.length-1),issues:["Unable to identify this CSV. Use a ZORVENA template or include the table's identifying columns."]};
+ const schemaTable={companies:"global_companies",people:"global_people",sources:"company_sources",person_sources:"person_sources"}[kind];
+ const live=(liveSchemaTemplateColumns[kind]||[]).map(c=>c.name.toLowerCase());
+ const liveRequired=(liveSchemaTemplateColumns[kind]||[]).filter(c=>String(c.nullable).toUpperCase()==="NO").map(c=>c.name.toLowerCase());
+ const requiredDefaults={companies:["company_id","company_name"],people:["person_id","company_id","full_name"],sources:["company_source_id","company_id","source_type","source_url"],person_sources:["person_source_id","person_id","source_type","source_url"]};
+ const required=[...new Set([...(live.length?liveRequired:requiredDefaults[kind]||[]),...(requiredDefaults[kind]||[])])];
+ const missing=required.filter(k=>!headers.includes(k));
+ const unknown=live.length?headers.filter(h=>!live.includes(h)): [];
+ const index=Object.fromEntries(headers.map((h,i)=>[h,i])),seen=new Set(),issues=[],issueRows=[];let valid=0,invalid=0,total=rows.length-1;
+ for(let n=1;n<rows.length;n++){const cells=rows[n],get=k=>(cells[index[k]]||"").trim(),rowIssues=[];
+ if(cells.length!==headers.length)rowIssues.push("expected "+headers.length+" cells but found "+cells.length);
+ required.forEach(k=>{if(headers.includes(k)&&!get(k))rowIssues.push(k+" is blank");});
+ const id={companies:"company_id",people:"person_id",sources:"company_source_id",person_sources:"person_source_id"}[kind],value=get(id),norm=value.toLowerCase();
+ if(value&&seen.has(norm))rowIssues.push("duplicate "+id);if(value)seen.add(norm);
+ ["source_url","official_website","linkedin_url","linkedin_profile"].forEach(k=>{const v=get(k);if(v&&!/^https?:\\/\\//i.test(v))rowIssues.push(k+" must begin with http:// or https://");});
+ (liveSchemaTemplateColumns[kind]||[]).forEach(col=>{const v=get(col.name.toLowerCase());if(!v)return;const t=String(col.type||"").toUpperCase();if(["INT64","INTEGER","FLOAT64","NUMERIC","BIGNUMERIC"].includes(t)&&!Number.isFinite(Number(v)))rowIssues.push(col.name+" must be numeric");if(t==="BOOL"&&!/^(true|false)$/i.test(v))rowIssues.push(col.name+" must be TRUE or FALSE");if(["DATE","DATETIME","TIMESTAMP"].includes(t)&&Number.isNaN(Date.parse(v)))rowIssues.push(col.name+" must be a valid date/time");});
+ if(rowIssues.length){invalid++;issueRows.push({row_number:n+1,issues:rowIssues.join("; ")});if(issues.length<8)issues.push("Row "+(n+1)+": "+rowIssues.join("; "));}else valid++;
  }
- return {total,valid,invalid,issues,issueRows,kind};
+ const headerNotes=[];if(missing.length)headerNotes.push("Missing required columns: "+missing.join(", "));if(unknown.length)headerNotes.push("Columns not found in live "+schemaTable+" schema: "+unknown.join(", "));
+ if(headerNotes.length){invalid=Math.max(invalid,total);valid=0;issues.unshift(...headerNotes);}
+ return {total,valid,invalid,issues,issueRows,kind,missing,unknown,schemaUsed:live.length>0};
 }
 function downloadCsvIssueReport(issueRows){
  const quote=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
