@@ -981,7 +981,7 @@ function attachSearchableFilter(id){
  input.addEventListener("focus",render);
  select.addEventListener("change",()=>{syncFromSelect();if(id.startsWith("company")&&["companySector","companyIndustry"].includes(id))render();});
  document.addEventListener("click",event=>{if(event.target!==input&&!panel.contains(event.target))close();});
- new MutationObserver(()=>{if(!input.value)syncFromSelect();}).observe(select,{childList:true,subtree:true,characterData:true});
+ new MutationObserver(()=>{if(!input.value)syncFromSelect();if(!panel.hidden)render();}).observe(select,{childList:true,subtree:true,characterData:true});
  syncFromSelect();
 }
 function attachAllSearchableFilters(){
