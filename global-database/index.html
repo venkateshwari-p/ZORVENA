@@ -884,7 +884,9 @@ async function loadRemoteAutocompleteOptions(id,query){
   const response=await fetch(API_BASE+endpoint+"?"+params.toString(),{headers:apiHeaders});
   if(!response.ok)return;
   const result=await response.json(),select=$(id);
-  if(!select)return;
+  // Ignore stale responses when the user has continued typing or cleared the field.
+  const currentInput=$(id+"Autocomplete");
+  if(!select||!currentInput||currentInput.value.trim()!==query)return;
   [...select.options].filter(option=>option.dataset.remote==="true").forEach(option=>option.remove());
   const rows=result.data||[];
   rows.forEach(row=>{
