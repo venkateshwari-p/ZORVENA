@@ -310,6 +310,12 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 .nav a{padding:11px 13px;border:1px solid transparent;border-radius:11px;color:#d6e4d8;font-size:12px;transition:background .18s,border-color .18s,transform .18s;}
 .nav a:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.08);transform:translateX(2px);}
 .nav a.active{background:rgba(255,255,255,.12);color:#fff;box-shadow:inset 3px 0 var(--lime);}
+/* Keep every sidebar destination reachable on short screens and smaller laptops */
+.sidebar{position:sticky;top:0;height:100vh;max-height:100vh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;align-self:start;}
+.sidebar::-webkit-scrollbar{width:6px}.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:8px}
+@media(max-width:720px){.sidebar{position:fixed;top:0;bottom:0;left:0;height:100dvh;max-height:100dvh;overflow-y:auto;z-index:100;}}
+.nav{width:100%;}
+.nav a,.nav button{min-height:42px;}
 </style>
 </head>
 <body>
@@ -516,6 +522,8 @@ const $=id=>document.getElementById(id);
 
 const labels={overview:"Overview",companies:"Company Directory",people:"People & Contacts",taxonomy:"Industry Taxonomy",trade:"Trade Intelligence",sources:"Sources & Evidence",research:"Research Pipeline",import:"Import Centre",export:"Export Centre",quality:"Data Quality",clients:"Client Prospect Lists"};
 function showView(name){if(!labels[name]||!document.getElementById("view-"+name))name="overview";document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));document.querySelectorAll("[data-view]").forEach(b=>{const active=b.dataset.view===name;b.classList.toggle("active",active);if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});document.getElementById("crumb").textContent=labels[name];document.getElementById("sidebar").classList.remove("open");document.getElementById("menuBtn").setAttribute("aria-expanded","false");if(location.hash!=="#"+name)history.replaceState(null,"","#"+name);window.scrollTo({top:0,behavior:"smooth"});}
+window.showView=showView;
+window.addEventListener("hashchange",()=>{const requested=location.hash.slice(1);if(labels[requested])showView(requested);});
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",event=>{event.preventDefault();showView(b.dataset.view);}));document.addEventListener("click",event=>{const navItem=event.target.closest(".nav [data-view]");if(navItem){event.preventDefault();showView(navItem.dataset.view);}});if(location.hash&&labels[location.hash.slice(1)])showView(location.hash.slice(1));
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.go)));
 document.getElementById("menuBtn").addEventListener("click",()=>{const sidebar=document.getElementById("sidebar");const open=sidebar.classList.toggle("open");document.getElementById("menuBtn").setAttribute("aria-expanded",String(open));});
