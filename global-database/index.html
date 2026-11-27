@@ -1013,8 +1013,10 @@ function attachSearchableFilter(id){
   }
   else if(event.key==="Enter"){
    event.preventDefault();
+   // Strict filters must select a valid suggestion before Enter can apply them.
+   if(!items.length)return;
    const selected=activeIndex>=0?items[activeIndex]:items[0];
-   if(selected)selected.click();
+   selected.click();
    const action=id.startsWith("company")?$("companyApply"):$("peopleApply");if(action)action.click();
   }else if(event.key==="Escape")close();
  });
