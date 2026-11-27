@@ -1000,7 +1000,9 @@ function attachAllSearchableFilters(){
  }
 }
 
-/* Initialize the searchable controls immediately; database-backed choices are added after connection. */
+/* Initialize searchable controls and static filter choices immediately; live records are added after connection. */
+populatePeopleFilterSuggestions([]);
+populateCompanyFilterSuggestions([]);
 attachAllSearchableFilters();
 
 function populateCompanyFilterSuggestions(records=[]){
