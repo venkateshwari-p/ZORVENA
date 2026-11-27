@@ -972,7 +972,11 @@ function attachSearchableFilter(id){
   const exact=getOptions().find(option=>displayFor(option).toLocaleLowerCase()===typed.toLocaleLowerCase()||option.value.toLocaleLowerCase()===typed.toLocaleLowerCase());
   if(exact){select.value=exact.value;select.dispatchEvent(new Event("change",{bubbles:true}));}
   else if(!typed){select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));}
-  else if(!filterBehavior.custom||isTaxonomy||id==="peopleCompany"){select.value="";}
+  else if(!filterBehavior.custom||isTaxonomy||id==="peopleCompany"){
+   select.value="";
+   select.dispatchEvent(new Event("change",{bubbles:true}));
+   input.value=typed;
+  }
   else{
    let custom=[...select.options].find(option=>option.dataset.custom==="true"&&option.value===typed);
    if(!custom){custom=document.createElement("option");custom.value=typed;custom.textContent=typed;custom.dataset.custom="true";select.appendChild(custom);}
