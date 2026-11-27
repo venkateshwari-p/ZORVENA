@@ -876,6 +876,32 @@ const searchableFilterIds=[
  "companySearch","companyCountry","companySector","companyIndustry","companySubsector","companyType","companyVerification",
  "peopleSearch","peopleCompany","peoplePurchasing","peopleProduct","peopleCountry","peopleDepartment","peopleRole","peopleVerification","peoplePermission"
 ];
+async function loadRemoteAutocompleteOptions(id,query){
+ if(!apiHeaders||query.length<2||!["companySearch","peopleSearch","peopleCompany"].includes(id))return;
+ const endpoint=id==="peopleSearch"?"/api/people":"/api/companies";
+ const params=new URLSearchParams({q:query,limit:"8",offset:"0"});
+ try{
+  const response=await fetch(API_BASE+endpoint+"?"+params.toString(),{headers:apiHeaders});
+  if(!response.ok)return;
+  const result=await response.json(),select=$(id);
+  if(!select)return;
+  [...select.options].filter(option=>option.dataset.remote==="true").forEach(option=>option.remove());
+  const rows=result.data||[];
+  rows.forEach(row=>{
+   const value=id==="peopleSearch"?(row.full_name||row.job_title):(id==="peopleCompany"?row.company_id:row.company_name);
+   if(!value||[...select.options].some(option=>option.value===String(value)))return;
+   const option=document.createElement("option");
+   option.value=String(value);
+   option.textContent=id==="peopleCompany"
+    ?(row.company_name||row.company_id)+" · "+(row.country||"Country not set")
+    :id==="peopleSearch"
+     ?String(row.full_name||row.job_title)+(row.job_title&&row.full_name?" — "+row.job_title:"")
+     :String(row.company_name);
+   option.dataset.remote="true";
+   select.appendChild(option);
+  });
+ }catch(error){console.warn("Live autocomplete lookup failed for "+id,error);}
+}
 function attachSearchableFilter(id){
  const select=$(id);if(!select||select.dataset.searchableAttached==="true")return;
  select.dataset.searchableAttached="true";
@@ -970,8 +996,20 @@ function attachSearchableFilter(id){
   const option=select.selectedOptions[0];
   input.value=option&&option.value?displayFor(option):"";
  };
+ let remoteLookupTimer=null,remoteLookupQuery="";
  input.addEventListener("input",()=>{
   const typed=input.value.trim();
+  if(["companySearch","peopleSearch","peopleCompany"].includes(id)){
+   remoteLookupQuery=typed;
+   if(remoteLookupTimer)clearTimeout(remoteLookupTimer);
+   if(typed.length>=2)remoteLookupTimer=setTimeout(()=>{
+    const requested=remoteLookupQuery;
+    loadRemoteAutocompleteOptions(id,requested).then(()=>{
+     if(input.value.trim()===requested&&!panel.hidden)render();
+    });
+   },250);
+   else [...select.options].filter(option=>option.dataset.remote==="true").forEach(option=>option.remove());
+  }
   const exact=getOptions().find(option=>normalize(displayFor(option))===normalize(typed)||normalize(option.value)===normalize(typed));
   if(exact){
    [...select.options].filter(option=>option.dataset.custom==="true").forEach(option=>option.remove());
