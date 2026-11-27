@@ -297,7 +297,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
  .company-filter-summary{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}.company-filter-summary:empty{display:none}.company-filter-chip{border:1px solid #dfe9d8;border-radius:999px;background:#f6faf3;padding:5px 9px;font-size:10px;color:#466348}.company-filter-chip b{color:#244c33}
 
 /* Independent live recommendation panels for directory filters */
-.filter-suggestion-panel{position:absolute;z-index:1000;top:calc(100% + 4px);left:0;right:0;max-height:220px;overflow-y:auto;background:#fff;border:1px solid #d8e4d6;border-radius:9px;box-shadow:0 8px 24px rgba(26,55,35,.14);padding:4px}
+.field:focus-within{z-index:20}\n.filter-suggestion-panel{position:absolute;z-index:1000;top:calc(100% + 4px);left:0;right:0;max-height:260px;overflow-y:auto;background:#fff;border:1px solid #d8e4d6;border-radius:10px;box-shadow:0 10px 28px rgba(26,55,35,.16);padding:4px}
 .filter-suggestion-panel[hidden]{display:none}
 .filter-suggestion{display:block;width:100%;border:0;border-radius:6px;background:#fff;text-align:left;padding:9px 10px;color:#304b36;font:inherit;font-size:12px;cursor:pointer}
 .filter-suggestion:hover,.filter-suggestion.active{background:#edf5e9;color:#245a32}
@@ -919,13 +919,12 @@ function attachSearchableFilter(id){
  const render=()=>{
   const typed=input.value.trim();
   panel.innerHTML="";activeIndex=-1;
-  if(!typed){close();return;}
   const q=typed.toLocaleLowerCase();
   const matches=getOptions().map(option=>({option,label:displayFor(option)}))
    .map(item=>{
     const label=item.label.toLocaleLowerCase();
-    const words=label.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
-    const rank=label===q?0:label.startsWith(q)?1:words.some(word=>word.startsWith(q))?2:label.includes(q)?3:99;
+    const words=label.split(/[^\\p{L}\\p{N}]+/u).filter(Boolean);
+    const rank=!q?0:label===q?0:label.startsWith(q)?1:words.some(word=>word.startsWith(q))?2:label.includes(q)?3:99;
     return {...item,rank};
    })
    .filter(item=>item.rank<99)
