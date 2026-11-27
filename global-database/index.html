@@ -919,12 +919,16 @@ function attachSearchableFilter(id){
  const render=()=>{
   const typed=input.value.trim();
   panel.innerHTML="";activeIndex=-1;
-  const q=typed.toLocaleLowerCase();
+  const normalize=value=>String(value||"").toLocaleLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").trim();
+  const q=normalize(typed);
+  const queryTokens=q.split(/[^\\p{L}\\p{N}]+/u).filter(Boolean);
   const matches=getOptions().map(option=>({option,label:displayFor(option)}))
    .map(item=>{
-    const label=item.label.toLocaleLowerCase();
+    const label=normalize(item.label);
     const words=label.split(/[^\\p{L}\\p{N}]+/u).filter(Boolean);
-    const rank=!q?0:label===q?0:label.startsWith(q)?1:words.some(word=>word.startsWith(q))?2:label.includes(q)?3:99;
+    const tokenStarts=queryTokens.every(token=>words.some(word=>word.startsWith(token)));
+    const tokenContains=queryTokens.every(token=>label.includes(token));
+    const rank=!q?0:label===q?0:label.startsWith(q)?1:tokenStarts?2:tokenContains?3:label.includes(q)?4:99;
     return {...item,rank};
    })
    .filter(item=>item.rank<99)
