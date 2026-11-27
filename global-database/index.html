@@ -634,8 +634,8 @@ function setupCompanyFilters(data){
   fillCompanySelect("companySector",data.sectors||[],"sector_id","sector_name","All sectors");
   fillCompanySelect("companyIndustry",data.industries||[],"industry_id","industry_name","All industries");
   fillCompanySelect("companySubsector",data.subsectors||[],"subsector_id","subsector_name","All sub-sectors");
-  $("companySector").onchange=()=>{const sid=$("companySector").value;fillCompanySelect("companyIndustry",(data.industries||[]).filter(x=>!sid||x.sector_id===sid),"industry_id","industry_name","All industries");$("companyIndustry").value="";$("companySubsector").innerHTML='<option value="">All sub-sectors</option>';["companyIndustry","companySubsector"].forEach(id=>{const input=$(id+"Autocomplete");if(input)input.value="";});renderCompanyFilterSummary();};
-  $("companyIndustry").onchange=()=>{const iid=$("companyIndustry").value;fillCompanySelect("companySubsector",(data.subsectors||[]).filter(x=>!iid||x.industry_id===iid),"subsector_id","subsector_name","All sub-sectors");const input=$("companySubsectorAutocomplete");if(input)input.value="";renderCompanyFilterSummary();};
+  $("companySector").onchange=()=>{const sid=$("companySector").value;fillCompanySelect("companyIndustry",(data.industries||[]).filter(x=>!sid||String(x.sector_id)===String(sid)),"industry_id","industry_name","All industries");$("companyIndustry").value="";$("companySubsector").innerHTML='<option value="">All sub-sectors</option>';["companyIndustry","companySubsector"].forEach(id=>{const input=$(id+"Autocomplete");if(input)input.value="";});renderCompanyFilterSummary();};
+  $("companyIndustry").onchange=()=>{const iid=$("companyIndustry").value;fillCompanySelect("companySubsector",(data.subsectors||[]).filter(x=>!iid||String(x.industry_id)===String(iid)),"subsector_id","subsector_name","All sub-sectors");const input=$("companySubsectorAutocomplete");if(input)input.value="";renderCompanyFilterSummary();};
  }
  async function loadSources(){
   if(!apiHeaders)return;
