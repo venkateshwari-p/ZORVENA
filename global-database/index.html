@@ -934,6 +934,19 @@ function attachSearchableFilter(id){
    .filter(item=>item.rank<99)
    .sort((a,b)=>a.rank-b.rank||a.label.localeCompare(b.label))
    .slice(0,8);
+  if(filterBehavior.custom&&typed&&!matches.some(item=>normalize(item.label)===q||normalize(item.option.value)===q)){
+   const customButton=document.createElement("button");customButton.type="button";
+   customButton.className="filter-suggestion filter-suggestion-custom";customButton.setAttribute("role","option");
+   customButton.id=id+"SuggestionCustom";customButton.setAttribute("aria-selected","false");
+   customButton.textContent="Use “"+typed+"” as custom filter";
+   customButton.addEventListener("mousedown",event=>event.preventDefault());
+   customButton.addEventListener("click",()=>{
+    let custom=[...select.options].find(option=>option.dataset.custom==="true"&&option.value===typed);
+    if(!custom){custom=document.createElement("option");custom.value=typed;custom.textContent=typed;custom.dataset.custom="true";select.appendChild(custom);}
+    select.value=typed;select.dispatchEvent(new Event("change",{bubbles:true}));input.value=typed;close();
+   });
+   panel.appendChild(customButton);
+  }
   matches.forEach((item,index)=>{
    const button=document.createElement("button");button.type="button";
    button.className="filter-suggestion";button.setAttribute("role","option");
@@ -943,9 +956,9 @@ function attachSearchableFilter(id){
    button.addEventListener("click",()=>choose(item.option));
    panel.appendChild(button);
   });
-  if(!matches.length){
+  if(!matches.length&&!filterBehavior.custom){
    const empty=document.createElement("div");empty.className="filter-suggestion-empty";
-   empty.textContent=isTaxonomy?"No matching classification. Choose a valid suggestion.":id==="peopleCompany"?"No matching company found. Choose a company from the list.":filterBehavior.custom?"No saved match. You can use this text as a custom filter.":"No matching option. Choose a suggestion from the list.";
+   empty.textContent=isTaxonomy?"No matching classification. Choose a valid suggestion.":id==="peopleCompany"?"No matching company found. Choose a company from the list.":"No matching option. Choose a suggestion from the list.";
    panel.appendChild(empty);
   }
   panel.hidden=false;input.setAttribute("aria-expanded","true");
