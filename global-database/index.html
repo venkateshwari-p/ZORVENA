@@ -1247,7 +1247,7 @@ async function loadCompanies(reset=false){
  };
  function connect(){
   if(apiHeaders?.Authorization){
-   authenticate(apiHeaders.Authorization.replace(/^Bearer\\s+/i,""));
+   authenticate(apiHeaders.Authorization.replace(/^Bearer\s+/i,""));
    return;
   }
   const panel=$("connectTokenPanel"),tokenInput=$("connectTokenInput");
