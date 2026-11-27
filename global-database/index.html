@@ -601,7 +601,7 @@ function validateCsv(input){
  if(rowIssues.length){invalid++;issueRows.push({row_number:n+1,issues:rowIssues.join("; ")});if(issues.length<8)issues.push("Row "+(n+1)+": "+rowIssues.join("; "));}else valid++;
  }
  const headerNotes=[];if(missing.length)headerNotes.push("Missing required columns: "+missing.join(", "));if(unknown.length)headerNotes.push("Columns not found in live "+schemaTable+" schema: "+unknown.join(", "));
- if(headerNotes.length){invalid=Math.max(invalid,total);valid=0;issues.unshift(...headerNotes);}
+ if(headerNotes.length){invalid=Math.max(invalid,total);valid=0;issues.unshift(...headerNotes);issueRows.unshift({row_number:1,issues:"Header validation: "+headerNotes.join("; ")});}
  return {total,valid,invalid,issues,issueRows,kind,missing,unknown,schemaUsed:live.length>0};
 }
 function downloadCsvIssueReport(issueRows){
