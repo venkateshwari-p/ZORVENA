@@ -970,14 +970,22 @@ function attachSearchableFilter(id){
  input.addEventListener("input",()=>{
   const typed=input.value.trim();
   const exact=getOptions().find(option=>displayFor(option).toLocaleLowerCase()===typed.toLocaleLowerCase()||option.value.toLocaleLowerCase()===typed.toLocaleLowerCase());
-  if(exact){select.value=exact.value;select.dispatchEvent(new Event("change",{bubbles:true}));}
-  else if(!typed){select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));}
+  if(exact){
+   [...select.options].filter(option=>option.dataset.custom==="true").forEach(option=>option.remove());
+   select.value=exact.value;select.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  else if(!typed){
+   [...select.options].filter(option=>option.dataset.custom==="true").forEach(option=>option.remove());
+   select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));
+  }
   else if(!filterBehavior.custom||isTaxonomy||id==="peopleCompany"){
+   [...select.options].filter(option=>option.dataset.custom==="true").forEach(option=>option.remove());
    select.value="";
    select.dispatchEvent(new Event("change",{bubbles:true}));
    input.value=typed;
   }
   else{
+   [...select.options].filter(option=>option.dataset.custom==="true"&&option.value!==typed).forEach(option=>option.remove());
    let custom=[...select.options].find(option=>option.dataset.custom==="true"&&option.value===typed);
    if(!custom){custom=document.createElement("option");custom.value=typed;custom.textContent=typed;custom.dataset.custom="true";select.appendChild(custom);}
    select.value=typed;
