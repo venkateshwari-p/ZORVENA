@@ -1026,6 +1026,11 @@ function attachAllSearchableFilters(){
   $("peopleReset").addEventListener("click",()=>searchableFilterIds.filter(id=>id.startsWith("people")).forEach(id=>{if($(id+"Autocomplete"))$(id+"Autocomplete").value="";}));
   $("companySector").addEventListener("change",()=>{if(!$("companyIndustry").value)$("companyIndustryAutocomplete").value="";if(!$("companySubsector").value)$("companySubsectorAutocomplete").value="";});
   $("companyIndustry").addEventListener("change",()=>{if(!$("companySubsector").value)$("companySubsectorAutocomplete").value="";});
+  searchableFilterIds.filter(id=>id.startsWith("company")).forEach(id=>{
+   const input=$(id+"Autocomplete"),select=$(id);
+   if(input&&!input.dataset.summaryListener){input.dataset.summaryListener="true";input.addEventListener("input",renderCompanyFilterSummary);}
+   if(select&&!select.dataset.summaryListener){select.dataset.summaryListener="true";select.addEventListener("change",renderCompanyFilterSummary);}
+  });
  }
 }
 
