@@ -612,7 +612,7 @@ function validateCsv(input){
  required.forEach(k=>{if(headers.includes(k)&&!get(k))rowIssues.push(k+" is blank");});
  const id={companies:"company_id",people:"person_id",sources:"company_source_id",person_sources:"person_source_id"}[kind],value=get(id),norm=value.toLowerCase();
  if(value&&seen.has(norm))rowIssues.push("duplicate "+id);if(value)seen.add(norm);
- ["source_url","official_website","linkedin_url","linkedin_profile"].forEach(k=>{const v=get(k);if(v&&!/^https?:\\/\\//i.test(v))rowIssues.push(k+" must begin with http:// or https://");});
+ ["source_url","official_website","linkedin_url","linkedin_profile"].forEach(k=>{const v=get(k);if(v&&!/^https?:\/\//i.test(v))rowIssues.push(k+" must begin with http:// or https://");});
  (liveSchemaTemplateColumns[kind]||[]).forEach(col=>{const v=get(col.name.toLowerCase());if(!v)return;const t=String(col.type||"").toUpperCase();if(["INT64","INTEGER","FLOAT64","NUMERIC","BIGNUMERIC"].includes(t)&&!Number.isFinite(Number(v)))rowIssues.push(col.name+" must be numeric");if(t==="BOOL"&&!/^(true|false)$/i.test(v))rowIssues.push(col.name+" must be TRUE or FALSE");if(["DATE","DATETIME","TIMESTAMP"].includes(t)&&Number.isNaN(Date.parse(v)))rowIssues.push(col.name+" must be a valid date/time");});
  if(rowIssues.length){invalid++;issueRows.push({row_number:n+1,issues:rowIssues.join("; ")});if(issues.length<8)issues.push("Row "+(n+1)+": "+rowIssues.join("; "));}else valid++;
  }
