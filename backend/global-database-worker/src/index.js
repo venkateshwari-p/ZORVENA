@@ -182,6 +182,37 @@ async function handleApi(request, env, url) {
     return { data: { sectors, industries, subsectors, divisions } };
   }
 
+  if (url.pathname === "/api/suggestions") {
+    const field = (url.searchParams.get("field") || "").trim();
+    const q = (url.searchParams.get("q") || "").trim().slice(0, 100);
+    const fields = {
+      companyCountry: ["global_companies", "country"],
+      companyType: ["global_companies", "business_type"],
+      companyVerification: ["global_companies", "verification_status"],
+      peoplePurchasing: ["global_people", "purchasing_responsibility"],
+      peopleProduct: ["global_people", "product_interest"],
+      peopleCountry: ["global_people", "country"],
+      peopleDepartment: ["global_people", "department"],
+      peopleRole: ["global_people", "decision_role"],
+      peopleVerification: ["global_people", "verification_status"],
+      peoplePermission: ["global_people", "outreach_permission_status"]
+    };
+    const selected = fields[field];
+    if (!selected) throw new Error("Unsupported suggestion field.");
+    const [tableName, column] = selected;
+    const params = [];
+    const where = " WHERE `" + column + "` IS NOT NULL AND TRIM(CAST(`" + column + "` AS STRING)) != ''";
+    let searchWhere = "";
+    if (q) {
+      searchWhere = " AND LOWER(CAST(`" + column + "` AS STRING)) LIKE CONCAT('%', LOWER(@q), '%')";
+      params.push({ name: "q", type: "STRING", value: q });
+    }
+    const sql = `SELECT DISTINCT CAST(${column} AS STRING) AS value
+      FROM ${table(env, tableName)}${where}${searchWhere}
+      ORDER BY value LIMIT 100`;
+    return { data: await runQuery(env, sql, params) };
+  }
+
   if (url.pathname === "/api/companies") {
     const params = [];
     const where = [];
