@@ -877,24 +877,25 @@ const searchableFilterIds=[
  "peopleSearch","peopleCompany","peoplePurchasing","peopleProduct","peopleCountry","peopleDepartment","peopleRole","peopleVerification","peoplePermission"
 ];
 async function loadRemoteAutocompleteOptions(id,query){
- if(!apiHeaders||query.length<2||!["companySearch","peopleSearch","peopleCompany"].includes(id))return;
- const endpoint=id==="peopleSearch"?"/api/people":"/api/companies";
- const params=new URLSearchParams({q:query,limit:"8",offset:"0"});
+ const directorySearch=["companySearch","peopleSearch","peopleCompany"].includes(id);
+ const databaseSuggestion=["companyCountry","companyType","companyVerification","peoplePurchasing","peopleProduct","peopleCountry","peopleDepartment","peopleRole","peopleVerification","peoplePermission"].includes(id);
+ if(!apiHeaders||query.length<2||(!directorySearch&&!databaseSuggestion))return;
+ const endpoint=databaseSuggestion?"/api/suggestions":id==="peopleSearch"?"/api/people":"/api/companies";
+ const params=new URLSearchParams(databaseSuggestion?{field:id,q:query}:{q:query,limit:"8",offset:"0"});
  try{
   const response=await fetch(API_BASE+endpoint+"?"+params.toString(),{headers:apiHeaders});
   if(!response.ok)return;
   const result=await response.json(),select=$(id);
-  // Ignore stale responses when the user has continued typing or cleared the field.
   const currentInput=$(id+"Autocomplete");
   if(!select||!currentInput||currentInput.value.trim()!==query)return;
   [...select.options].filter(option=>option.dataset.remote==="true").forEach(option=>option.remove());
   const rows=result.data||[];
   rows.forEach(row=>{
-   const value=id==="peopleSearch"?(row.full_name||row.job_title):(id==="peopleCompany"?row.company_id:row.company_name);
+   const value=databaseSuggestion?row.value:id==="peopleSearch"?(row.full_name||row.job_title):(id==="peopleCompany"?row.company_id:row.company_name);
    if(!value||[...select.options].some(option=>option.value===String(value)))return;
    const option=document.createElement("option");
    option.value=String(value);
-   option.textContent=id==="peopleCompany"
+   option.textContent=databaseSuggestion?String(value):id==="peopleCompany"
     ?(row.company_name||row.company_id)+" · "+(row.country||"Country not set")
     :id==="peopleSearch"
      ?String(row.full_name||row.job_title)+(row.job_title&&row.full_name?" — "+row.job_title:"")
@@ -1001,7 +1002,7 @@ function attachSearchableFilter(id){
  let remoteLookupTimer=null,remoteLookupQuery="";
  input.addEventListener("input",()=>{
   const typed=input.value.trim();
-  if(["companySearch","peopleSearch","peopleCompany"].includes(id)){
+  if(["companySearch","peopleSearch","peopleCompany","companyCountry","companyType","companyVerification","peoplePurchasing","peopleProduct","peopleCountry","peopleDepartment","peopleRole","peopleVerification","peoplePermission"].includes(id)){
    remoteLookupQuery=typed;
    if(remoteLookupTimer)clearTimeout(remoteLookupTimer);
    if(typed.length>=2)remoteLookupTimer=setTimeout(()=>{
