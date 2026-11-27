@@ -625,7 +625,8 @@ document.getElementById("csvFile").addEventListener("change",event=>{
  const fillCompanySelect=(id,items,key,label,firstText)=>{const el=$(id);el.innerHTML="";const first=document.createElement("option");first.value="";first.textContent=firstText;el.appendChild(first);items.forEach(item=>{const o=document.createElement("option");o.value=item[key];o.textContent=item[key]+" · "+item[label];el.appendChild(o);});};
  function renderCompanyFilterSummary(){
  const host=$("companyFilterSummary");if(!host)return;host.innerHTML="";
- const fields=[["Search",$("companySearch").value.trim()],["Country",$("companyCountry").value.trim()],["Sector",$("companySector").selectedOptions[0]?.textContent],["Industry",$("companyIndustry").selectedOptions[0]?.textContent],["Sub-sector",$("companySubsector").selectedOptions[0]?.textContent],["Business type",$("companyType").value.trim()],["Verification",$("companyVerification").value]];
+ const taxonomyLabel=id=>{const option=$(id).selectedOptions[0];return option?.value?option.textContent.split(" · ").slice(1).join(" · "):"";};
+ const fields=[["Search",$("companySearch").value.trim()],["Country",$("companyCountry").value.trim()],["Sector",taxonomyLabel("companySector")],["Industry",taxonomyLabel("companyIndustry")],["Sub-sector",taxonomyLabel("companySubsector")],["Business type",$("companyType").value.trim()],["Verification",$("companyVerification").value]];
  fields.forEach(([label,value])=>{if(!value||value.startsWith("All ")||value.startsWith("Select "))return;const chip=document.createElement("span");chip.className="company-filter-chip";chip.textContent=label+": "+value;host.appendChild(chip);});
 }
 function setupCompanyFilters(data){
