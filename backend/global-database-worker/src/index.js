@@ -142,9 +142,10 @@ function intParam(value, fallback, max) {
 }
 
 function addExactFilter(params, where, searchParams, key, column) {
-  const value = searchParams.get(key);
+  const value = (searchParams.get(key) || "").trim();
   if (value) {
-    where.push(column + " = @" + key);
+    // Directory filters should not fail only because a user entered different capitalization.
+    where.push("LOWER(TRIM(" + column + ")) = LOWER(TRIM(@" + key + "))");
     params.push({ name: key, type: "STRING", value });
   }
 }
