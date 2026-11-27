@@ -739,17 +739,8 @@ async function loadAllPeopleFilterSuggestions(){
  peopleSuggestionRecords=[];
  if(!apiHeaders)return;
  try{
-  let offset=0,total=Infinity;
-  while(offset<total){
-   const params=new URLSearchParams({limit:"100",offset:String(offset)});
-   const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});
-   if(!response.ok)throw new Error("HTTP "+response.status);
-   const result=await response.json(),rows=result.data||[];
-   total=getDirectoryPageTotal(result,rows,offset);
-   peopleSuggestionRecords.push(...rows);
-   if(!rows.length)break;
-   offset+=rows.length;
-  }
+  const result=await fetchAllDirectoryRows("/api/people",new URLSearchParams(),apiHeaders);
+  peopleSuggestionRecords=result.data||[];
   populatePeopleFilterSuggestions(peopleSuggestionRecords);
  }catch(error){
   console.error("Could not load all contact filter suggestions",error);
@@ -782,17 +773,8 @@ async function loadPeopleCompanyOptions(){
   select.innerHTML='<option value="">All companies</option>';
   if(!apiHeaders)return;
   try{
-   let offset=0,all=[],total=Infinity;
-   while(offset<total){
-    const params=new URLSearchParams({limit:"100",offset:String(offset)});
-    const response=await fetch(API_BASE+"/api/companies?"+params.toString(),{headers:apiHeaders});
-    if(!response.ok)throw new Error("HTTP "+response.status);
-    const result=await response.json(),rows=result.data||[];
-    total=getDirectoryPageTotal(result,rows,offset);
-    all=all.concat(rows);
-    if(!rows.length)break;
-    offset+=rows.length;
-   }
+   const result=await fetchAllDirectoryRows("/api/companies",new URLSearchParams(),apiHeaders);
+   const all=result.data||[];
    all.sort((a,b)=>String(a.company_name||"").localeCompare(String(b.company_name||"")));
    all.forEach(company=>{
     if(!company.company_id)return;
@@ -1078,17 +1060,8 @@ async function loadAllCompanyFilterSuggestions(){
  companySuggestionRecords=[];
  if(!apiHeaders)return;
  try{
-  let offset=0,total=Infinity;
-  while(offset<total){
-   const params=new URLSearchParams({limit:"100",offset:String(offset)});
-   const response=await fetch(API_BASE+"/api/companies?"+params.toString(),{headers:apiHeaders});
-   if(!response.ok)throw new Error("HTTP "+response.status);
-   const result=await response.json(),rows=result.data||[];
-   total=getDirectoryPageTotal(result,rows,offset);
-   companySuggestionRecords.push(...rows);
-   if(!rows.length)break;
-   offset+=rows.length;
-  }
+  const result=await fetchAllDirectoryRows("/api/companies",new URLSearchParams(),apiHeaders);
+  companySuggestionRecords=result.data||[];
   populateCompanyFilterSuggestions(companySuggestionRecords);
  }catch(error){
   console.error("Could not load all company filter suggestions",error);
