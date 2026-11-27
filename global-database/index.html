@@ -663,8 +663,11 @@ document.getElementById("csvFile").addEventListener("change",event=>{
  const $=id=>document.getElementById(id);
  let apiHeaders=null, taxonomyData=null, companyOffset=0, companyTotal=0;
  const companyLimit=()=>Number($("companyLimit").value||50);
- // Bind the connection control before the remaining dashboard setup runs.
+ // Bind connection controls before other dashboard initialization can fail.
  $("connectBtn").addEventListener("click",connect);
+ $("submitConnect").addEventListener("click",()=>authenticate());
+ $("cancelConnect").addEventListener("click",()=>{$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";});
+ $("connectTokenInput").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();authenticate();}});
  const industryName=id=>(taxonomyData?.industries||[]).find(x=>x.industry_id===id)?.industry_name||id||"—";
  const fillCompanySelect=(id,items,key,label,firstText)=>{const el=$(id);el.innerHTML="";const first=document.createElement("option");first.value="";first.textContent=firstText;el.appendChild(first);items.forEach(item=>{const o=document.createElement("option");o.value=item[key];o.textContent=item[key]+" · "+item[label];el.appendChild(o);});};
  let liveSchemaTemplateColumns={};
@@ -1280,9 +1283,7 @@ async function loadCompanies(reset=false){
   }
   finally{$("submitConnect").disabled=false;$("submitConnect").textContent="Authenticate and load data";}
  }
- $("submitConnect").addEventListener("click",()=>authenticate());
- $("cancelConnect").addEventListener("click",()=>{$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";});
- $("connectTokenInput").addEventListener("keydown",e=>{if(e.key==="Enter")authenticate();});
+
  $("companyApply").addEventListener("click",()=>{renderCompanyFilterSummary();loadCompanies(true);});
  ["companySearch","companyCountry","companySector","companyIndustry","companySubsector","companyType","companyVerification"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();renderCompanyFilterSummary();loadCompanies(true);}}));
  $("companyReset").addEventListener("click",()=>{["companySearch","companyCountry","companyType","companySector","companyIndustry","companySubsector","companyVerification"].forEach(id=>{const select=$(id);select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));const input=$(id+"Autocomplete");if(input)input.value="";});setupCompanyFilters(taxonomyData||{sectors:[],industries:[],subsectors:[]});renderCompanyFilterSummary();loadCompanies(true);});
