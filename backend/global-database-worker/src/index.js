@@ -162,7 +162,7 @@ async function handleApi(request, env, url) {
 
   if (url.pathname === "/api/schema") {
     const sql = `SELECT table_name, ordinal_position, column_name, data_type, is_nullable
-      FROM ${table(env, "INFORMATION_SCHEMA.COLUMNS").replace(/INFORMATION_SCHEMA\\.COLUMNS$/, "INFORMATION_SCHEMA.COLUMNS")}
+      FROM ${table(env, "INFORMATION_SCHEMA.COLUMNS")}
       WHERE table_name IN ('global_companies','global_people','company_sources','person_sources')
       ORDER BY table_name, ordinal_position`;
     const [columns, counts] = await Promise.all([
