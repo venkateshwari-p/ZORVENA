@@ -1081,7 +1081,7 @@ async function loadAllCompanyFilterSuggestions(){
    const response=await fetch(API_BASE+"/api/companies?"+params.toString(),{headers:apiHeaders});
    if(!response.ok)throw new Error("HTTP "+response.status);
    const result=await response.json(),rows=result.data||[];
-   total=Number(result.pagination?.total||0);
+   total=getDirectoryPageTotal(result,rows,offset);
    companySuggestionRecords.push(...rows);
    if(!rows.length)break;
    offset+=rows.length;
