@@ -1272,7 +1272,11 @@ async function loadCompanies(reset=false){
    await loadPeopleCompanyOptions();await loadAllPeopleFilterSuggestions();await loadAllCompanyFilterSuggestions();await loadCompanies(true);await loadPeople(true);await loadSources();
    const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview, industry taxonomy, Company Directory and People & Contacts are connected to the authenticated ZORVENA API. Directory results depend on records available in BigQuery.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
    setStatus(true,"API connected");$("connectBtn").textContent="Refresh data";$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";
-  }catch(e){apiHeaders=null;setStatus(false,"Connection failed");$("connectBtn").textContent="Connect database";message.textContent="Could not connect: "+e.message+" — check the token and try again."; }
+  }catch(e){
+   apiHeaders=null;setStatus(false,"Connection failed");$("connectBtn").textContent="Connect database";
+   message.textContent=(existingToken?"Database refresh failed: ":"Could not connect: ")+e.message+" — enter the admin token and try again.";
+   if(existingToken){$("connectTokenPanel").style.display="block";$("connectTokenInput").value="";$("connectTokenInput").focus();}
+  }
   finally{$("submitConnect").disabled=false;$("submitConnect").textContent="Authenticate and load data";}
  }
  $("connectBtn").addEventListener("click",connect);
