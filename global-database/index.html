@@ -448,6 +448,7 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
         <div class="panel-head"><h2>Live BigQuery schema inspection</h2><small id="liveSchemaStatus">Connect database to inspect</small></div>
         <p class="muted">Read-only metadata from INFORMATION_SCHEMA. Use this report to align CSV fields before enabling imports.</p>
         <div id="liveSchemaCounts" class="stats" style="grid-template-columns:repeat(4,minmax(0,1fr));margin:12px 0"></div>
+        <div id="schemaTemplateCompare" class="panel" style="display:none;margin-top:12px"><div class="panel-head"><h3>Provisional template vs live schema</h3><small>Automated header comparison only</small></div><div id="schemaCompareBody" class="warning-text"></div></div>
         <div class="table-wrap"><table class="data-table"><thead><tr><th>Table</th><th>Column</th><th>BigQuery type</th><th>Nullable</th><th>Position</th></tr></thead><tbody id="liveSchemaRows"><tr><td colspan="5" class="empty">Authenticate to load live schema metadata.</td></tr></tbody></table></div>
       </div>
       <div class="import-layout">
@@ -639,6 +640,20 @@ document.getElementById("csvFile").addEventListener("change",event=>{
   if(!columns.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=5;td.className="empty";td.textContent="No schema columns returned.";tr.appendChild(td);body.appendChild(tr);}
   columns.forEach(item=>{const tr=document.createElement("tr");[item.table_name,item.column_name,item.data_type,item.is_nullable,item.ordinal_position].forEach(value=>{const td=document.createElement("td");td.textContent=String(value??"—");tr.appendChild(td);});body.appendChild(tr);});
   status.textContent=columns.length+" columns · read-only";
+  const compare=$("schemaTemplateCompare"),out=$("schemaCompareBody");
+  if(typeof templates==="undefined"){compare.style.display="none";return;}
+  const mapping={global_companies:"companies",global_people:"people",company_sources:"sources"};
+  const groups={};columns.forEach(col=>(groups[col.table_name]||(groups[col.table_name]=[])).push(col.column_name));
+  out.innerHTML="";
+  Object.entries(mapping).forEach(([tableName,type])=>{
+   const live=groups[tableName]||[],draft=templates[type]||[];
+   const absent=draft.filter(h=>!live.includes(h)),extra=live.filter(h=>!draft.includes(h));
+   const box=document.createElement("div");box.style.marginBottom="12px";
+   const heading=document.createElement("strong");heading.textContent=tableName+" — "+(live.length?"schema found":"no columns returned");box.appendChild(heading);
+   const detail=document.createElement("div");detail.textContent="Template headers absent from live schema: "+(absent.length?absent.join(", "):"None")+" | Live columns not represented in template: "+(extra.length?extra.join(", "):"None");box.appendChild(detail);
+   const note=document.createElement("div");note.textContent="This is a name-only comparison; it does not validate types, required values, relationships or write safety.";note.className="muted";box.appendChild(note);out.appendChild(box);
+  });
+  compare.style.display="block";
  }
  function renderCompanyFilterSummary(){
  const host=$("companyFilterSummary");if(!host)return;host.innerHTML="";
