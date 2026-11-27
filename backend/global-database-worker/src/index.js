@@ -322,7 +322,7 @@ export default {
     const url = new URL(request.url);
     try {
       const result = await handleApi(request, env, url);
-      if (!result) return json({ error: "Not found", available_endpoints: ["/health", "/api/overview", "/api/taxonomy", "/api/companies", "/api/people", "/api/sources"] }, 404, allowedOrigin);
+      if (!result) return json({ error: "Not found", available_endpoints: ["/health", "/api/overview", "/api/taxonomy", "/api/suggestions", "/api/companies", "/api/people", "/api/sources"] }, 404, allowedOrigin);
       return json(result, 200, allowedOrigin);
     } catch (error) {
       return json({
