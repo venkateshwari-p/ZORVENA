@@ -1199,9 +1199,11 @@ async function loadCompanies(reset=false){
   if(!token){message.textContent="Enter your admin API token to continue.";return;}
   const headers={Authorization:"Bearer "+token};$("submitConnect").disabled=true;$("submitConnect").textContent="Connecting…";message.textContent="Checking credentials and loading database data…";
   try{
-   const responses=await Promise.all([fetch(API_BASE+"/api/overview",{headers}),fetch(API_BASE+"/api/taxonomy",{headers}),fetch(API_BASE+"/api/schema",{headers})]);
+   const responses=await Promise.all([fetch(API_BASE+"/api/overview",{headers}),fetch(API_BASE+"/api/taxonomy",{headers})]);
    for(const res of responses)if(!res.ok){let detail="HTTP "+res.status;try{const j=await res.json();detail=j.detail||j.error||detail;}catch(_){}throw new Error(detail);}
-   const [ov,tx,sc]=await Promise.all(responses.map(x=>x.json()));if(!ov.data||!tx.data||!sc.data)throw new Error("Unexpected API response format");renderLiveSchema(sc.data);
+   const [ov,tx]=await Promise.all(responses.map(x=>x.json()));if(!ov.data||!tx.data)throw new Error("Unexpected API response format");
+   try{const schemaResponse=await fetch(API_BASE+"/api/schema",{headers});if(!schemaResponse.ok){let detail="HTTP "+schemaResponse.status;try{const j=await schemaResponse.json();detail=j.detail||j.error||detail;}catch(_){}throw new Error(detail);}const schemaResult=await schemaResponse.json();if(!schemaResult.data)throw new Error("Unexpected schema response format");renderLiveSchema(schemaResult.data);}
+   catch(schemaError){$("liveSchemaStatus").textContent="Schema inspection unavailable";$("liveSchemaRows").innerHTML="";const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=5;td.className="empty";td.textContent="The main database connection is available, but schema inspection failed: "+schemaError.message;tr.appendChild(td);$("liveSchemaRows").appendChild(tr);$("liveSchemaCounts").innerHTML="";}
    const counts=ov.data,stats=document.querySelectorAll("#view-overview .stats .stat strong");
    [counts.companies,counts.people,counts.industries,counts.subsectors].forEach((v,i)=>{if(stats[i])stats[i].textContent=Number(v??0).toLocaleString();});
    const tax=document.querySelectorAll("#view-overview .tax-item b");
