@@ -459,10 +459,10 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
           <div class="panel" id="csvValidation" style="display:none;margin-top:14px"><div class="panel-head"><h2>CSV validation report</h2><span class="tag" id="csvValidationStatus">Not checked</span></div><div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><article class="stat"><div class="stat-top">Rows checked</div><strong id="csvRowsChecked">0</strong></article><article class="stat"><div class="stat-top">Valid rows</div><strong id="csvRowsValid">0</strong></article><article class="stat"><div class="stat-top">Rows with issues</div><strong id="csvRowsInvalid">0</strong></article></div><div id="csvValidationDetails" class="warning-text"></div><button class="btn" id="downloadCsvIssues" type="button" style="display:none;margin-top:12px">Download row issues CSV</button></div>
           <div class="warning-text">Validation runs locally in your browser. It does not upload files or write to BigQuery. Database import remains disabled until server-side validation, duplicate checks and write permissions are implemented.</div>
         </div>
-        <div class="panel"><div class="panel-head"><h2>Download CSV templates</h2><small>Provisional headers · confirm live schema first</small></div><div class="template-list">
+        <div class="panel"><div class="panel-head"><h2>Download CSV templates</h2><small>Live-schema headers when available; otherwise provisional fallback</small></div><div class="template-list">
           <div class="template"><div><b>Company directory</b><small>Provisional company fields · not yet schema-approved</small></div><button data-template="companies">Download</button></div>
           <div class="template"><div><b>People directory</b><small>Provisional people fields · not yet schema-approved</small></div><button data-template="people">Download</button></div>
-          <div class="template"><div><b>Company sources</b><small>Provisional source fields · not yet schema-approved</small></div><button data-template="sources">Download</button></div><div class="template"><div><b>Sample company CSV</b><small>One fictional row · validation test only</small></div><button id="downloadSampleCompany" type="button">Download sample</button></div>
+          <div class="template"><div><b>Company sources</b><small>Live-schema headers when available; otherwise provisional</small></div><button data-template="sources">Download</button></div><div class="template"><div><b>Person sources</b><small>Generated from live schema when available</small></div><button data-template="person_sources">Download</button></div><div class="template"><div><b>Sample company CSV</b><small>One fictional row · validation test only</small></div><button id="downloadSampleCompany" type="button">Download sample</button></div>
         </div><div style="height:17px"></div><div class="panel-head"><h2>Import validation checklist</h2></div><div class="check-list"><div class="check"><i>✓</i> Supported CSV template and required headers</div><div class="check"><i>✓</i> Required values in each data row</div><div class="check"><i>✓</i> Duplicate record IDs within the selected file</div><div class="check"><i>✓</i> Basic URL format for source and profile links</div><div class="check"><i>✓</i> First 10 data rows preview and issue examples</div></div><div class="warning-text">Not checked yet: exact live BigQuery column names and types, taxonomy IDs against BigQuery, duplicates against existing records, source-table relationships, verification status rules, permissions, and audit logging. Local validation does not mean a file is safe or ready to import.</div></div>
       </div>
     </section>
@@ -548,9 +548,10 @@ renderResearch();
 const templates={
  companies:["company_id","company_name","country","state_region","city","official_website","linkedin_url","sector_id","industry_id","subsector_id","division_summary","business_type","products_services","trade_activity","public_contact_details","verification_status","created_at","updated_at","source_url","last_verified_at"],
  people:["person_id","company_id","full_name","job_title","department","country","linkedin_profile","business_email","business_phone","contact_location","decision_role","purchasing_responsibility","product_interest","contact_source","verification_status","outreach_permission_status","created_at","updated_at","last_verified_at"],
- sources:["company_source_id","company_id","source_type","source_url","evidence_summary","source_reliability","verification_status","checked_at","created_at"]
+ sources:["company_source_id","company_id","source_type","source_url","evidence_summary","source_reliability","verification_status","checked_at","created_at"],
+ person_sources:["person_source_id","person_id","source_type","source_url","evidence_summary","source_reliability","verification_status","checked_at","created_at"]
 };
-document.querySelectorAll("[data-template]").forEach(btn=>btn.addEventListener("click",()=>{const type=btn.dataset.template;const csv=templates[type].join(",")+"\r\n";const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="zorvena_"+type+"_import_template.csv";a.click();URL.revokeObjectURL(url);}));
+document.querySelectorAll("[data-template]").forEach(btn=>btn.addEventListener("click",()=>{const type=btn.dataset.template;const live=liveSchemaTemplateColumns[type];const headers=live?.length?live.map(c=>c.name):templates[type];const csv=headers.map(h=>`"${String(h).replace(/"/g,'""')}"`).join(",")+"\r\n";const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="zorvena_"+type+(live?.length?"_live_schema_template":"_provisional_template")+".csv";a.click();URL.revokeObjectURL(url);}));
 document.getElementById("downloadSampleCompany").addEventListener("click",()=>{
  const headers=templates.companies;
  const sample={company_id:"DEMO-COMPANY-001",company_name:"Example Agricultural Supplies Ltd",country:"India",state_region:"Tamil Nadu",city:"Coimbatore",official_website:"https://example.com",linkedin_url:"https://www.linkedin.com/company/example",sector_id:"SEC006",industry_id:"IND026",subsector_id:"SUB042",division_summary:"Procurement and Purchasing",business_type:"Manufacturer",products_services:"Example growing media products",trade_activity:"Domestic and export",public_contact_details:"Public demo record only",verification_status:"Pending",created_at:"",updated_at:"",source_url:"https://example.com/company-profile",last_verified_at:""};
@@ -631,9 +632,11 @@ document.getElementById("csvFile").addEventListener("change",event=>{
  const companyLimit=()=>Number($("companyLimit").value||50);
  const industryName=id=>(taxonomyData?.industries||[]).find(x=>x.industry_id===id)?.industry_name||id||"—";
  const fillCompanySelect=(id,items,key,label,firstText)=>{const el=$(id);el.innerHTML="";const first=document.createElement("option");first.value="";first.textContent=firstText;el.appendChild(first);items.forEach(item=>{const o=document.createElement("option");o.value=item[key];o.textContent=item[key]+" · "+item[label];el.appendChild(o);});};
+ let liveSchemaTemplateColumns={};
  function renderLiveSchema(report){
   const status=$("liveSchemaStatus"),countsHost=$("liveSchemaCounts"),body=$("liveSchemaRows");
   const counts=report?.counts||[],columns=report?.columns||[];
+  liveSchemaTemplateColumns={};columns.forEach(col=>{const typeMap={global_companies:"companies",global_people:"people",company_sources:"sources",person_sources:"person_sources"};const key=typeMap[col.table_name];if(key)(liveSchemaTemplateColumns[key]||(liveSchemaTemplateColumns[key]=[])).push({name:col.column_name,type:col.data_type,nullable:col.is_nullable,position:Number(col.ordinal_position||0)});});Object.values(liveSchemaTemplateColumns).forEach(list=>list.sort((a,b)=>a.position-b.position));
   countsHost.innerHTML="";
   counts.forEach(item=>{const card=document.createElement("article");card.className="stat";const label=document.createElement("div");label.className="stat-top";label.textContent=item.table_name;const value=document.createElement("strong");value.textContent=Number(item.row_count||0).toLocaleString();card.append(label,value);countsHost.appendChild(card);});
   body.innerHTML="";
@@ -642,7 +645,7 @@ document.getElementById("csvFile").addEventListener("change",event=>{
   status.textContent=columns.length+" columns · read-only";
   const compare=$("schemaTemplateCompare"),out=$("schemaCompareBody");
   if(typeof templates==="undefined"){compare.style.display="none";return;}
-  const mapping={global_companies:"companies",global_people:"people",company_sources:"sources"};
+  const mapping={global_companies:"companies",global_people:"people",company_sources:"sources",person_sources:"person_sources"};
   const groups={};columns.forEach(col=>(groups[col.table_name]||(groups[col.table_name]=[])).push(col.column_name));
   out.innerHTML="";
   Object.entries(mapping).forEach(([tableName,type])=>{
