@@ -740,11 +740,16 @@ async function loadAllPeopleFilterSuggestions(){
  peopleSuggestionRecords=[];
  if(!apiHeaders)return;
  try{
-  const result=await fetchAllDirectoryRows("/api/people",new URLSearchParams(),apiHeaders);
+  // Keep connection lightweight: use a small sample for dropdown hints.
+  // The actual Search contacts action queries BigQuery across the full directory.
+  const params=new URLSearchParams({limit:"100",offset:"0"});
+  const response=await fetch(API_BASE+"/api/people?"+params.toString(),{headers:apiHeaders});
+  if(!response.ok)throw new Error("HTTP "+response.status);
+  const result=await response.json();
   peopleSuggestionRecords=result.data||[];
   populatePeopleFilterSuggestions(peopleSuggestionRecords);
  }catch(error){
-  console.error("Could not load all contact filter suggestions",error);
+  console.error("Could not load contact filter suggestions",error);
   populatePeopleFilterSuggestions(peopleSuggestionRecords);
  }
 }
@@ -774,7 +779,10 @@ async function loadPeopleCompanyOptions(){
   select.innerHTML='<option value="">All companies</option>';
   if(!apiHeaders)return;
   try{
-   const result=await fetchAllDirectoryRows("/api/companies",new URLSearchParams(),apiHeaders);
+   // Populate an initial company list without downloading the entire directory.
+   const response=await fetch(API_BASE+"/api/companies?limit=100&offset=0",{headers:apiHeaders});
+   if(!response.ok)throw new Error("HTTP "+response.status);
+   const result=await response.json();
    const all=result.data||[];
    all.sort((a,b)=>String(a.company_name||"").localeCompare(String(b.company_name||"")));
    all.forEach(company=>{
@@ -839,6 +847,8 @@ document.addEventListener("keydown",event=>{if(event.key==="Escape"&&$("companyD
 
 let companySuggestionRecords=[];
 const companyFilterDefaults={
+ // These are search phrases, not fabricated company records. They work with the API's partial-text search.
+ companySearch:["greenhouse","hydroponic","cocopeat","coco coir","growing media","horticulture","nursery","agricultural supplier","farm operator","substrate"],
  companyCountry:["Australia","Canada","France","Germany","India","Indonesia","Italy","Japan","Malaysia","Netherlands","New Zealand","Saudi Arabia","Singapore","South Korea","Spain","Thailand","UAE","United Kingdom","United States"],
  companyType:["Agricultural producer","Commercial grower","Farm operator","Greenhouse grower","Hydroponic grower","Manufacturer","Nursery / propagator","Exporter","Importer","Distributor","Wholesaler","Retailer","Supplier","Service provider","Research institution"]
 };
@@ -1050,7 +1060,10 @@ function populateCompanyFilterSuggestions(records=[]){
  records.forEach(row=>{
   if(row.company_name)companies.push({value:String(row.company_name),label:String(row.company_name)});
  });
- const uniqueCompanies=[...new Map(companies.map(item=>[item.value,item])).values()].sort((a,b)=>a.label.localeCompare(b.label));
+ const uniqueCompanies=[...new Map([
+  ...companyFilterDefaults.companySearch.map(value=>({value,label:value+" · search keyword"})),
+  ...companies
+ ].map(item=>[item.value,item])).values()].sort((a,b)=>a.label.localeCompare(b.label));
  const countries=[...new Set([...companyFilterDefaults.companyCountry,...records.map(row=>row.country).filter(Boolean).map(String)])].sort((a,b)=>a.localeCompare(b));
  const businessTypes=[...new Set([...companyFilterDefaults.companyType,...records.map(row=>row.business_type).filter(Boolean).map(String)])].sort((a,b)=>a.localeCompare(b));
  setCompanySelectOptions("companySearch",uniqueCompanies,"All companies");
@@ -1061,11 +1074,14 @@ async function loadAllCompanyFilterSuggestions(){
  companySuggestionRecords=[];
  if(!apiHeaders)return;
  try{
-  const result=await fetchAllDirectoryRows("/api/companies",new URLSearchParams(),apiHeaders);
+  // Only load a small sample for suggestions; full search stays server-side in BigQuery.
+  const response=await fetch(API_BASE+"/api/companies?limit=100&offset=0",{headers:apiHeaders});
+  if(!response.ok)throw new Error("HTTP "+response.status);
+  const result=await response.json();
   companySuggestionRecords=result.data||[];
   populateCompanyFilterSuggestions(companySuggestionRecords);
  }catch(error){
-  console.error("Could not load all company filter suggestions",error);
+  console.error("Could not load company filter suggestions",error);
   populateCompanyFilterSuggestions(companySuggestionRecords);
  }
 }
