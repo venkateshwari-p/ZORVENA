@@ -314,22 +314,22 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
   <div>
     <div class="nav-label">Workspace</div>
     <nav class="nav" aria-label="Database navigation" role="navigation">
-      <button class="active" data-view="overview"><span class="ico">▦</span>Overview</button>
-      <button data-view="companies"><span class="ico">▣</span>Company Directory</button>
-      <button data-view="people"><span class="ico">♙</span>People & Contacts</button>
-      <button data-view="taxonomy"><span class="ico">⌘</span>Industry Taxonomy</button>
-      <button data-view="trade"><span class="ico">⇄</span>Trade Intelligence</button>
-      <button data-view="sources"><span class="ico">↗</span>Sources & Evidence</button>
-      <button data-view="research"><span class="ico">◎</span>Research Pipeline</button>
+      <button class="active" data-view="overview" onclick="showView('overview')" type="button"><span class="ico">▦</span>Overview</button>
+      <button data-view="companies" onclick="showView('companies')" type="button"><span class="ico">▣</span>Company Directory</button>
+      <button data-view="people" onclick="showView('people')" type="button"><span class="ico">♙</span>People & Contacts</button>
+      <button data-view="taxonomy" onclick="showView('taxonomy')" type="button"><span class="ico">⌘</span>Industry Taxonomy</button>
+      <button data-view="trade" onclick="showView('trade')" type="button"><span class="ico">⇄</span>Trade Intelligence</button>
+      <button data-view="sources" onclick="showView('sources')" type="button"><span class="ico">↗</span>Sources & Evidence</button>
+      <button data-view="research" onclick="showView('research')" type="button"><span class="ico">◎</span>Research Pipeline</button>
     </nav>
   </div>
   <div>
     <div class="nav-label">Data management</div>
     <nav class="nav">
-      <button data-view="import"><span class="ico">⇧</span>Import Centre</button>
-      <button data-view="export"><span class="ico">⇩</span>Export Centre</button>
-      <button data-view="quality"><span class="ico">✓</span>Data Quality</button>
-      <button data-view="clients"><span class="ico">▤</span>Client Prospect Lists</button>
+      <button data-view="import" onclick="showView('import')" type="button"><span class="ico">⇧</span>Import Centre</button>
+      <button data-view="export" onclick="showView('export')" type="button"><span class="ico">⇩</span>Export Centre</button>
+      <button data-view="quality" onclick="showView('quality')" type="button"><span class="ico">✓</span>Data Quality</button>
+      <button data-view="clients" onclick="showView('clients')" type="button"><span class="ico">▤</span>Client Prospect Lists</button>
     </nav>
   </div>
   <div class="side-foot" id="sideConnection"><b>Database connection</b>Not connected.<br>Use Connect database to load live taxonomy and overview data.</div>
@@ -507,8 +507,8 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(112,157,92,.35);outl
 </div>
 <script>
 const labels={overview:"Overview",companies:"Company Directory",people:"People & Contacts",taxonomy:"Industry Taxonomy",trade:"Trade Intelligence",sources:"Sources & Evidence",research:"Research Pipeline",import:"Import Centre",export:"Export Centre",quality:"Data Quality",clients:"Client Prospect Lists"};
-function showView(name){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));document.querySelectorAll("[data-view]").forEach(b=>{const active=b.dataset.view===name;b.classList.toggle("active",active);if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});document.getElementById("crumb").textContent=labels[name]||"Overview";document.getElementById("sidebar").classList.remove("open");document.getElementById("menuBtn").setAttribute("aria-expanded","false");window.scrollTo({top:0,behavior:"smooth"});}
-document.querySelectorAll("[data-view]").forEach(b=>{b.type="button";b.addEventListener("click",event=>{event.preventDefault();showView(b.dataset.view);});});
+function showView(name){if(!labels[name]||!document.getElementById("view-"+name))name="overview";document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));document.querySelectorAll("[data-view]").forEach(b=>{const active=b.dataset.view===name;b.classList.toggle("active",active);if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});document.getElementById("crumb").textContent=labels[name];document.getElementById("sidebar").classList.remove("open");document.getElementById("menuBtn").setAttribute("aria-expanded","false");if(location.hash!=="#"+name)history.replaceState(null,"","#"+name);window.scrollTo({top:0,behavior:"smooth"});}
+document.querySelectorAll("[data-view]").forEach(b=>{b.type="button";b.addEventListener("click",event=>{event.preventDefault();showView(b.dataset.view);});});if(location.hash&&labels[location.hash.slice(1)])showView(location.hash.slice(1));
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.go)));
 document.getElementById("menuBtn").addEventListener("click",()=>{const sidebar=document.getElementById("sidebar");const open=sidebar.classList.toggle("open");document.getElementById("menuBtn").setAttribute("aria-expanded",String(open));});
 document.addEventListener("keydown",event=>{if(event.key==="Escape"){document.getElementById("sidebar").classList.remove("open");document.getElementById("menuBtn").setAttribute("aria-expanded","false");}});
