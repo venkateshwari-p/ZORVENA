@@ -204,7 +204,7 @@ async function handleApi(request, env, url) {
       linkedin_url, sector_id, industry_id, subsector_id, division_summary, business_type,
       products_services, trade_activity, verification_status, source_url, last_verified_at
       FROM ${table(env, "global_companies")}${whereSql}
-      ORDER BY company_name LIMIT ${limit} OFFSET ${offset}`;
+      ORDER BY company_name, company_id LIMIT ${limit} OFFSET ${offset}`;
     const countSql = `SELECT COUNT(*) AS total FROM ${table(env, "global_companies")}${whereSql}`;
     const [data, count] = await Promise.all([runQuery(env, sql, params), runQuery(env, countSql, params)]);
     return { data, pagination: { total: Number(count[0]?.total || 0), limit, offset } };
@@ -256,7 +256,7 @@ async function handleApi(request, env, url) {
       p.purchasing_responsibility, p.product_interest, p.verification_status, p.outreach_permission_status
       FROM ${table(env, "global_people")} p
       LEFT JOIN ${table(env, "global_companies")} c ON p.company_id = c.company_id${whereSql.replace(/(?<!@)\b(company_id|country|department|decision_role|verification_status|outreach_permission_status|purchasing_responsibility|product_interest)\b/g, "p.$1")}
-      ORDER BY p.full_name LIMIT ${limit} OFFSET ${offset}`;
+      ORDER BY p.full_name, p.person_id LIMIT ${limit} OFFSET ${offset}`;
     const countSql = `SELECT COUNT(*) AS total FROM ${table(env, "global_people")}${whereSql}`;
     const [data, count] = await Promise.all([runQuery(env, sql, params), runQuery(env, countSql, params)]);
     return { data, pagination: { total: Number(count[0]?.total || 0), limit, offset } };
