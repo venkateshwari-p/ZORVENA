@@ -710,7 +710,7 @@ function setupCompanyFilters(data){
   $("companySector").onchange=()=>{const sid=$("companySector").value;fillCompanySelect("companyIndustry",(data.industries||[]).filter(x=>!sid||String(x.sector_id)===String(sid)),"industry_id","industry_name","All industries");$("companyIndustry").value="";$("companySubsector").innerHTML='<option value="">All sub-sectors</option>';["companyIndustry","companySubsector"].forEach(id=>{const input=$(id+"Autocomplete");if(input)input.value="";});renderCompanyFilterSummary();};
   $("companyIndustry").onchange=()=>{const iid=$("companyIndustry").value;fillCompanySelect("companySubsector",(data.subsectors||[]).filter(x=>!iid||String(x.industry_id)===String(iid)),"subsector_id","subsector_name","All sub-sectors");const input=$("companySubsectorAutocomplete");if(input)input.value="";renderCompanyFilterSummary();};
  }
- async function loadSources(){
+ async function loadSources(strict=false){
   if(!apiHeaders)return;
   $("sourcesRefresh").disabled=true;$("sourcesRefresh").textContent="Loading…";
   try{
@@ -744,7 +744,7 @@ function setupCompanyFilters(data){
    }
    $("sourcesCount").textContent=rows.length+" records · "+keys.length+" source fields";
    $("sourcesResults").textContent="Loaded "+rows.length+" source records (maximum 100 per refresh).";
-  }catch(error){$("sourcesCount").textContent="Could not load";$("sourcesResults").textContent="Source register error: "+error.message;}
+  }catch(error){$("sourcesCount").textContent="Could not load";$("sourcesResults").textContent="Source register error: "+error.message;if(strict)throw error;}
   finally{$("sourcesRefresh").disabled=false;$("sourcesRefresh").textContent="↻ Refresh sources";}
  }
  let peopleOffset=0,peopleTotal=0;
@@ -873,7 +873,7 @@ async function loadPeopleCompanyOptions(){
    console.error("Could not load company dropdown",error);
   }
 }
-async function loadPeople(reset=false){
+async function loadPeople(reset=false,strict=false){
   if(!apiHeaders)return;
   if(reset)peopleOffset=0;
   const allMode=$("peopleLimit").value==="all";
@@ -895,7 +895,7 @@ async function loadPeople(reset=false){
    });
    $("peopleResults").textContent=allMode?"Showing all "+peopleTotal+" contacts":"Showing "+(peopleTotal?peopleOffset+1:0)+"–"+Math.min(peopleOffset+rows.length,peopleTotal)+" of "+peopleTotal+" contacts";
    $("peoplePrev").disabled=allMode||peopleOffset===0;$("peopleNext").disabled=allMode||peopleOffset+rows.length>=peopleTotal||rows.length===0;
-  }catch(error){$("peopleResults").textContent="Could not load professional records: "+error.message;}
+  }catch(error){$("peopleResults").textContent="Could not load professional records: "+error.message;if(strict)throw error;}
   finally{$("peopleApply").disabled=false;$("peopleApply").textContent="Search contacts";}
  }
  async function openCompanyDetail(row){
@@ -1198,7 +1198,7 @@ async function loadAllCompanyFilterSuggestions(){
   populateCompanyFilterSuggestions(companySuggestionRecords);
  }
 }
-async function loadCompanies(reset=false){
+async function loadCompanies(reset=false,strict=false){
   if(!apiHeaders)return;
   if(reset)companyOffset=0;
   const allMode=$("companyLimit").value==="all";
@@ -1220,7 +1220,7 @@ async function loadCompanies(reset=false){
    $("companyResults").textContent=allMode?"Showing all "+companyTotal+" companies":"Showing "+(companyTotal?companyOffset+1:0)+"–"+Math.min(companyOffset+rows.length,companyTotal)+" of "+companyTotal+" companies";
    $("companyPrev").disabled=allMode||companyOffset===0;
    $("companyNext").disabled=allMode||companyOffset+rows.length>=companyTotal||rows.length===0;
-  }catch(error){$("companyResults").textContent="Could not load company records: "+error.message;}
+  }catch(error){$("companyResults").textContent="Could not load company records: "+error.message;if(strict)throw error;}
   finally{$("companyApply").disabled=false;$("companyApply").textContent="Search directory";}
  }
  const setStatus=(ok,msg)=>{
@@ -1273,7 +1273,7 @@ async function loadCompanies(reset=false){
    const ccount=Number(counts.companies||0),pcount=Number(counts.people||0);$("readinessCompanies").textContent=ccount.toLocaleString()+" records currently available";$("companyReadiness").textContent=ccount?"Available":"Empty";$("readinessPeople").textContent=pcount.toLocaleString()+" contacts currently available";$("peopleReadiness").textContent=pcount?"Available":"Empty";
    $("companyReadiness").style.background=ccount?"#e9f5e9":"#fbf2df";$("companyReadiness").style.color=ccount?"#377144":"#946c25";$("peopleReadiness").style.background=pcount?"#e9f5e9":"#fbf2df";$("peopleReadiness").style.color=pcount?"#377144":"#946c25";
    renderTaxonomy(tx.data);apiHeaders=headers;setupCompanyFilters(tx.data);attachAllSearchableFilters();
-   await loadPeopleCompanyOptions();await loadAllPeopleFilterSuggestions();await loadAllCompanyFilterSuggestions();await loadCompanies(true);await loadPeople(true);await loadSources();
+   await loadPeopleCompanyOptions();await loadAllPeopleFilterSuggestions();await loadAllCompanyFilterSuggestions();await loadCompanies(true,true);await loadPeople(true,true);await loadSources(true);
    const notice=$("view-overview").querySelector(".notice");notice.innerHTML='<span class="nicon">✓</span><div><strong>Live BigQuery connection established.</strong>Overview, industry taxonomy, Company Directory and People & Contacts are connected to the authenticated ZORVENA API. Directory results depend on records available in BigQuery.</div>';notice.style.background="#eff8ef";notice.style.borderColor="#cce5cf";notice.style.color="#28643b";
    setStatus(true,"API connected");$("connectBtn").textContent="Refresh data";$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";
   }catch(e){
