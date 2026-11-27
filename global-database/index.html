@@ -1280,7 +1280,7 @@ async function loadCompanies(reset=false){
   }
   finally{$("submitConnect").disabled=false;$("submitConnect").textContent="Authenticate and load data";}
  }
- $("submitConnect").addEventListener("click",authenticate);
+ $("submitConnect").addEventListener("click",()=>authenticate());
  $("cancelConnect").addEventListener("click",()=>{$("connectTokenPanel").style.display="none";$("connectTokenInput").value="";$("connectTokenMessage").textContent="";});
  $("connectTokenInput").addEventListener("keydown",e=>{if(e.key==="Enter")authenticate();});
  $("companyApply").addEventListener("click",()=>{renderCompanyFilterSummary();loadCompanies(true);});
