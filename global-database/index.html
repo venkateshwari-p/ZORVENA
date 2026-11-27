@@ -911,6 +911,7 @@ function attachSearchableFilter(id){
  let activeIndex=-1;
  const getOptions=()=>[...select.options].slice(1).filter(option=>!option.disabled&&option.value&&!option.dataset.custom);
  const displayFor=option=>isTaxonomy?option.textContent.split(" · ").slice(1).join(" · "):option.textContent;
+ const normalize=value=>String(value||"").toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
  const close=()=>{panel.hidden=true;panel.innerHTML="";activeIndex=-1;input.setAttribute("aria-expanded","false");input.removeAttribute("aria-activedescendant");};
  const choose=option=>{
   select.value=option.value;select.dispatchEvent(new Event("change",{bubbles:true}));
@@ -919,7 +920,6 @@ function attachSearchableFilter(id){
  const render=()=>{
   const typed=input.value.trim();
   panel.innerHTML="";activeIndex=-1;
-  const normalize=value=>String(value||"").toLocaleLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
   const q=normalize(typed);
   const queryTokens=q.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
   const matches=getOptions().map(option=>({option,label:displayFor(option)}))
@@ -969,7 +969,7 @@ function attachSearchableFilter(id){
  };
  input.addEventListener("input",()=>{
   const typed=input.value.trim();
-  const exact=getOptions().find(option=>displayFor(option).toLocaleLowerCase()===typed.toLocaleLowerCase()||option.value.toLocaleLowerCase()===typed.toLocaleLowerCase());
+  const exact=getOptions().find(option=>normalize(displayFor(option))===normalize(typed)||normalize(option.value)===normalize(typed));
   if(exact){
    [...select.options].filter(option=>option.dataset.custom==="true").forEach(option=>option.remove());
    select.value=exact.value;select.dispatchEvent(new Event("change",{bubbles:true}));
